@@ -1,0 +1,72 @@
+/* =========================================================================
+   COMPONENTS: AVATAR (Refined Circle Initials)
+   ========================================================================= */
+
+@use "../abstracts" as *;
+
+.user-avatar-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    position: relative;  /* CRÍTICO: contexto para .status-dot */
+    background: linear-gradient(135deg, var(--buca-blue), #1e4bb5);
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 
+        0 4px 10px var(--buca-blue-glow),
+        inset 0 0 8px rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+
+    span {
+        line-height: 1;
+        margin-bottom: -1px; /* Visual alignment fix */
+    }
+
+    &.small {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+
+    &.large {
+        width: 48px;
+        height: 48px;
+        font-size: 1.1rem;
+    }
+
+    &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 15px var(--buca-blue-glow);
+        border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Indicador de estado (visto en fotos 4, 5, 6) */
+    .status-dot {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 10px;
+        height: 10px;
+        background: #22c55e;
+        border: 2px solid var(--bg-primary);
+        border-radius: 50%;
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+        pointer-events: none;  /* No bloquear hover del padre */
+        z-index: 2;            /* Siempre visible sobre el avatar */
+    }
+}
+
+/* Fix para el avatar dentro de la píldora de perfil */
+.glass-pill.profile {
+    .user-avatar-circle {
+        margin-right: -4px; /* Ajuste sutil para balance visual */
+    }
+}

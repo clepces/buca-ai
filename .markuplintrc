@@ -1,0 +1,15 @@
+{
+  "parser": {
+    ".html$": "@markuplint/html-parser"
+  },
+  "specs": {
+    ".html$": "@markuplint/html-spec"
+  },
+  "excludeFiles": ["dist/**/*"],
+  "rules": {
+    "required-attr": true,
+    "label-has-control": true,
+    "doctype": "always",
+    "permitted-contents": true
+  }
+}

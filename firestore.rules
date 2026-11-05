@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isBusinessOwner(bizId) {
+      return isAuthenticated() && (
+        request.auth.uid == get(/databases/$(database)/documents/businesses/$(bizId)).data.owner_id ||
+        (resource != null && resource.data.owner_id == request.auth.uid)
+      );
+    }
+
+    function isBusinessStaff(bizId) {
+      return isAuthenticated() && (
+        isBusinessOwner(bizId) ||
+        exists(/databases/$(database)/documents/businesses/$(bizId)/staff/$(request.auth.uid))
+      );
+    }
+
+    // Configuración global (tasas, etc.)
+    match /global_config/{configId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Tasas Cambiarias Operativas (Finance Module)
+    match /finance_rates/{tenantId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Registro de actividad y auditoría
+    match /activity_log/{logId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Inmutable
+    }
+
+    // Notificaciones (Broadcast & System Alerts)
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated(); // El superadmin/sistema crea
+      allow update: if isAuthenticated() && (
+        // Solo permite agregar el propio UID al array read_by
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read_by']) &&
+        request.resource.data.read_by.hasAll(resource.data.read_by) &&
+        request.resource.data.read_by.size() == resource.data.read_by.size() + 1 &&
+        (request.auth.uid in request.resource.data.read_by)
+      );
+      allow delete: if false; // Inmutable
+    }
+
+    // Perfil de usuario y subcolecciones (Workspaces)
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isUser(userId);
+
+      match /workspaces/{bizId} {
+        allow read, write: if isUser(userId);
+      }
+    }
+
+    // Unidades de Negocio (Multi-Tenant)
+    match /businesses/{bizId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.owner_id == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (resource.data.owner_id == request.auth.uid);
+
+      // Subcolecciones del Negocio
+      match /{subcollection}/{docId} {
+        allow read: if isAuthenticated();
+        allow write: if isAuthenticated();
+      }
+    }
+  }
+}

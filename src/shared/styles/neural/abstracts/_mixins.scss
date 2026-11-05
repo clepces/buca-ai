@@ -1,0 +1,179 @@
+/* =========================================================================
+   ABSTRACTS: MIXINS (Responsive & Utility Logic)
+   ========================================================================= */
+
+@use "variables" as *;
+
+/* 
+ * RESPONSIVE BREAKPOINTS (Standards 2026)
+ * Basado en la metodología Mobile-First.
+ */
+
+/* 
+ * RESPONSIVE MIXINS (BUCA Centralized Strategy)
+ * Basado en la metodología Mobile-First.
+ */
+
+/**
+ * respond-to($breakpoint) — Media query min-width (Mobile-First)
+ * @param {String} $breakpoint - Nombre del breakpoint (sm, md, lg, xl, xxl)
+ */
+@mixin respond-to($breakpoint) {
+    @if map-has-key($breakpoints, $breakpoint) {
+        @media screen and (min-width: map-get($breakpoints, $breakpoint)) {
+            @content;
+        }
+    } @else {
+        @warn "El breakpoint '#{$breakpoint}' no está definido.";
+    }
+}
+
+/**
+ * respond-below($breakpoint) — Media query max-width (Desktop-Down)
+ */
+@mixin respond-below($breakpoint) {
+    @if map-has-key($breakpoints, $breakpoint) {
+        @media screen and (max-width: (map-get($breakpoints, $breakpoint) - 1px)) {
+            @content;
+        }
+    } @else {
+        @warn "El breakpoint '#{$breakpoint}' no está definido.";
+    }
+}
+
+/**
+ * respond-between($lower, $upper) — Media query rango.
+ */
+@mixin respond-between($lower, $upper) {
+    @if map-has-key($breakpoints, $lower) and map-has-key($breakpoints, $upper) {
+        @media screen and (min-width: map-get($breakpoints, $lower)) and (max-width: (map-get($breakpoints, $upper) - 1px)) {
+            @content;
+        }
+    } @else {
+        @warn "Uno o ambos breakpoints ('#{$lower}', '#{$upper}') no existen.";
+    }
+}
+
+/* Semántica para compatibilidad y legibilidad */
+@mixin mobile-lg { @include respond-to('sm') { @content; } }
+@mixin tablet-v  { @include respond-to('md') { @content; } }
+@mixin tablet-h  { @include respond-to('lg') { @content; } }
+@mixin laptop    { @include respond-to('xl') { @content; } }
+@mixin desktop   { @include respond-to('xxl') { @content; } }
+@mixin ultra-hd   { @include respond-to('4k') { @content; } }
+
+/* Mixins de Orientación */
+@mixin landscape { @media screen and (orientation: landscape) { @content; } }
+@mixin portrait  { @media screen and (orientation: portrait)  { @content; } }
+
+
+/* 
+ * UTILITY: HIDE SCROLLBAR
+ * Oculta el scrollbar visualmente manteniendo la funcionalidad de scroll.
+ */
+@mixin hide-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    
+    @supports (scrollbar-width: none) {
+        scrollbar-width: none;    /* Firefox */
+    }
+    
+    @supports (scrollbar-color: transparent transparent) {
+        scrollbar-color: transparent transparent; /* Firefox fallback */
+    }
+
+    &::-webkit-scrollbar {
+        display: none; /* Chrome, Safari and Opera */
+        width: 0;
+        height: 0;
+    }
+}
+
+/* 
+ * WIDGET GLOW SYSTEM (Fase 5)
+ */
+@mixin glow-on-hover($color: var(--buca-blue-glow)) {
+    transition: box-shadow 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    &:hover {
+        box-shadow: 0 0 30px $color;
+        border-color: rgba(37, 99, 235, 0.5);
+    }
+}
+
+/**
+ * glass-surface — El corazón del sistema visual "Corporate Hybrid Glass".
+ * Aplica fondo, borde, desenfoque y sombras dinámicas según el nivel de rendimiento.
+ */
+@mixin glass-surface($bg: var(--surface-glass), $blur: var(--blur-intensity), $radius: 20px) {
+    background: $bg;
+    border: 1px solid var(--border-glass);
+    border-radius: $radius;
+    -webkit-backdrop-filter: blur($blur);
+    backdrop-filter: blur($blur);
+    box-shadow: var(--shadow-dynamic);
+    transition: background var(--anim-duration) ease, 
+                border-color var(--anim-duration) ease, 
+                box-shadow var(--anim-duration) ease,
+                backdrop-filter var(--anim-duration) ease;
+}
+
+/**
+ * glass-panel — Alias semántico para superficies tipo panel.
+ */
+@mixin glass-panel($bg: var(--surface-glass), $blur: var(--blur-intensity), $radius: 12px) {
+    @include glass-surface($bg, $blur, $radius);
+}
+
+
+/**
+ * auto-profile-scaling — Maneja el escalado de interacción según el tier de rendimiento.
+ * En L0 (Eco), el escalado es 1 (desactivado) automáticamente vía variables CSS.
+ */
+@mixin auto-profile-scaling($scale: var(--interaction-scale)) {
+    transition: transform var(--anim-duration) cubic-bezier(0.23, 1, 0.32, 1);
+    
+    &:hover {
+        transform: scale($scale);
+    }
+    
+    &:active {
+        transform: scale(0.98);
+    }
+}
+
+/* 
+ * BENTO GRID UTILITIES (Fase 5)
+ */
+@mixin bento-span($cols: 1, $rows: 1) {
+    grid-column: span $cols;
+    grid-row: span $rows;
+
+    @media screen and (max-width: 991px) {
+        grid-column: span 1;
+        grid-row: span 1;
+    }
+}
+
+/**
+ * buca-mask-fade — Técnica de Difuminación Neural (Fading Edges).
+ * Crea una máscara de transparencia en los bordes para suavizar el contenido.
+ * Soporta desvanecimiento multidireccional.
+ */
+@mixin buca-mask-fade($top: 0, $bottom: 0, $left: 0, $right: 0) {
+    $v-mask: linear-gradient(to bottom,
+        transparent 0%,
+        black if(sass($top > 0): #{$top}; else: 0%),
+        black if(sass($bottom > 0): calc(100% - #{$bottom}); else: 100%),
+        transparent 100%);
+    $h-mask: linear-gradient(to right,
+        transparent 0%,
+        black if(sass($left > 0): #{$left}; else: 0%),
+        black if(sass($right > 0): calc(100% - #{$right}); else: 100%),
+        transparent 100%);
+
+    -webkit-mask-image: $v-mask, $h-mask;
+    mask-image: $v-mask, $h-mask;
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+}

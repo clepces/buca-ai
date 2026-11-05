@@ -1,0 +1,19 @@
+/* =========================================================================
+   COMPONENTS: INDEX
+   NOTA: _dropdowns.scss ha sido removido. El nuevo sistema unificado
+   es _panels.scss. El archivo _dropdowns.scss se mantiene en disco
+   por si se necesita rollback, pero ya no se importa.
+   ========================================================================= */
+
+@forward "pills";
+@forward "panels";    /* ← Sistema unificado de Glass Panels */
+@forward "widgets";
+@forward "buttons";
+@forward "badges";
+@forward "modals";
+@forward "../modals/profile";
+@forward "avatar";
+@forward "icons";
+@forward "system-overlay";
+@forward "skeletons";
+

@@ -1,0 +1,362 @@
+/**
+ * Workspace System Widgets & Accordion Styles
+ */
+@use "@/shared/styles/neural/abstracts" as *;
+
+.system-widget-card {
+    background: var(--glass-bg, rgba(255, 255, 255, 0.95));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.08));
+    border-radius: 1.25rem;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.03);
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+        border-color: rgba(37, 99, 235, 0.25);
+    }
+}
+
+.system-accordion-stack {
+    .system-accordion-item {
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        background: #ffffff !important;
+
+        &:hover {
+            border-color: rgba(37, 99, 235, 0.3) !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+        }
+    }
+
+    .accordion-body-content {
+        display: none !important;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+
+        &.show {
+            display: block !important;
+            max-height: 600px;
+            opacity: 1;
+        }
+    }
+
+    .accordion-scroll-body {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(37, 99, 235, 0.3) transparent;
+
+        &::-webkit-scrollbar {
+            width: 5px;
+        }
+        &::-webkit-scrollbar-thumb {
+            background: rgba(37, 99, 235, 0.3);
+            border-radius: 10px;
+        }
+    }
+
+    .accordion-chevron {
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .accordion-inner-frame {
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        border-radius: 0.85rem;
+        background: #f8fafc !important;
+    }
+
+    .system-highlight-card {
+        transition: all 0.2s ease;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        background: #ffffff !important;
+        min-width: 0;
+
+        &:hover {
+            transform: translateY(-1px);
+            border-color: rgba(37, 99, 235, 0.25) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+        }
+
+        .system-highlight-text {
+            min-width: 0;
+            flex: 1 1 auto;
+            overflow: hidden;
+
+            strong, span {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+    }
+
+    .system-metric-box {
+        margin-top: 1rem;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        background: #ffffff !important;
+    }
+}
+
+.widget-badge-pill {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.65rem;
+}
+
+.widget-status-dot {
+    font-size: 0.45rem;
+}
+
+.widget-progress-track {
+    height: 6px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.widget-progress-fill-85 {
+    width: 85%;
+}
+
+.widget-meta-micro {
+    font-size: 0.72rem;
+}
+
+/* ── SYSTEM HEALTH MONITOR CLASSES ─────────────────────── */
+.health-header-icon-box {
+    width: 38px;
+    height: 38px;
+    background: rgba(5, 150, 105, 0.12);
+    color: #059669;
+}
+
+.health-title {
+    font-family: var(--font-family-display, 'Outfit', sans-serif);
+}
+
+.health-subtitle {
+    font-size: 0.72rem;
+}
+
+.health-card-icon-cloud {
+    width: 36px;
+    height: 36px;
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
+}
+
+.health-card-icon-gpu {
+    color: #d97706;
+}
+
+.health-card-icon-db {
+    width: 36px;
+    height: 36px;
+    background: rgba(124, 58, 237, 0.12);
+    color: #7c3aed;
+}
+
+.health-card-title {
+    font-family: var(--font-family-display, 'Outfit', sans-serif);
+    font-size: 0.88rem;
+}
+
+.health-badge-online {
+    font-size: 0.65rem;
+    background: #059669;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.health-badge-fps {
+    font-size: 0.65rem;
+    background: rgba(217, 119, 6, 0.15);
+    color: #b45309;
+    font-weight: 700;
+}
+
+.health-badge-storage {
+    font-size: 0.65rem;
+    background: rgba(124, 58, 237, 0.15);
+    color: #6d28d9;
+    font-weight: 700;
+}
+
+.health-progress-gpu {
+    height: 8px;
+}
+
+.health-progress-bar-gpu {
+    width: 85%;
+    background: #2563eb;
+}
+
+.health-progress-text {
+    font-size: 0.7rem;
+}
+
+/* ── QUICK ACTIONS CONTROL CLASSES ──────────────────────── */
+.qa-header-icon-box {
+    width: 38px;
+    height: 38px;
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
+}
+
+.qa-tile-link {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border-color: rgba(0, 0, 0, 0.06);
+
+    &:hover {
+        border-color: rgba(37, 99, 235, 0.3);
+        transform: translateY(-2px);
+    }
+}
+
+.qa-tile-icon-box {
+    width: 36px;
+    height: 36px;
+
+    &--blue { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+    &--green { background: rgba(5, 150, 105, 0.12); color: #059669; }
+    &--amber { background: rgba(217, 119, 6, 0.12); color: #d97706; }
+    &--purple { background: rgba(124, 58, 237, 0.12); color: #7c3aed; }
+}
+
+.qa-badge {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+
+    &--blue { color: #2563eb; }
+    &--green { color: #059669; }
+    &--amber { color: #d97706; }
+    &--purple { color: #7c3aed; }
+}
+
+.qa-title {
+    font-family: var(--font-family-display, 'Outfit', sans-serif);
+    font-size: 0.88rem;
+    color: #0f172a;
+}
+
+.qa-desc {
+    font-size: 0.73rem;
+    line-height: 1.25;
+}
+
+.qa-summary-box {
+    background: #f8fafc;
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+.qa-summary-icon {
+    width: 38px;
+    height: 38px;
+    background: rgba(5, 150, 105, 0.1);
+    color: #059669;
+}
+
+.qa-summary-title {
+    font-size: 0.82rem;
+    font-family: var(--font-family-display, 'Outfit', sans-serif);
+}
+
+.qa-summary-sub {
+    font-size: 0.7rem;
+}
+
+.qa-link-btn {
+    font-size: 0.75rem;
+    color: #2563eb;
+}
+
+/* ── ACCORDION & SYSTEM WIDGETS SEMANTIC CLASSES ────────── */
+.system-widgets-header-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
+}
+
+.system-widgets-header-title {
+    font-family: var(--font-family-display, 'Outfit', sans-serif);
+    color: #0f172a;
+}
+
+.system-widgets-header-sub {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.accordion-icon-box {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+
+    &--blue { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+    &--purple { background: rgba(124, 58, 237, 0.12); color: #7c3aed; }
+    &--green { background: rgba(16, 185, 129, 0.12); color: #059669; }
+}
+
+.accordion-title {
+    font-family: var(--font-family-display, 'Outfit', sans-serif);
+    font-size: 0.98rem;
+    color: #0f172a;
+}
+
+.accordion-sub {
+    font-size: 0.74rem;
+    color: #475569;
+}
+
+.accordion-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+
+    &--blue { color: #2563eb; letter-spacing: 0.5px; }
+    &--purple { color: #7c3aed; }
+    &--green { color: #059669; }
+}
+
+.profile-l4-pill {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #047857;
+}
+
+.dot-green-micro {
+    width: 6px;
+    height: 6px;
+    background: #059669;
+}
+
+.metric-highlight-title {
+    font-size: 0.82rem;
+    color: #0f172a;
+}
+
+.metric-highlight-sub {
+    font-size: 0.72rem;
+}
+
+.accordion-desc-text {
+    font-size: 0.84rem;
+    line-height: 1.55;
+    color: #334155;
+}
+
+.vsync-bar-fill {
+    width: 100%;
+    background: #2563eb;
+}
+
+.vsync-track {
+    height: 6px;
+}
+
+.metric-event-text {
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+

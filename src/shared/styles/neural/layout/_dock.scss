@@ -1,0 +1,395 @@
+/* =========================================================================
+   LAYOUT: DOCK SLOT & HUD (Bottom Integrated Navigation)
+   ========================================================================= */
+
+@use "../abstracts" as *;
+
+.dock-slot {
+    position: fixed;
+    bottom: calc(15px + env(safe-area-inset-bottom, 0px));
+    left: 0;
+    right: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 20px;
+    padding: 0 40px;
+    z-index: z('dock') !important;
+    pointer-events: none; /* Permite clicks a través del espacio vacío entre HUDs y Dock */
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+
+    @include tablet-v {
+        padding: 0 20px;
+        gap: 12px;
+    }
+
+    @include mobile-lg {
+        padding: 0 10px;
+        justify-content: center;
+    }
+
+    @media screen and (max-height: 800px) {
+        bottom: 8px;
+        transform: scale(0.9);
+        transform-origin: bottom center;
+    }
+
+    @media screen and (max-width: 576px) {
+        bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+        padding: 0 8px;
+        gap: 6px;
+
+        .dock-hud {
+            display: none !important;
+        }
+
+        .dock-nav-wrapper {
+            padding: 4px 6px;
+            gap: 2px;
+        }
+
+        .dock-item {
+            padding: 6px;
+            gap: 2px;
+            i { font-size: 1.1rem; }
+        }
+    }
+}
+
+/* 1. HUD MODULES (Left/Right) */
+.dock-hud {
+    width: 200px; 
+    min-width: 200px;
+    max-width: 200px;
+    flex-shrink: 0;
+    pointer-events: auto;
+    background: var(--surface-glass);
+    -webkit-backdrop-filter: blur(var(--blur-intensity, 16px));
+    backdrop-filter: blur(var(--blur-intensity, 16px));
+    border: 1px solid var(--border-glass);
+    padding: 10px 18px;
+    border-radius: 18px;
+    box-shadow: var(--shadow-glass-sm);
+    align-items: center;
+    min-height: 58px;
+    
+    @include mobile-lg {
+        padding: 5px 12px;
+        min-height: 48px;
+        width: 130px; 
+        min-width: 130px;
+        max-width: 130px;
+        border-radius: 12px;
+        
+        .hud-item-stacked {
+            .hud-label { font-size: 0.5rem; }
+            .hud-value { font-size: 0.75rem; }
+        }
+    }
+
+    @media screen and (max-height: 800px) {
+        padding: 6px 14px;
+        min-height: 48px;
+        width: 170px;
+        min-width: 170px;
+    }
+
+    &.left { order: 1; }
+    &.right { order: 3; text-align: right; justify-content: flex-end; }
+
+    /* Force visibility */
+    display: flex !important;
+    z-index: 10;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+        background: var(--bg-surface); /* Fondo más sólido para evitar sensación de transparencia */
+        border-color: var(--buca-blue);
+        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+        transform: translateY(-5px);
+        
+        .hud-value { color: var(--buca-blue); }
+    }
+}
+
+.hud-item-stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    min-width: 130px; /* Asegura espacio para la hora sin desplazar */
+
+    .hud-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        display: block;
+    }
+
+    .hud-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-main);
+        font-family: 'Outfit', 'Inter', monospace; /* Añadir monospace como fallback para estabilidad */
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.2px;
+        display: block;
+        white-space: nowrap;
+        transition: color 0.3s ease;
+    }
+}
+
+/* 2. DOCK CONTAINER (Central) */
+.dock-container {
+    order: 2;
+    pointer-events: auto;
+    width: fit-content;
+    max-width: 95vw;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+
+    &.dock-context-transition {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+}
+
+.dock-nav-wrapper {
+    display: flex;
+    align-items: center;
+    background: var(--surface-dock);
+    -webkit-backdrop-filter: blur(var(--blur-intensity)) saturate(180%);
+    backdrop-filter: blur(var(--blur-intensity)) saturate(180%);
+    border: 1px solid var(--border-glass-bright);
+    padding: 6px 12px;
+    border-radius: 20px;
+    gap: 8px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.dock {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    max-width: 90vw;
+    padding: 8px 4px;
+    margin: -8px 0;
+    scroll-behavior: smooth;
+
+    @include hide-scrollbar;
+
+    @include tablet-v {
+        gap: 6px;
+    }
+}
+
+.nav-arrow {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+    opacity: 0.6;
+
+    &:hover {
+        color: var(--buca-blue);
+        opacity: 1;
+    }
+}
+
+.dock-item {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: visible;
+
+    i {
+        font-size: 1.2rem;
+        transition: transform 0.3s;
+    }
+
+    span {
+        display: none;
+        font-size: 0.75rem;
+    }
+
+    @include laptop {
+        flex-direction: row;
+        gap: 8px;
+        padding: 10px 16px;
+        span { display: inline-block; }
+    }
+
+    /* Indicación de Activo (Fase 3 Premium) */
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 50%;
+        transform: translateX(-50%) scaleX(0);
+        width: 15px;
+        height: 3px;
+        background: var(--buca-blue);
+        border-radius: 10px;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 0 10px var(--buca-blue-glow);
+    }
+
+    &.active {
+        color: var(--buca-blue);
+        background: var(--hover-glass);
+        
+        &::after { transform: translateX(-50%) scaleX(1); }
+        i { transform: translateY(-2px); }
+    }
+
+    &:hover:not(.active) {
+        color: var(--text-main);
+        background: var(--hover-glass);
+        transform: translateY(-5px);
+        
+        i { transform: scale(1.2); }
+    }
+    
+    &:active { transform: scale(0.92); }
+
+    /* Tooltip logic */
+    .dock-tooltip {
+        position: absolute;
+        bottom: 120%;
+        left: 50%;
+        transform: translateX(-50%) translateY(5px);
+        background: rgba(15, 23, 42, 0.95);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+
+        &::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: rgba(15, 23, 42, 0.95);
+        }
+    }
+
+    &:hover .dock-tooltip {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.separator {
+    width: 1px;
+    height: 18px;
+    background: var(--border-glass);
+    margin: 0 4px;
+    flex-shrink: 0;
+}
+
+.dock-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 8px;
+    padding-left: 12px;
+    border-left: 1px solid var(--border-glass);
+}
+
+.btn-ai,
+.btn-add {
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    
+    &:hover { transform: translateY(-4px) rotate(5deg); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); }
+    &:active { transform: scale(0.9); }
+}
+
+.btn-ai { background: linear-gradient(135deg, #6366f1, #a855f7); }
+.btn-add { background: var(--buca-blue); }
+
+/* MOBILE REFINEMENTS */
+@media (max-width: 480px) {
+    .dock-slot { bottom: 10px; }
+    .dock-item { padding: 12px; }
+    .btn-ai, .btn-add { width: 42px; height: 42px; }
+}
+
+@media (max-width: 400px) {
+    .dock-slot { 
+        padding: 0 5px; 
+    }
+    .dock-nav-wrapper {
+        padding: 4px 8px;
+        gap: 4px;
+        width: 100%;
+        justify-content: space-between;
+    }
+    .dock { 
+        max-width: 100%; 
+        padding: 6px 2px;
+    }
+    .dock-actions { 
+        margin-left: 4px; 
+        padding-left: 8px; 
+    }
+    .btn-ai, .btn-add { 
+        width: 36px; 
+        height: 36px; 
+    }
+}
+
+/* ── SOPORTE L0 (ECO) - CAPA DE SEGURIDAD ─────────────────── */
+[data-buca-perf="L0"] {
+    .dock-hud, .dock-nav-wrapper {
+        background: var(--surface-solid) !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+        box-shadow: none !important;
+        border: 1px solid var(--border-glass) !important;
+    }
+
+    .dock-item:hover {
+        transform: none !important;
+    }
+}

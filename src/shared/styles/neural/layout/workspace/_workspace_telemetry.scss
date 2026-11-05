@@ -1,0 +1,151 @@
+/* =========================================================================
+   WORKSPACE PREMIUM: Telemetry Premium Strip & Metric Cards
+   ========================================================================= */
+
+@use "../../abstracts" as *;
+
+.telemetry-premium-strip {
+    margin-bottom: 20px;
+    padding: 6px 0;
+    width: 100%;
+
+    @media screen and (max-height: 800px) {
+        margin-bottom: 14px;
+        padding: 2px 0;
+    }
+
+    .telemetry-items {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        width: 100%;
+
+        @include respond-below('xl') {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        @include respond-below('sm') {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding-bottom: 6px;
+            min-width: max-content;
+            @include hide-scrollbar;
+        }
+    }
+}
+
+.telemetry-card {
+    @include glass-surface;
+
+    border-radius: 18px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 240px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-glass);
+
+    @include respond-below('lg') {
+        padding: 10px 14px;
+        min-width: 215px;
+        gap: 10px;
+        border-radius: 14px;
+    }
+
+    &:hover {
+        background: var(--surface-glass-bright);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+
+        .t-icon i {
+            transform: scale(1.1) rotate(5deg);
+        }
+    }
+}
+
+.t-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--buca-blue);
+    flex-shrink: 0;
+
+    @media screen and (max-height: 800px) {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        font-size: 1.1rem;
+    }
+    
+    i {
+        transition: transform 0.4s ease;
+    }
+}
+
+.t-data {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.t-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.t-value {
+    font-size: 1.08rem;
+    font-weight: 800;
+    color: var(--text-main);
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.2px;
+
+    @media screen and (max-height: 800px) {
+        font-size: 0.98rem;
+    }
+}
+
+.t-trend {
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    &.up { color: var(--color-success); }
+    &.down { color: var(--color-error); }
+    &.neutral { color: var(--text-muted); opacity: 0.7; }
+    &.warning { color: var(--color-warning); }
+
+    &.pulse-success {
+        color: var(--color-success);
+        i {
+            font-size: 6px;
+            animation: t-pulse-glow 2s infinite;
+        }
+    }
+}
+
+@keyframes t-pulse-glow {
+    0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    70% { transform: scale(1.2); opacity: 0.5; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+    100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Icon Glow Variations */
+.bg-blue-glow { background: rgba(37, 99, 235, 0.1); color: var(--buca-blue); }
+.bg-purple-glow { background: rgba(139, 92, 246, 0.1); color: var(--color-accent); }
+.bg-green-glow { background: rgba(16, 185, 129, 0.1); color: var(--color-success); }
+.bg-orange-glow { background: rgba(245, 158, 11, 0.1); color: var(--color-warning); }

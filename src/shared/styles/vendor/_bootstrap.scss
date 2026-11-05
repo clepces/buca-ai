@@ -1,0 +1,45 @@
+/**
+ * BUCA - Custom Bootstrap Integration
+ * =========================================================================
+ * Vincula el sistema de variables de Buca Neural Engine con Bootstrap 5.
+ */
+@use 'sass:map';
+@use '../neural/abstracts' as buca;
+
+// 1. CONFIGURACIÓN DE COLORES
+$primary: #2563eb; // --buca-blue
+$secondary: #64748b; // --text-muted
+$success: #22c55e;
+$info: #3b82f6;
+$warning: #f59e0b;
+$danger: #ef4444;
+$dark: #0f172a;
+$light: #f8fafc;
+
+// 2. BREAKPOINTS (Normalización BUCA v5)
+$grid-breakpoints: (
+  xs: 0,
+  s: 576px, // Cambiado de sm a s según estándar solicitado
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1400px
+);
+
+// 3. PERSONALIZACIÓN DE COMPONENTES
+$border-radius: 12px;
+$border-radius-lg: 16px;
+$border-radius-sm: 8px;
+$font-family-sans-serif: 'Inter', system-ui, -apple-system, "Segoe UI", roboto, "Helvetica Neue", arial;
+
+// 4. IMPORTACIÓN DE BOOTSTRAP
+@import "bootstrap/scss/bootstrap";
+
+// 5. EXTENSIONES NEURAL (L0 Solid Design)
+.buca-card {
+    @extend .card;
+    
+    border: 1px solid var(--border-glass);
+    background: var(--surface-solid);
+    border-radius: var(--ui-capsule-radius);
+}

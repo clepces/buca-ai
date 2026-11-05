@@ -1,0 +1,208 @@
+/* =========================================================================
+   BASE: GLOBAL (Body & System Overlays)
+   ========================================================================= */
+
+@use "../abstracts" as *;
+
+html {
+    font-size: 16px;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+
+    @media (prefers-reduced-motion: reduce) {
+        scroll-behavior: auto;
+    }
+}
+
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+
+    --buca-font-family: 'Outfit', 'Inter', sans-serif;
+
+    background-color: var(--bg-primary);
+    color: var(--text-main);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-family: var(--buca-font-family);
+    font-variant-numeric: tabular-nums;
+
+    &.glass-theme {
+        background-color: var(--bg-primary);
+        background-image:
+            radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.15) 0, transparent 50%),
+            radial-gradient(at 100% 0%, rgba(37, 99, 235, 0.15) 0, transparent 50%),
+            radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.15) 0, transparent 50%),
+            url('/assets/media/wallpaper.jpg');
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        image-rendering: -webkit-optimize-contrast; // Claridad en 2026
+    }
+}
+
+/* Tipografía Adaptativa (Fase 3): Fuente de sistema en modo ECO */
+[data-buca-perf="L0"] body {
+    --buca-font-family: -apple-system, blinkmacsystemfont, "Segoe UI", roboto, helvetica, arial, sans-serif;
+}
+
+/* Elusión de degradación (Excepción para elementos críticos) */
+[data-buca-perf="L0"] [data-bne-ignore="true"],
+[data-buca-perf="L0"] [data-bne-ignore="true"] * {
+    --buca-font-family: 'Outfit', 'Inter', sans-serif !important;
+
+    animation: inherit !important; /* Permitir animaciones manuales */
+}
+
+.bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-overlay-color);
+    -webkit-backdrop-filter: blur(calc(var(--blur-intensity) * var(--buca-blur-factor)));
+    backdrop-filter: blur(calc(var(--blur-intensity) * var(--buca-blur-factor)));
+    border: none;
+    border-radius: 0;
+    z-index: -1;
+    transition: background-color 0.4s ease, backdrop-filter 0.4s ease;
+    will-change: backdrop-filter;
+}
+
+/* UTILITIES */
+.text-success { color: var(--color-success) !important; }
+.text-warning { color: var(--color-warning) !important; }
+.text-error { color: var(--color-error) !important; }
+.text-primary { color: var(--buca-blue) !important; }
+
+/* Flexbox Utilities (Lightweight) */
+.d-flex { display: flex !important; }
+.flex-column { flex-direction: column !important; }
+.justify-content-center { justify-content: center !important; }
+.justify-content-between { justify-content: space-between !important; }
+.justify-content-end { justify-content: flex-end !important; }
+.align-items-center { align-items: center !important; }
+.align-items-baseline { align-items: baseline !important; }
+.gap-1 { gap: 0.25rem !important; }
+.gap-2 { gap: 0.5rem !important; }
+.gap-3 { gap: 1rem !important; }
+
+/* Spacing Utilities (Lightweight) */
+.mt-1 { margin-top: 0.25rem !important; }
+.mt-2 { margin-top: 0.5rem !important; }
+.mt-3 { margin-top: 1rem !important; }
+.mt-4 { margin-top: 1.5rem !important; }
+.mb-3 { margin-bottom: 1rem !important; }
+.me-1 { margin-right: 0.25rem !important; }
+.me-2 { margin-right: 0.5rem !important; }
+.ms-2 { margin-left: 0.5rem !important; }
+.px-2 { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
+.px-4 { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
+.py-3 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+
+.d-none { display: none !important; }
+
+.hidden-mobile {
+    @media screen and (max-width: 768px) {
+        display: none !important;
+    }
+}
+
+/* ── NEURAL POST-PROCESSING SYSTEM (FASE 3) ──────────────── */
+[data-buca-bloom="true"] {
+    .glass-modal, .glass-panel, .glass-pill {
+        filter: brightness(1.05) contrast(1.02);
+        /* El bloom escala con el slider de intensidad */
+        box-shadow: 
+            var(--shadow-dynamic),
+            0 0 calc(20px * var(--buca-bloom-intensity, 1)) rgba(37, 99, 235, calc(0.15 * var(--buca-bloom-intensity, 1)));
+    }
+}
+
+[data-buca-grain="true"] body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.04;
+    z-index: 9999;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+[data-buca-reflections="false"] {
+    /* Desactivar solo brillos y resaltar bordes opacos, NO matar el desenfoque */
+    .glass-modal, .glass-panel, .glass-pill, .header-actions-capsule {
+        border-color: var(--border-glass) !important;
+
+        --border-highlight: transparent !important;
+    /* Mantenemos el fondo original del cristal para no perder el desenfoque */
+    }
+}
+
+/* ── FIREBASE EMULATOR UI OVERRIDE ──────────────────────── */
+/* Bloqueo total del banner nativo para priorizar el EmulatorModal corporativo */
+.firebase-emulator-warning, 
+[class*="firebase-emulator"] {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    height: 0 !important;
+    z-index: -1000 !important;
+}
+
+/* ── ERROR LAYOUTS (Full Screen) ────────────────────────── */
+.full-screen-error-layout {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-primary);
+    background-image: var(--bg-wallpaper, none);
+    background-size: cover;
+    background-position: center;
+}
+
+.error-page {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    text-align: center;
+}
+
+/* Glassmorphism Utilities */
+.bg-white-5  { background: rgba(255, 255, 255, 0.05) !important; }
+.bg-white-10 { background: rgba(255, 255, 255, 0.1) !important; }
+.bg-white-15 { background: rgba(255, 255, 255, 0.15) !important; }
+
+.border-white-5  { border-color: rgba(255, 255, 255, 0.05) !important; }
+.border-white-10 { border-color: rgba(255, 255, 255, 0.1) !important; }
+.border-white-15 { border-color: rgba(255, 255, 255, 0.15) !important; }
+
+.border-glass-bright { border-color: var(--border-glass-bright) !important; }
+.border-glass { border-color: var(--border-glass) !important; }
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}

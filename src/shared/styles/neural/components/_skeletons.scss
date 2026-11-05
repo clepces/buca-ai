@@ -1,0 +1,280 @@
+/* =========================================================================
+   COMPONENTS: SKELETON LOADERS (Neural Glass Shimmer Engine)
+   ========================================================================= */
+
+@use "../abstracts" as *;
+
+/* ── ANIMACIÓN DE RESPLANDOR (SHIMMER) ─────────────────── */
+@keyframes bucaSkeletonShimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+:root {
+    --skeleton-base: rgba(226, 232, 240, 0.65);
+    --skeleton-wave: rgba(248, 250, 252, 0.95);
+    --skeleton-card-bg: rgba(255, 255, 255, 0.7);
+    --skeleton-border: rgba(226, 232, 240, 0.8);
+}
+
+html[data-theme="dark"] {
+    --skeleton-base: rgba(30, 41, 59, 0.55);
+    --skeleton-wave: rgba(51, 65, 85, 0.85);
+    --skeleton-card-bg: rgba(18, 24, 38, 0.65);
+    --skeleton-border: rgba(51, 65, 85, 0.5);
+}
+
+/* ── CLASE BASE DE SHIMMER ─────────────────────────────── */
+.skeleton-shimmer,
+.sk-shimmer {
+    background: linear-gradient(
+        90deg,
+        var(--skeleton-base) 0%,
+        var(--skeleton-wave) 50%,
+        var(--skeleton-base) 100%
+    );
+    background-size: 250% 100%;
+    animation: bucaSkeletonShimmer 1.8s infinite cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: background-position;
+}
+
+/* ── PRIMITIVAS DE SKELETON ────────────────────────────── */
+.sk-box {
+    border-radius: 12px;
+
+    &.sm { width: 44px; height: 44px; }
+    &.md { width: 110px; height: 36px; }
+    &.full-h44 { height: 44px; width: 100%; }
+}
+
+.sk-circle {
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &.sm { width: 32px; height: 32px; }
+    &.md { width: 38px; height: 38px; }
+    &.lg { width: 44px; height: 44px; }
+    &.xl { width: 56px; height: 56px; }
+    &.avatar { width: 64px; height: 64px; }
+}
+
+.sk-pill {
+    border-radius: 9999px;
+    flex-shrink: 0;
+
+    &.xs { width: 60px; height: 20px; }
+    &.sm { width: 70px; height: 24px; }
+    &.md { width: 95px; height: 30px; }
+    &.lg { width: 115px; height: 32px; }
+    &.xl { width: 135px; height: 36px; }
+    &.search { width: 260px; height: 38px; }
+}
+
+.sk-banner-text {
+    max-width: 500px;
+}
+
+.sk-line {
+    height: 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+
+    &.lg { height: 20px; border-radius: 8px; }
+    &.sm { height: 9px; border-radius: 4px; }
+    &.w-25 { width: 25%; }
+    &.w-33 { width: 33%; }
+    &.w-50 { width: 50%; }
+    &.w-75 { width: 75%; }
+    &.w-100 { width: 100%; }
+    &.w-180 { width: 180px; }
+}
+
+.sk-card {
+    background: var(--skeleton-card-bg);
+    border: 1px solid var(--skeleton-border);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ── ESTRUCTURA COMPLETA DE VISTA PRINCIPAL ────────────── */
+.buca-skeleton-view {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 90px;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Header Stack Skeleton */
+.sk-header-stack {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--surface-glass, rgba(255, 255, 255, 0.8));
+    [data-theme="dark"] & {
+        background: rgba(15, 23, 42, 0.85);
+    }
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-glass, rgba(226, 232, 240, 0.6));
+}
+
+.sk-topbar {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    .sk-topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .sk-topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+}
+
+.sk-ribbon {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 8px 24px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* Workspace Content Skeleton */
+.sk-workspace-container {
+    max-width: 1440px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px 24px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+/* Banner Skeleton */
+.sk-banner-card {
+    height: 170px;
+    border-radius: 22px;
+    padding: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--skeleton-card-bg);
+    border: 1px solid var(--skeleton-border);
+
+    @media screen and (max-width: 767px) {
+        height: auto;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+}
+
+/* Telemetry Strip Skeleton */
+.sk-telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+
+    @media screen and (max-width: 991px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media screen and (max-width: 575px) {
+        grid-template-columns: 1fr;
+    }
+
+    .sk-telemetry-item {
+        height: 74px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: var(--skeleton-card-bg);
+        border: 1px solid var(--skeleton-border);
+    }
+}
+
+/* Business Hub Grid Skeleton */
+.sk-hub-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+
+    @media screen and (max-width: 991px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media screen and (max-width: 575px) {
+        grid-template-columns: 1fr;
+    }
+
+    .sk-hub-item {
+        height: 130px;
+        border-radius: 18px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: var(--skeleton-card-bg);
+        border: 1px solid var(--skeleton-border);
+    }
+}
+
+/* Two-Column Section Skeleton */
+.sk-two-columns {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 18px;
+
+    @media screen and (max-width: 991px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Floating Bottom Dock Skeleton */
+.sk-floating-dock {
+    position: fixed;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 320px;
+    height: 56px;
+    border-radius: 9999px;
+    background: var(--surface-glass, rgba(255, 255, 255, 0.88));
+    [data-theme="dark"] & {
+        background: rgba(18, 24, 38, 0.9);
+    }
+    border: 1px solid var(--border-glass-bright, rgba(255, 255, 255, 0.35));
+    box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.18);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 16px;
+    z-index: 999;
+}

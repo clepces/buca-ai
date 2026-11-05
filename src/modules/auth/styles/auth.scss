@@ -1,0 +1,10 @@
+/* ==========================================================================
+   BUCA PREMIUM AUTH ECOSYSTEM - v6.1 (Modular Atomic Edition)
+   Arquitectura: Desacoplamiento en Submódulos Atómicos Locales
+   ========================================================================== */
+
+@forward "./auth_base";
+@forward "./auth_card";
+@forward "./auth_forms";
+@forward "./auth_pin";
+@forward "./auth_session";

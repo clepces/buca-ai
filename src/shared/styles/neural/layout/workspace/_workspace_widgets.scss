@@ -1,0 +1,159 @@
+/* =========================================================================
+   WORKSPACE PREMIUM: System & Performance Infrastructure Widgets
+   ========================================================================= */
+
+@use "../../abstracts" as *;
+
+.ws-system-widgets {
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+
+    .system-widget-card {
+        background: var(--surface-glass, rgba(255, 255, 255, 0.78));
+        border: 1px solid var(--border-color, rgba(226, 232, 240, 0.85));
+        border-radius: 1.25rem;
+        padding: 1.35rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+
+        &:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px -4px rgba(37, 99, 235, 0.12);
+            border-color: rgba(37, 99, 235, 0.35);
+        }
+
+        .widget-header {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .widget-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            flex-shrink: 0;
+
+            &--blue {
+                background: rgba(37, 99, 235, 0.1);
+                color: #2563eb;
+            }
+            &--purple {
+                background: rgba(147, 51, 234, 0.1);
+                color: #9333ea;
+            }
+            &--amber {
+                background: rgba(245, 158, 11, 0.1);
+                color: #d97706;
+            }
+        }
+
+        .widget-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-main, #0f172a);
+            line-height: 1.2;
+        }
+
+        .widget-category {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted, #64748b);
+        }
+
+        .widget-body {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .widget-description {
+            font-size: 0.825rem;
+            color: var(--text-muted, #475569);
+            margin-bottom: 1rem;
+            line-height: 1.45;
+        }
+
+        .widget-meta-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            margin-top: auto;
+        }
+    }
+}
+
+/* Modo Oscuro para System Widgets */
+html[data-theme="dark"] .ws-system-widgets {
+    .system-widget-card {
+        background: rgba(15, 23, 42, 0.75);
+        border-color: rgba(51, 65, 85, 0.75);
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+
+        &:hover {
+            box-shadow: 0 12px 30px -4px rgba(59, 130, 246, 0.22);
+            border-color: rgba(59, 130, 246, 0.45);
+        }
+
+        .widget-title {
+            color: #f8fafc;
+        }
+
+        .widget-category {
+            color: #94a3b8;
+        }
+
+        .widget-description {
+            color: #cbd5e1;
+        }
+
+        .widget-meta-strip {
+            border-top-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .widget-icon-box {
+            &--blue { background: rgba(37, 99, 235, 0.2); color: #60a5fa; }
+            &--purple { background: rgba(147, 51, 234, 0.2); color: #c084fc; }
+            &--amber { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        }
+    }
+}
+
+/* Modo L0 / Rendimiento BNE */
+[data-buca-perf="L0"] .ws-system-widgets {
+    .system-widget-card {
+        background: var(--surface-solid, #ffffff) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+        border: 1px solid var(--border-color, #cbd5e1) !important;
+        transform: none !important;
+        transition: none !important;
+    }
+}
+
+html[data-theme="dark"][data-buca-perf="L0"] .ws-system-widgets {
+    .system-widget-card {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+    }
+}

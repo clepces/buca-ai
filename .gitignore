@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build Outputs & Bundles
+dist/
+build/
+out/
+*.tgz
+
+# Environment Variables (Secrets & Credentials)
+.env
+.env.*
+!.env.example
+
+# Logs & Debugging
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+firebase-debug.log*
+firebase-debug.*.log*
+
+# Firebase Caches & Local Runtime
+.firebase/
+.firebaserc.local
+.firebaserc.*
+.dataconnect/
+
+# Sandbox & Runtime Artifacts
+bun.lock
+bun.lockb
+.bun/
+.cache/
+.temp/
+.tmp/
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# IDE, OS & System Files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Testing & Coverage
+coverage/
+.nyc_output/
+lib-cov/
+
+# Caches
+.npm/
+.eslintcache
+.stylelintcache
+.node_repl_history
+.yarn-integrity

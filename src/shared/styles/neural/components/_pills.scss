@@ -1,0 +1,101 @@
+/* =========================================================================
+   COMPONENTS: PILLS (Glass Pill System)
+   ========================================================================= */
+
+@use "../abstracts" as *;
+
+.glass-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    @include glass-surface;
+
+    padding: 6px 14px;
+    border-radius: 50px;
+    
+    &.clickable {
+        @include auto-profile-scaling;
+        
+        &:hover {
+            background: var(--hover-glass);
+            border-color: var(--buca-blue);
+            box-shadow: 0 6px 20px var(--buca-blue-glow);
+        }
+    }
+
+    .pill-icon {
+        width: 28px;
+        height: 28px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-main);
+        font-size: 1.1rem;
+    }
+
+    .pill-content {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+    }
+
+    .pill-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .pill-amount {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--text-main);
+    }
+
+    .pill-value-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .pill-currency {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .pill-arrow {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-left: 2px;
+        transition: transform 0.3s;
+    }
+
+    /* Bug #5: eliminado translateY que conflictuaba con rotate de panel-open */
+
+    &.profile {
+        padding-left: 6px;
+    }
+
+    /* Breakpoint: desde 901px en adelante se ve el pill-label.
+       En ≤900px solo se muestra el icono/bandera/avatar. */
+    @media screen and (max-width: 900px) {
+        padding: 6px 8px;
+        gap: 6px;
+        .pill-label { display: none; }
+    }
+}
+
+/* Note: .header-actions-capsule is authoritatively styled in layout/_header.scss */
+
+.pill-separator {
+    width: 1px;
+    height: 18px;
+    background: var(--border-glass);
+    margin: 0 4px;
+}

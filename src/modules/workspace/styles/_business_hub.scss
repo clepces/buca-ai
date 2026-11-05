@@ -1,0 +1,186 @@
+/**
+ * Business Hub Compact & Command Center Styles
+ * =========================================================================
+ * Clean Atomic Sass, No !important, Centralized Abstract Tokens
+ * =========================================================================
+ */
+@use "@/shared/styles/neural/abstracts" as *;
+
+.ws-business-hub {
+    .hub-scroll-container {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        scrollbar-width: none;
+        &::-webkit-scrollbar { display: none; }
+    }
+
+    .hub-empty-state {
+        border: 1px solid rgba(37, 99, 235, 0.15);
+        min-width: 280px;
+
+        .hub-icon-box {
+            width: 42px;
+            height: 42px;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--buca-blue, #2563eb);
+        }
+    }
+
+    .hub-card-compact {
+        min-width: 200px;
+        width: 200px;
+        height: 90px;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 0.75rem;
+        padding: 0.75rem;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        &:hover {
+            transform: translateY(-2px);
+            border-color: var(--buca-blue, #2563eb);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-status-line {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+        }
+
+        .card-type {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.5px;
+            max-width: 140px;
+        }
+
+        .card-badge-role,
+        .card-badge-status {
+            font-size: 0.65rem;
+        }
+
+        .card-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin: 0.15rem 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #0f172a;
+        }
+
+        .card-alert-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            padding: 0 4px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+            .progress-val { font-size: 0.65rem; font-weight: 600; color: #64748b; }
+            .mini-progress {
+                flex-grow: 1;
+                height: 4px;
+                background: #f1f5f9;
+                border-radius: 2px;
+                overflow: hidden;
+                .fill { height: 100%; background: #2563eb; }
+            }
+        }
+
+        &.add-new {
+            border: 1px dashed #cbd5e1;
+            background: #f8fafc;
+            align-items: center;
+            text-align: center;
+            color: #64748b;
+            span { font-size: 0.75rem; font-weight: 600; }
+            .add-icon { margin-bottom: 0.25rem; font-size: 1.1rem; }
+            &:hover { background: #f1f5f9; border-color: #2563eb; color: #2563eb; }
+        }
+    }
+
+    .nav-arrow-sm {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        cursor: pointer;
+        &:hover { border-color: #2563eb; color: #2563eb; }
+    }
+
+    .btn-link-action {
+        border: none;
+        background: none;
+        color: #2563eb;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0;
+        &:hover { text-decoration: underline; }
+    }
+}
+
+/* Command Center Modal Styles */
+.command-center-container {
+    display: flex;
+    height: 600px;
+    background: #f8fafc;
+    border-radius: 0 0 1rem 1rem;
+    overflow: hidden;
+
+    .cc-sidebar {
+        width: 240px;
+        background: #ffffff;
+        border-right: 1px solid #e2e8f0;
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cc-nav-item {
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #64748b;
+        cursor: pointer;
+        margin-bottom: 0.25rem;
+        transition: all 0.2s;
+        &:hover { background: #f1f5f9; color: #0f172a; }
+        &.active { background: #eff6ff; color: #2563eb; }
+    }
+
+    .cc-main {
+        flex-grow: 1;
+        padding: 1.5rem;
+    }
+
+    .cc-business-card {
+        transition: all 0.2s;
+        &:hover { border-color: var(--buca-blue, #2563eb); transform: translateY(-2px); }
+    }
+}

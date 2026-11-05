@@ -1,0 +1,230 @@
+/* =========================================================================
+   HEADER PARTIAL: HEADER ACTIONS (Capsules, Theme Toggle & Buttons)
+   ========================================================================= */
+
+@use "../../abstracts" as *;
+
+.header-actions-capsule {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 44px;
+    padding: 5px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.05);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    flex-shrink: 0;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+}
+
+.action-capsule-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: 1px solid rgba(var(--buca-blue-rgb), 0.2);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+    color: var(--text-main);
+    position: relative;
+
+    /* Iconos modernos y estados */
+    i {
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    /* Punto de notificación (glow) */
+    &.btn-notif-toggle .notif-glow-dot {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 8px;
+        height: 8px;
+        background: #ef4444;
+        border-radius: 50%;
+        box-shadow: 0 0 8px #ef4444;
+        animation: pulse 2s infinite;
+    }
+
+    /* Estado de Conexión (Dinámico) - Iconografía Viva (Requested Update) */
+    &.btn-status-toggle {
+        &.online { 
+            border-color: rgba(5, 150, 105, 0.4); 
+            color: #059669;
+            box-shadow: 0 0 12px rgba(5, 150, 105, 0.3), 0 0 25px rgba(5, 150, 105, 0.1);
+            animation: glow-pulse 3s ease-in-out infinite;
+        }
+        
+        &.syncing, &.connecting { 
+            border-color: rgba(124, 58, 237, 0.5); 
+            color: #7c3aed;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, rgba(37, 99, 235, 0.1) 70%);
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.4), 0 0 10px rgba(37, 99, 235, 0.3);
+            animation: status-rotate 2s linear infinite, glow-pulse 2s ease-in-out infinite;
+            
+            i { color: #2563eb; } // Blue icon on purple/blue background
+        }
+        
+        &.offline { 
+            border-color: rgba(239, 68, 68, 0.5); 
+            color: #ef4444;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, rgba(37, 99, 235, 0.1) 70%);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4), 0 0 10px rgba(37, 99, 235, 0.3);
+            animation: alert-blink 1.2s ease-in-out infinite, glow-pulse 2s ease-in-out infinite;
+            
+            i { color: #2563eb; } // Blue icon on red/blue background
+        }
+    }
+
+    &.btn-test-sandbox {
+        border-color: rgba(220, 38, 38, 0.3);
+        color: #dc2626;
+    }
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+}
+
+@keyframes glow-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px currentColor); }
+    50% { opacity: 0.85; transform: scale(0.98); filter: drop-shadow(0 0 8px currentColor); }
+}
+
+@keyframes status-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes alert-blink {
+    0%, 100% { opacity: 1; filter: saturate(1) brightness(1); }
+    50% { opacity: 0.6; filter: saturate(1.5) brightness(1.2); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.header-status-badge {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    font-size: 0.75rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+
+    &.online {
+        background: rgba(5, 150, 105, 0.1);
+        color: #059669;
+        border-color: rgba(5, 150, 105, 0.2);
+    }
+    
+    .status-icon-dot {
+        font-size: 8px;
+    }
+}
+
+.btn-theme-toggle {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.06));
+    border-color: rgba(99, 102, 241, 0.25);
+
+    .action-icon-theme {
+        color: #6366f1;
+        filter: drop-shadow(0 1px 3px rgba(99, 102, 241, 0.35));
+    }
+
+    &:hover {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(139, 92, 246, 0.15));
+        border-color: rgba(99, 102, 241, 0.45);
+        box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+
+        .action-icon-theme {
+            transform: rotate(20deg) scale(1.1);
+        }
+    }
+}
+
+[data-theme="dark"] .btn-theme-toggle {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(251, 191, 36, 0.1));
+    border-color: rgba(245, 158, 11, 0.35);
+
+    .action-icon-theme {
+        color: #fbbf24;
+        filter: drop-shadow(0 1px 3px rgba(245, 158, 11, 0.35));
+    }
+
+    &:hover {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.28), rgba(251, 191, 36, 0.2));
+        border-color: rgba(245, 158, 11, 0.55);
+        box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+    }
+}
+
+.user-profile-trigger {
+    background: var(--surface-glass);
+    border: 1px solid var(--border-glass-bright);
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: var(--hover-glass);
+        border-color: var(--buca-blue, #2563eb);
+    }
+
+    .topbar-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 0.75rem;
+        font-weight: 800;
+    }
+
+    .topbar-status-dot {
+        width: 7px;
+        height: 7px;
+        border: 2px solid #ffffff;
+    }
+
+    .topbar-user-name {
+        font-size: 0.74rem;
+        max-width: 80px;
+    }
+
+    .topbar-user-role {
+        font-size: 0.55rem;
+        letter-spacing: 0.4px;
+    }
+
+    .topbar-chevron {
+        font-size: 0.6rem;
+    }
+}
+
+.brand-badge-version {
+    font-size: 0.55rem;
+    font-weight: 800;
+    padding: 2px 6px;
+}
+

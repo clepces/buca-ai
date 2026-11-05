@@ -1,0 +1,170 @@
+/* =========================================================================
+   COMPONENTS: DROPDOWNS (Menus & Mobile Drawers)
+   ========================================================================= */
+
+.dropdown-wrapper {
+    position: relative;
+}
+
+.custom-dropdown {
+    position: absolute;
+    top: calc(100% + 16px);
+    right: 0;
+    width: 250px;
+    background: var(--surface-glass);
+    -webkit-backdrop-filter: blur(var(--blur-intensity, 24px));
+    backdrop-filter: blur(var(--blur-intensity, 24px));
+    border: 1px solid var(--border-highlight);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px var(--shadow-glass);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px) scale(0.98);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2000;
+}
+
+.custom-dropdown.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.custom-dropdown.sidebar-dropdown {
+    width: 280px;
+    top: calc(100% + 15px);
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Sidebar Grid Header inside dropdown */
+.sidebar-grid-header {
+    padding: 18px;
+    background: var(--hover-glass);
+    border-bottom: 1px solid var(--border-glass);
+}
+
+.user-info-sidebar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-labels {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.user-name-sidebar {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-main);
+}
+
+.user-role-sidebar {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Quick Actions Grid */
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 18px;
+}
+
+.qa-item {
+    background: transparent;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+    padding: 10px 5px;
+    border-radius: 12px;
+    color: var(--text-main);
+}
+
+.qa-item:hover {
+    background: var(--hover-glass);
+    transform: translateY(-2px);
+}
+
+.qa-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--surface-glass);
+    border: 1px solid var(--border-highlight);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px var(--shadow-glass);
+    position: relative;
+    transition: all 0.2s;
+}
+
+.qa-item:hover .qa-icon {
+    border-color: var(--buca-blue);
+    box-shadow: 0 4px 15px var(--buca-blue-glow);
+}
+
+.qa-icon i {
+    font-size: 1.4rem;
+    color: var(--text-main);
+}
+
+.qa-item span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+/* Common Dropdown Items */
+.dropdown-header {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border-glass);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.drop-item {
+    width: 100%;
+    padding: 12px 18px;
+    border: none;
+    background: transparent;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-main);
+}
+
+.drop-item:hover {
+    background: var(--hover-glass);
+    padding-left: 24px;
+}
+
+/* Mobile Adjustments */
+@media screen and (max-width: 767px) {
+    .custom-dropdown.sidebar-dropdown {
+        position: fixed;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) scale(0.9) !important;
+        width: 90vw;
+        max-width: 340px;
+    }
+    .custom-dropdown.sidebar-dropdown.active {
+        transform: translate(-50%, -50%) scale(1) !important;
+    }
+}

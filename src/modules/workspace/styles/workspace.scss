@@ -1,0 +1,25 @@
+/**
+ * Workspace Module Styles - Modular Architecture BUCA v5.2
+ */
+@use "@/shared/styles/neural/abstracts" as *;
+@use "./navigation_ribbon";
+@use "./banner";
+@use "./telemetry";
+@use "./business_hub";
+@use "./recent_activity";
+@use "./system_widgets";
+@use "./performance_modal";
+@use "./settings_dashboard";
+
+.workspace-dashboard {
+    padding: var(--ui-floating-margin);
+    
+    .dashboard-header {
+        margin-bottom: 30px;
+        h1 {
+            color: var(--text-main);
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+    }
+}

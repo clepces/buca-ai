@@ -1,0 +1,26 @@
+// BUCA Global Styles Entry Point
+// =========================================================================
+
+// ── V1: LEGACY DESIGN SYSTEM ──
+// Por ahora vacío. Reservado para estilos heredados de la plataforma base.
+// @use 'legacy/index';
+
+// ── V2: NEURAL DESIGN SYSTEM (Buca Neural Engine) ──
+@use 'neural/abstracts' as *;
+@use 'neural/base';
+@use 'neural/layout';
+@use 'neural/components';
+@use 'neural/themes';
+@use 'neural/utilities';
+
+// ── V2.5: BOOTSTRAP INTEGRATION ──
+@use 'vendor/bootstrap';
+
+// ── V3: MODULAR STYLES ──
+@use '@/modules/auth/styles/auth';
+@use '@/modules/workspace/styles/workspace';
+@use '@/modules/business/styles/business';
+@use '@/modules/finance/styles/finance';
+
+// ── V4: EXPERIMENTAL / SANDBOX ──
+@use 'neural/layout/dock_experimental';

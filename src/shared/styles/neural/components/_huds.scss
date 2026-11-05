@@ -1,0 +1,139 @@
+/* =========================================================================
+   COMPONENTS: HUD TOASTS
+   ========================================================================= */
+
+.hud-feedback-container {
+    position: fixed;
+    bottom: clamp(1rem, 5vh, 2rem);
+    right: clamp(1rem, 5vw, 2rem);
+    left: clamp(1rem, 5vw, auto); /* En móvil pequeño, centrar o dar margen izq */
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    pointer-events: none;
+
+    @media (max-width: 480px) {
+        right: 1rem;
+        left: 1rem;
+    }
+}
+
+.hud-toast {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 340px;
+    margin-left: auto; /* Alinear a la derecha por defecto */
+    transform: translateX(120%) scale(0.9);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+    pointer-events: auto;
+    
+    @media (max-width: 480px) {
+        max-width: none;
+    }
+
+    &.show {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+
+    /* Glass Effect (Default) */
+    &--glass {
+        background: var(--surface-glass);
+        -webkit-backdrop-filter: blur(var(--ui-glass-blur));
+        backdrop-filter: blur(var(--ui-glass-blur));
+        border: 1px solid var(--border-glass-bright);
+        box-shadow: var(--shadow-lg);
+        color: var(--text-main);
+    }
+
+    /* Eco/Flat Effect (Panic Mode) */
+    &--eco {
+        background: var(--bg-surface); /* Usar el color de superficie del sistema */
+        border: 1px solid var(--border-glass);
+        box-shadow: var(--shadow-md);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        color: var(--text-main);
+        transition: none !important; /* No animations in panic */
+        transform: none !important;
+        opacity: 1 !important;
+        margin-top: 0.5rem;
+    }
+
+    .hud-toast-icon {
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hud-toast-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .hud-toast-message {
+        font-size: 0.85rem;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+
+    .hud-toast-close {
+        background: none;
+        border: none;
+        color: inherit;
+        opacity: 0.5;
+        font-size: 1.5rem;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0;
+        transition: opacity 0.2s;
+        
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    /* Status Colors */
+    &--info .hud-toast-icon { color: #3b82f6; }
+    &--success .hud-toast-icon { color: #10b981; }
+    &--warning .hud-toast-icon { color: #f59e0b; }
+    &--error .hud-toast-icon { color: #ef4444; }
+}
+
+/* ── ANIMACIONES Y ESTADOS DE NOTIFICACIÓN ──────────── */
+.pulse-notif {
+    animation: bucaPulseNotif 2s infinite;
+}
+
+@keyframes bucaPulseNotif {
+    0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+.notification-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--buca-blue);
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    &:active::after {
+        opacity: 0.05;
+    }
+}

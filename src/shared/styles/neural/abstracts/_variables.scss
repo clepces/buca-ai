@@ -1,0 +1,281 @@
+@use 'sass:map';
+
+/* =========================================================================
+   ABSTRACTS: VARIABLES (Design Tokens & Arquitectura)
+   =========================================================================
+   Fuente de verdad centralizada para:
+   - Colores de marca y semánticos
+   - Sombras (sistema sm/md/lg/glass)
+   - Superficies con transparencia (glass, dock, overlay)
+   - Z-index (mapa SASS + función z())
+   - Tokens de layout (header-height, dock-height)
+   ========================================================================= */
+
+/* ── MAPA CENTRALIZADO DE Z-INDEX ───────────────────────────
+ * Garantiza apilamiento predecible en toda la app.
+ * Usar: z-index: z('header');
+ * ─────────────────────────────────────────────────────────── */
+$z-index: (
+    'base': 1,
+    'header': 100,
+    'huds': 500,
+    'dock': 1000,
+    'panel-overlay': 10040,
+    'panel': 10050,
+    'modal-perf': 20000,
+    'modal-overlay': 21000,
+    'preloader': 99999
+);
+
+/**
+ * z($layer) — Recupera el z-index de una capa nombrada.
+ * @param {String} $layer - Nombre de la capa (ej: 'header', 'panel')
+ * @returns {Number} - Valor z-index o null si no existe
+ */
+@function z($layer) {
+    @if map.has-key($z-index, $layer) {
+        @return map.get($z-index, $layer);
+    }
+
+    @warn "La capa '#{$layer}' no existe en el mapa de Z-Index.";
+    @return null;
+}
+
+/* ── BREAKPOINTS ESTÁNDAR (BUCA RESPONSIVE SYSTEM) ──────── */
+$breakpoints: (
+    'xs': 0,
+    'sm': 576px,
+    'md': 768px,
+    'lg': 992px,
+    'xl': 1200px,
+    'xxl': 1400px,
+    '3k': 1920px,
+    '4k': 2560px
+);
+
+/* ── VARIABLES CSS — TEMA CLARO (Default) ───────────────── */
+:root {
+    /* Marca */
+    --buca-blue: #2563eb;
+    --buca-blue-dark: #1d4ed8;
+    --buca-blue-glow: rgba(37, 99, 235, 0.4);
+    
+    /* Fase 3 Performance Tokens */
+    --buca-blur-factor: 1;  /* Inyectado por JS: 1 / DPR */
+    --buca-tier-num: 1;     /* Inyectado por JS: 0 (Eco) a 3 (Ultra) */
+    --blur-intensity: 16px;
+
+    /* Sistema de Sombras (Neural Mapping) */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+    --shadow-glass: rgba(0, 0, 0, 0.12);
+    
+    /* La calidad de sombra (0 a 1) afecta al desenfoque y extensión */
+    --shadow-dynamic-blur: calc(25px * var(--buca-shadow-quality, 1));
+    --shadow-dynamic-spread: calc(10px * var(--buca-shadow-quality, 1));
+    --shadow-glass-sm: 0 4px var(--shadow-dynamic-blur) var(--shadow-glass);
+    --shadow-glass-lg: 0 15px var(--shadow-dynamic-blur) var(--shadow-glass);
+    
+    /* Valor por defecto global */
+    --shadow-dynamic: var(--shadow-glass-lg);
+
+    /* Sistema de Micro-animaciones (Fase 5) */
+    --interaction-speed: calc(0.6s / (var(--buca-particle-density, 1) + 0.1));
+
+    /* Colores de Badge (High Contrast Refined - Phase 5) */
+    --color-enterprise: #fef3c7;
+    --color-enterprise-text: #78350f; /* Darker for better contrast */
+    --color-balanced: #dbeafe;
+    --color-balanced-text: #1e40af;
+    --color-eco: #dcfce7;
+    --color-eco-text: #166534;
+    --color-ultra: #fee2e2;
+    --color-ultra-text: #991b1b;
+    --color-pro: #ede9fe;
+    --color-pro-text: #5b21b6;
+
+    /* Semánticos */
+    --color-success: #166534;
+    --color-warning: #92400e;
+    --color-error: #991b1b;
+    --color-info: #075985;
+    --color-accent: #5b21b6;
+
+    /* Layout & Dinámica (Fase 4 Modular) */
+    --topbar-height: 70px;
+    --header-total-height: var(--topbar-height);
+    --dock-height: 85px;
+
+    /* Floating UI Tokens */
+    --ui-floating-margin: 10px;
+    --ui-capsule-radius: 18px;
+    --ui-glass-blur: 16px;
+    --header-height: var(--header-total-height); /* Compatibilidad legado */
+    --panel-overlay-bg: rgba(0, 0, 0, 0.35);
+    --max-width: 1400px;
+    --ws-fade-color: transparent;
+
+    /* Responsive Overrides (Low Height Viewports) */
+    @media screen and (max-height: 800px) {
+        --topbar-height: 60px;
+        --dock-height: 72px;
+        --ui-floating-margin: 6px;
+    }
+
+    /* Support for Dynamic Viewport Height */
+    --full-height: 100dvh;
+
+    /* Superficies */
+    --bg-primary: #f8fafc;
+    --bg-surface: rgba(255, 255, 255, 0.8);
+    --bg-overlay-color: rgba(255, 255, 255, 0.55);
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+
+    /* Sistema de Cristal (Glassmorphism Light) */
+    --surface-glass: rgba(255, 255, 255, 0.7);
+    --surface-glass-bright: rgba(255, 255, 255, 0.9);
+    --surface-dock: rgba(255, 255, 255, 0.65);
+    --bg-glass-heavy: rgba(255, 255, 255, 0.45);
+    --border-glass: rgba(0, 0, 0, 0.08);
+    --border-glass-bright: rgba(255, 255, 255, 0.6);
+    --border-highlight: rgba(255, 255, 255, 0.9);
+    --hover-glass: rgba(37, 99, 235, 0.05);
+    --shadow-premium: 0 12px 30px rgba(0, 0, 0, 0.08);
+    --surface-solid: #fff;
+    /* Fallback Eco (Light) */
+    --surface-eco-fallback: #fff;
+    --surface-dock-fallback: #f8fafc;
+
+    /* Recursos & Térmico (Fase 4) */
+    --resource-low: #22c55e;
+    --resource-med: #f59e0b;
+    --resource-high: #ef4444;
+    --impact-bar-gradient: linear-gradient(90deg, var(--resource-low), var(--resource-med), var(--resource-high));
+}
+
+/* ── VARIABLES CSS — TEMA OSCURO ────────────────────────── */
+[data-theme="dark"] {
+    /* Superficies */
+    --bg-primary: #0f172a;
+    --bg-surface: rgba(30, 41, 59, 0.8);
+    --bg-overlay-color: rgba(15, 23, 42, 0.55);
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+
+    /* Sistema de Cristal (Dark) */
+    --surface-glass: rgba(30, 41, 59, 0.7);
+    --surface-glass-bright: rgba(30, 41, 59, 0.9);
+    --surface-dock: rgba(15, 23, 42, 0.75);
+    --bg-glass-heavy: rgba(15, 23, 42, 0.6);
+    --border-glass: rgba(255, 255, 255, 0.1);
+    --border-glass-bright: rgba(255, 255, 255, 0.25);
+    --border-highlight: rgba(255, 255, 255, 0.14);
+    --hover-glass: rgba(255, 255, 255, 0.05);
+    --shadow-premium: 0 15px 40px rgba(0, 0, 0, 0.3);
+    --surface-solid: #1e293b;
+    /* Fallback Eco (Dark) */
+    --surface-eco-fallback: #1e293b;
+    --surface-dock-fallback: #0f172a;
+    --ws-fade-color: transparent;
+
+    /* Colores de Badge (Dark High Contrast Refined) */
+    --color-balanced: rgba(59, 130, 246, 0.25);
+    --color-balanced-text: #93c5fd;
+    --color-eco: rgba(34, 197, 94, 0.25);
+    --color-eco-text: #86efac;
+    --color-ultra: rgba(239, 68, 68, 0.25);
+    --color-ultra-text: #fca5a5;
+    --color-pro: rgba(139, 92, 246, 0.25);
+    --color-pro-text: #c4b5fd;
+
+    /* Semánticos (Dark) */
+    --color-success: #4ade80;
+    --color-warning: #fbbf24;
+    --color-error: #f87171;
+}
+
+/* ── SISTEMA DE RENDIMIENTO (Neural Auto-Profiling) ────────── */
+:root {
+    /* L1: Balanced (Default) */
+    --buca-v4-perf-level: "L1";
+    --buca-tier-num: 1;
+    --blur-intensity: calc(16px * var(--buca-blur-factor, 1));
+    --shadow-dynamic: var(--shadow-md);
+    --opacity-glass: 0.7;
+    --anim-duration: 0.3s;
+    --interaction-scale: 1.02;
+    --glow-opacity: 0.1;
+}
+
+[data-buca-perf="L0"] {
+    --buca-v4-perf-level: "L0 - ECO";
+    --buca-tier-num: 0;
+    --blur-intensity: 0px;
+    --shadow-dynamic: none;
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: none;
+    --opacity-glass: 0.98; /* Casi opaco para evitar mezcla de colores costosa */
+    --anim-duration: 0s;
+    --interaction-scale: 1;
+    --glow-opacity: 0;
+    --buca-blue-glow: transparent;
+
+    /* Fallback Inteligente: Usar variable dependiente del tema */
+    --surface-glass: var(--surface-eco-fallback);
+    --surface-dock: var(--surface-dock-fallback);
+    --surface-glass-bright: var(--surface-solid);
+
+    /* Neural Reset: Solo lo esencial para garantizar fluidez */
+    * {
+        transition-duration: 0s !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+        box-shadow: none !important; /* Blindaje GPU */
+    }
+
+    /* Excluir animaciones esenciales como el Preloader */
+    *:not(.hud-toast, .buca-spinner) {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    /* Fallback de color sólido para superficies que eran transparentes */
+    .glass-surface, .glass-panel, .app-header, .glass-modal {
+        background: var(--surface-solid) !important;
+    }
+}
+
+[data-buca-perf="L1"] {
+    --buca-v4-perf-level: "L1 - BALANCED";
+    --buca-tier-num: 1;
+}
+
+[data-buca-perf="L2"] {
+    --buca-v4-perf-level: "L2 - PRO";
+    --buca-tier-num: 2;
+    --blur-intensity: calc(24px * var(--buca-blur-factor, 1));
+    --opacity-glass: 0.65;
+    --shadow-dynamic: var(--shadow-lg);
+    --interaction-scale: 1.035;
+}
+
+[data-buca-perf="L3"] {
+    --buca-v4-perf-level: "L3 - ULTRA";
+    --buca-tier-num: 3;
+    --blur-intensity: calc(32px * var(--buca-blur-factor, 1));
+    --opacity-glass: 0.55;
+    --shadow-dynamic: 0 15px 40px rgba(0, 0, 0, 0.2);
+    --buca-blue-glow: rgba(37, 99, 235, 0.6);
+    --interaction-scale: 1.05;
+    --glow-opacity: 0.2;
+}
+
+/* ── ANIMACIONES DE MOTOR ─────────────────────────────── */
+@keyframes sync-pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}

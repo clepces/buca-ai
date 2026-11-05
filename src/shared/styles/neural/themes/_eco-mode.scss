@@ -1,0 +1,159 @@
+/* =========================================================================
+   THEMES: ECO MODE (Motor Gráfico — Rendimiento Máximo)
+   =========================================================================
+   ESTRATEGIA DE OPTIMIZACIÓN:
+   En vez de usar `body.eco-mode * { backdrop-filter: none !important; }`
+   (que destruye TODOS los filtros de CUALQUIER componente externo/plugin),
+   operamos manipulando el token --blur-intensity a 0px.
+   
+   Todos los componentes del sistema ya usan blur(var(--blur-intensity)),
+   por lo que al poner 0px el navegador anula el costo GPU automáticamente.
+   
+   Solo los componentes con blur hardcodeado necesitan el override directo.
+   ========================================================================= */
+
+/* ─────────────────────────────────────────────────────────
+   MODO ECO — TEMA CLARO
+   ───────────────────────────────────────────────────────── */
+[data-buca-perf="L0"] {
+    /* Eliminar blur sobreescribiendo el token raíz */
+    --blur-intensity: 0px;
+
+    /* Overlay transparente: sin blur no necesita capa,
+       así el wallpaper se ve directamente (rendimiento máximo) */
+    --bg-overlay-color:   transparent;
+
+    /* Superficies de componentes sí se mantienen opacas para legibilidad */
+    --surface-glass:      rgba(255, 255, 255, 0.95);
+    --surface-dock:       rgba(255, 255, 255, 0.95);
+    --border-glass:       rgba(0, 0, 0, 0.12);
+    --border-highlight:   rgba(0, 0, 0, 0.15);
+}
+
+/* ─────────────────────────────────────────────────────────
+   MODO ECO — TEMA OSCURO
+   html tiene data-theme, body tiene eco-mode
+   ───────────────────────────────────────────────────────── */
+html[data-theme="dark"][data-buca-perf="L0"] {
+    --bg-overlay-color: transparent;
+    --surface-glass:    rgba(15, 23, 42, 0.95);
+    --surface-dock:     rgba(15, 23, 42, 0.95);
+    --border-glass:     rgba(255, 255, 255, 0.1);
+    --border-highlight: rgba(255, 255, 255, 0.15);
+}
+
+/* ─────────────────────────────────────────────────────────
+   FEEDBACK VISUAL DEL BOTÓN ECO
+   ───────────────────────────────────────────────────────── */
+[data-buca-perf="L0"] .eco-icon {
+    color: var(--color-eco) !important;
+    filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.6));
+}
+
+/* Botón CPU en cápsula de acciones destaca en verde */
+[data-buca-perf="L0"] .action-pill-btn:has(.eco-icon) {
+    background: rgba(34, 197, 94, 0.12);
+    border-radius: 50%;
+}
+
+/* Botón en el panel de perfil (qc-toggle-btn) */
+[data-buca-perf="L0"] .qc-toggle-btn:has(.eco-icon) {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: var(--color-eco);
+    color: var(--color-eco);
+}
+
+/* ─────────────────────────────────────────────────────────
+   ECO MODE: Reducción de animaciones
+   Se PRESERVAN las propiedades de transición (transform)
+   pero se mitiga la duración para reducir carga CPU.
+   ───────────────────────────────────────────────────────── */
+[data-buca-perf="L0"] .glass-pill,
+[data-buca-perf="L0"] .glass-panel,
+[data-buca-perf="L0"] .header-actions-capsule {
+    transition-duration: 0.1s;
+}
+
+/* Dock: se mantiene transform en la declaración, solo se acorta */
+[data-buca-perf="L0"] .dock-item {
+    transition-duration: 0.1s;
+}
+
+/* ─────────────────────────────────────────────────────────
+   ECO BADGE – Cambio visual BALANCED → ECO
+   ───────────────────────────────────────────────────────── */
+[data-buca-perf="L0"] .badge--balanced {
+    background: var(--color-eco);
+    color: var(--color-eco-text);
+}
+
+/* ─────────────────────────────────────────────────────────
+   ECO MODE: Legibilidad del panel de perfil
+   ─────────────────────────────────────────────────────────
+   Sin blur, el wallpaper se ve directamente → el texto del
+   footer necesita un fondo con contraste para ser legible.
+   Usamos un gradiente sutil en lugar de blur costoso.
+   ───────────────────────────────────────────────────────── */
+
+/* Asegurar que los paneles tengan fondo suficientemente opaco */
+[data-buca-perf="L0"] .glass-panel {
+    /* Superficie más sólida en eco: sin transparencia que dependa del blur */
+    background: var(--surface-glass);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+/* El footer bar del panel rico: fondo con gradiente para claridad */
+[data-buca-perf="L0"] .panel-footer-bar {
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(240, 245, 255, 0.6) 100%
+    );
+    border-top: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+/* Modo oscuro + eco: gradiente oscuro en footer */
+html[data-theme="dark"][data-buca-perf="L0"] .panel-footer-bar {
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(10, 15, 30, 0.6) 100%
+    );
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ─────────────────────────────────────────────────────────
+   PANIC MODE: THERMAL THROTTLE & REFLOW GUARD
+   ───────────────────────────────────────────────────────── */
+html.buca-thermal-throttle *:not(.bne-ignore, .bne-force-render), 
+html.buca-reflow-throttle *:not(.bne-ignore, .bne-force-render) {
+    /* Apagar instantáneamente todo efecto pesado */
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    will-change: auto !important;
+    box-shadow: none !important;
+    transition: none !important;
+    animation-duration: 0.01ms !important;
+}
+
+html.buca-thermal-throttle, 
+html.buca-reflow-throttle {
+    --blur-intensity: 0px !important;
+    --buca-bloom-intensity: 0 !important;
+    --buca-grain-intensity: 0 !important;
+}
+
+/* ── NUEVOS MODIFICADORES MANUALES (POST-PROCESADO) ───────────────── */
+html[data-buca-shadows="false"] {
+    --shadow-dynamic: none !important;
+    --shadow-accent: none !important;
+    --shadow-glass-sm: none !important;
+    --shadow-glass-lg: none !important;
+}
+
+html[data-buca-aa="false"] {
+    /* Desactivamos suavizado avanzado pero mantenemos legibilidad básica */
+    -webkit-font-smoothing: subpixel-antialiased !important;
+    image-rendering: auto;
+}

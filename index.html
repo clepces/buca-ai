@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>BUCA AI - Corporate Hybrid Glass</title>
+    <meta name="description" content="Ecosistema inteligente ERP con diseño Glassmorphism y motor neuronal.">
+
+    <!-- 1. IDENTIDAD CORPORATIVA & TIPOGRAFÍA -->
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/logo-dark.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- 2. NÚCLEO PRE-RENDER: ESTADO Y PREFERENCIAS -->
+    <script>
+        (function() {
+            try {
+                // Sincronización inmediata de tema y rendimiento para evitar FOUC
+                const theme = localStorage.getItem('buca-theme') || 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+
+                const perfData = JSON.parse(localStorage.getItem('buca_performance_config') || '{"profile":"balanced","isManualMode":false}');
+                const tiers = { 'eco': 'L0', 'balanced': 'L1', 'pro': 'L2', 'ultra': 'L3' };
+                document.documentElement.setAttribute('data-buca-perf', tiers[perfData.profile] || 'L1');
+                document.documentElement.setAttribute('data-buca-manual', perfData.isManualMode ? 'true' : 'false');
+                
+                // Registro de actividad para el watchdog
+                window.__bucaLastActivity = Date.now();
+                window.bucaNotifyActivity = function() { window.__bucaLastActivity = Date.now(); };
+            } catch (e) {
+                console.warn('[Pre-init] Error cargando preferencias:', e);
+            }
+        })();
+    </script>
+
+    <!-- 2.1. CSS CRÍTICO DE ARRANQUE (PRELOADER INICIAL SIN FOUC) -->
+    <style id="buca-critical-preloader-css">
+        #global-preloader {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 99999;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            user-select: none;
+        }
+        html[data-theme="dark"] #global-preloader {
+            background: #0f172a;
+            color: #ffffff;
+        }
+        .buca-spinner {
+            width: 44px;
+            height: 44px;
+            border: 4px solid rgba(37, 99, 235, 0.15);
+            border-top: 4px solid #2563eb;
+            border-radius: 50%;
+            animation: buca-spin 0.8s linear infinite;
+            margin-bottom: 20px;
+            will-change: transform;
+        }
+        @keyframes buca-spin {
+            to { transform: rotate(360deg); }
+        }
+        .buca-text {
+            color: #2563eb;
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+        html[data-theme="dark"] .buca-text {
+            color: #ffffff;
+        }
+        .buca-sub {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+            max-width: 320px;
+            line-height: 1.4;
+        }
+        html[data-theme="dark"] .buca-sub {
+            color: #94a3b8;
+        }
+        .splash-progress-wrapper {
+            width: 180px;
+            max-width: 80vw;
+            height: 4px;
+            background: rgba(37, 99, 235, 0.12);
+            border-radius: 99px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+        #splash-progress {
+            width: var(--buca-progress, 0%);
+            height: 100%;
+            background: #2563eb;
+            transition: width 0.3s ease;
+        }
+        #splash-percentage {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0;
+        }
+
+        /* Estados de Alerta / Advertencia del Preloader (Watchdog 503 / Error) */
+        #global-preloader.preloader--503,
+        #global-preloader.is-warning,
+        #global-preloader.preloader--error,
+        #global-preloader.is-error {
+            background: linear-gradient(135deg, rgba(255, 247, 237, 0.95) 0%, rgba(254, 215, 170, 0.95) 100%) !important;
+        }
+        html[data-theme="dark"] #global-preloader.preloader--503,
+        html[data-theme="dark"] #global-preloader.is-warning,
+        html[data-theme="dark"] #global-preloader.is-error {
+            background: linear-gradient(135deg, rgba(69, 10, 10, 0.96) 0%, rgba(24, 4, 4, 0.96) 100%) !important;
+        }
+        #global-preloader.preloader--503 .buca-text,
+        #global-preloader.is-warning .buca-text {
+            color: #ea580c !important;
+        }
+        html[data-theme="dark"] #global-preloader.preloader--503 .buca-text,
+        html[data-theme="dark"] #global-preloader.is-warning .buca-text {
+            color: #fb923c !important;
+        }
+        #global-preloader.preloader--503 #splash-status,
+        #global-preloader.is-warning #splash-status {
+            color: #9a3412 !important;
+            font-weight: 600;
+            opacity: 1 !important;
+            background: rgba(234, 88, 12, 0.12);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(234, 88, 12, 0.25);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.15);
+            cursor: pointer;
+        }
+        html[data-theme="dark"] #global-preloader.preloader--503 #splash-status,
+        html[data-theme="dark"] #global-preloader.is-warning #splash-status {
+            color: #fdba74 !important;
+            background: rgba(251, 146, 60, 0.15);
+            border-color: rgba(251, 146, 60, 0.3);
+        }
+        #global-preloader.preloader--503 .splash-progress-wrapper,
+        #global-preloader.preloader--503 #splash-percentage,
+        #global-preloader.is-warning .splash-progress-wrapper,
+        #global-preloader.is-warning #splash-percentage {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="glass-theme">
+    <!-- 3. CAPA DE ARRANQUE (SPLASH SCREEN) -->
+    <div id="global-preloader">
+        <div class="buca-spinner"></div>
+        <div class="buca-text">BUCA</div>
+        <div class="splash-progress-wrapper">
+            <div id="splash-progress"></div>
+        </div>
+        <div id="splash-percentage" class="buca-sub">0%</div>
+        <div id="splash-status" class="buca-sub buca-sub--low-opacity">Iniciando Kernel Neuronal...</div>
+    </div>
+
+    <!-- 4. CONTENEDOR RAÍZ SPA -->
+    <div id="app">
+        <!-- El esqueleto CSS se inyecta aquí o se mantiene como placeholder estático -->
+        <div class="buca-skeleton-view" id="app-initial-skeleton" aria-busy="true">
+            <!-- Los skeletons se cargan dinámicamente o se definen aquí si son críticos -->
+            <div class="sk-header-stack"></div>
+            <div class="sk-workspace-container"></div>
+            <div class="sk-floating-dock"></div>
+        </div>
+    </div>
+    
+    <!-- 4.1. MODAL BASE GLOBAL (NEURAL GLASS SYSTEM) -->
+    <div id="modal-base" class="glass-modal-overlay" aria-hidden="true">
+        <div class="glass-modal" id="modal-container">
+            <div class="modal-header">
+                <div class="header-left" id="modal-header-left"></div>
+                <div class="header-center" id="modal-header-center"></div>
+                <div class="header-right" id="modal-header-right"></div>
+            </div>
+            <div class="modal-body" id="modal-body-content"></div>
+            <div class="modal-footer">
+                <div class="footer-left" id="modal-footer-left"></div>
+                <div class="footer-center" id="modal-footer-center"></div>
+                <div class="footer-right" id="modal-footer-right"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. SISTEMA DE VIGILANCIA Y GESTIÓN DE ERRORES (WATCHDOG) -->
+    <script>
+        (function() {
+            window.onerror = function(msg, url, line, col) {
+                const splash = document.getElementById('global-preloader');
+                if (splash && !document.body.classList.contains('app-ready')) {
+                    splash.classList.add('preloader--error', 'is-error');
+                    const status = document.getElementById('splash-status');
+                    if (status) status.textContent = "Error de Kernel: " + (msg || "Anomalía de arranque");
+                    splash.style.cursor = "pointer";
+                    splash.onclick = function() { location.reload(); };
+                }
+                try {
+                    localStorage.setItem('buca_watchdog_last_error', JSON.stringify({
+                        msg: String(msg), url: String(url), line, col, time: Date.now()
+                    }));
+                } catch {
+                    // Silencioso en caso de bloqueo de storage
+                }
+                return false;
+            };
+
+            // Watchdog de carga: Si el sistema no arranca en 15s, ofrece reinicio
+            let attempts = 0;
+            const check = () => {
+                if (document.body.classList.contains('app-ready')) return;
+                attempts++;
+                if (attempts > 3) {
+                    const splash = document.getElementById('global-preloader');
+                    if (splash) {
+                        splash.classList.add('preloader--503', 'is-warning');
+                        const status = document.getElementById('splash-status');
+                        if (status) {
+                            status.innerHTML = `<i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> El sistema tarda demasiado. <strong>Clic aquí para reintentar</strong>`;
+                        }
+                        splash.style.cursor = "pointer";
+                        splash.onclick = function() { location.reload(); };
+                    }
+                } else {
+                    setTimeout(check, 5000);
+                }
+            };
+            setTimeout(check, 8000);
+        })();
+    </script>
+
+    <!-- 6. PUNTO DE ENTRADA PRINCIPAL -->
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

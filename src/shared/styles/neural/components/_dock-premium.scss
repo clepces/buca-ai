@@ -1,0 +1,207 @@
+/* =========================================================================
+   DOCK PREMIUM — Reference: animation-dock.gif
+   ========================================================================= */
+
+@use "../abstracts" as *;
+
+.dock-container {
+    --dock-bg: #fff;
+    --dock-height: 65px;
+    --circle-size: 60px;
+    --icon-active-color: #000;
+    --icon-inactive-color: #a0aec0;
+    
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    z-index: 100;
+
+    @media (max-width: 767px) {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-width: 100%;
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+        background: transparent;
+    }
+}
+
+.dock-nav-wrapper {
+    position: relative;
+    height: var(--dock-height);
+    background: var(--dock-bg);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    /* La curva se genera mediante los hijos activos */
+    border-radius: 30px 30px 0 0;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.dock {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.dock-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: var(--icon-inactive-color);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 5;
+    cursor: pointer;
+
+    &.dock-item-pressed {
+        transform: scale(0.88);
+        transition: transform 0.1s ease !important;
+    }
+
+    i {
+        font-size: 1.4rem;
+        z-index: 10;
+    }
+
+    span {
+        font-size: 0.6rem;
+        font-weight: 700;
+        margin-top: 4px;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    /* El Círculo Activo */
+    &.active {
+        color: var(--icon-active-color);
+        transform: translateY(-32px);
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: var(--circle-size);
+            height: var(--circle-size);
+            background: var(--dock-bg);
+            border-radius: 50%;
+            z-index: -1;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* LAS CURVAS NEGATIVAS (Efecto igual al GIF) */
+        &::after {
+            content: '';
+            position: absolute;
+            top: 45px; 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110px; 
+            height: 35px;
+            background: transparent;
+            /* Usamos un border-radius invertido mediante box-shadow o técnica de círculos */
+            pointer-events: none;
+            z-index: -2;
+        }
+
+        /* Técnica de "Inverted Border Radius" con pseudo-elementos adicionales o sombras */
+    }
+}
+
+/* Selector dinámico para la curva */
+.dock-nav-wrapper .curve-container {
+    position: absolute;
+    top: -30px; // Elevado para el círculo
+    width: 110px;
+    height: 60px;
+    background: transparent;
+    pointer-events: none;
+    transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1;
+    
+    /* El Círculo Blanco Central */
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 60px;
+        background: var(--dock-bg);
+        border-radius: 50%;
+        box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+    }
+
+    /* Oreja Izquierda */
+    .curve-left {
+        position: absolute;
+        left: -5px;
+        bottom: 0;
+        width: 30px;
+        height: 30px;
+        background: transparent;
+        &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-bottom-right-radius: 20px;
+            box-shadow: 10px 10px 0 0 var(--dock-bg);
+        }
+    }
+
+    /* Oreja Derecha */
+    .curve-right {
+        position: absolute;
+        right: -5px;
+        bottom: 0;
+        width: 30px;
+        height: 30px;
+        background: transparent;
+        &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-bottom-left-radius: 20px;
+            box-shadow: -10px 10px 0 0 var(--dock-bg);
+        }
+    }
+}
+
+/* Animación Contextual (El cambio de iconos) */
+.dock-context-transition {
+    animation: dockIconSwap 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dockIconSwap {
+    0% { opacity: 0; transform: scale(0.8) translateY(10px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Sombra de "atrás" mencionada por el usuario */
+.dock-nav-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 40px;
+    pointer-events: none;
+    box-shadow: inset 0 4px 10px rgba(0,0,0,0.05);
+    z-index: 1;
+}
+
+.sandbox-workspace {
+    background: rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}

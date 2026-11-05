@@ -1,0 +1,279 @@
+@use "@/shared/styles/neural/abstracts/variables" as v;
+@use "@/shared/styles/neural/abstracts/mixins" as m;
+
+/* ==========================================================================
+   BUCA AUTH - CARD & VIEW TRANSITIONS
+   Aislamiento Modular Atómico: Tarjeta Vidrio Híbrido y Transición de Vistas
+   ========================================================================== */
+
+.auth-main-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 420px;
+    padding: 2rem 1rem;
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+}
+
+.auth-card {
+    background: rgba(255, 255, 255, 0.45);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 32px;
+    padding: 1.5rem 2.25rem;
+    width: 100%;
+    max-height: 90dvh;
+    overflow: hidden auto;
+    box-shadow: 
+        0 4px 24px -1px rgba(0, 0, 0, 0.02),
+        0 40px 120px -20px rgba(0, 0, 0, 0.08),
+        inset 0 0 0 1.5px rgba(255, 255, 255, 0.6);
+    animation: authCardEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.05); border-radius: 10px; }
+
+    @media (max-height: 800px) {
+        padding: 1.25rem 2rem;
+    }
+
+    @media (max-height: 750px) {
+        padding: 1rem 1.75rem;
+    }
+
+    @media (max-height: 700px) {
+        padding: 0.85rem 1.5rem;
+        border-radius: 24px;
+    }
+
+    @media (max-height: 620px) {
+        padding: 0.75rem 1.25rem;
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(
+            to right,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent
+        );
+        transform: skewX(-25deg);
+        transition: 0.75s;
+    }
+
+    &:hover::before {
+        left: 150%;
+    }
+    
+    .auth-header {
+        margin-bottom: 1.5rem;
+        text-align: center;
+
+        .logo-box {
+            display: inline-flex;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border-radius: 12px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+            transition: all 0.3s ease;
+
+            @media (max-height: 750px) {
+                width: 30px;
+                height: 30px;
+                margin-bottom: 0.25rem;
+            }
+            
+            img {
+                width: 20px;
+                height: 20px;
+                filter: brightness(0) invert(1);
+
+                @media (max-height: 750px) {
+                    width: 16px;
+                    height: 16px;
+                }
+            }
+        }
+
+        .auth-brand {
+            .brand-name {
+                font-family: 'Outfit', sans-serif;
+                font-size: 1.4rem;
+                font-weight: 800;
+                letter-spacing: -1px;
+                color: #0f172a;
+                margin: 0;
+
+                @media (max-height: 750px) {
+                    font-size: 1.2rem;
+                }
+            }
+            .brand-tagline {
+                font-size: 0.75rem;
+                color: #64748b;
+                font-weight: 500;
+
+                @media (max-height: 750px) { display: none !important; } 
+            }
+        }
+    }
+
+    .auth-body {
+        .auth-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #1e293b;
+            text-align: center;
+            margin-bottom: 1.25rem;
+            letter-spacing: -0.5px;
+
+            @media (max-height: 750px) {
+                font-size: 1.1rem;
+                margin-bottom: 0.75rem;
+            }
+        }
+    }
+}
+
+@keyframes authCardEntrance {
+    from { opacity: 0; transform: scale(0.95) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.view-transition-container {
+    position: relative;
+    width: 100%;
+    
+    &.fade-out {
+        opacity: 0;
+        transform: translateX(-10px);
+        transition: all var(--interaction-speed) ease-in;
+    }
+    
+    &.fade-in {
+        opacity: 1;
+        transform: translateX(0);
+        transition: all var(--interaction-speed) ease-out;
+    }
+}
+
+.auth-view-slide-in {
+    animation: slideIn var(--interaction-speed) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.auth-view-active {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.auth-view-exit {
+    opacity: 0 !important;
+    transform: translateY(10px) !important;
+    transition: all 0.25s ease-in !important;
+}
+
+@media (max-width: 640px) {
+    .auth-card { 
+        padding: 2rem 1.5rem; 
+        border-radius: 24px;
+    }
+}
+
+.pin-demo-badge {
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--buca-blue);
+    font-size: 0.72rem;
+    border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.pin-inputs-row {
+    gap: 8px;
+}
+
+.pin-digit-box {
+    width: 45px;
+    height: 56px;
+    font-size: 1.5rem;
+}
+
+.logo-box-auth--settings {
+    width: 48px;
+    height: 48px;
+
+    i {
+        font-size: 24px;
+        line-height: 48px;
+    }
+}
+
+.glass-panel--settings {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.demo-accounts-panel {
+    background: rgba(37, 99, 235, 0.08);
+    border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.demo-title-text {
+    font-size: 0.72rem;
+    color: var(--buca-blue);
+}
+
+.demo-badge-micro {
+    background: rgba(37, 99, 235, 0.15);
+    color: var(--buca-blue);
+    font-size: 0.65rem;
+}
+
+.demo-acc-btn-styled {
+    font-size: 0.75rem;
+    padding: 4px 6px;
+    border-radius: 8px;
+}
+
+.session-header-label {
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+}
+
+.session-device-icon-box {
+    width: 40px;
+    height: 40px;
+}
+
+.session-subtext-micro {
+    font-size: 0.7rem;
+}
+
+.session-active-dot {
+    width: 8px;
+    height: 8px;
+    font-size: 0;
+}

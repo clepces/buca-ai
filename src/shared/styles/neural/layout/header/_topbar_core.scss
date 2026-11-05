@@ -1,0 +1,306 @@
+/* =========================================================================
+   HEADER PARTIAL: TOPBAR CORE (Branding, Logo & Search Capsule)
+   ========================================================================= */
+
+@use "../../abstracts" as *;
+
+/* ── FLOATING CAPSULE HEADER ────────────────────────────────────────── */
+.app-header {
+    position: relative;
+    width: 100%;
+    max-width: var(--max-width, 1400px);
+    margin: 10px auto 0 auto;
+    z-index: 1000;
+    box-sizing: border-box !important;
+    background: var(--surface-glass);
+    -webkit-backdrop-filter: blur(var(--ui-glass-blur));
+    backdrop-filter: blur(var(--ui-glass-blur));
+    border: 1px solid var(--border-glass-bright);
+    border-radius: var(--ui-capsule-radius);
+    height: 54px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+    @media screen and (max-height: 800px) {
+        height: 44px;
+        padding: 0 10px !important;
+    }
+
+    @media screen and (max-width: 1100px) {
+        height: 46px;
+        padding: 0 12px !important;
+    }
+
+    .container-fluid {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0 !important;
+        margin: 0 !important;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    &:hover {
+        background: var(--surface-glass-bright);
+        border-color: rgba(37, 99, 235, 0.35);
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+    }
+}
+
+.header-center-zone {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+    pointer-events: none;
+}
+
+
+.layout-greeting {
+    pointer-events: auto;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    padding: 6px 20px;
+    border-radius: 100px;
+    border: 1px solid var(--border-glass-bright);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slide-down-fade 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+
+    .greeting-text {
+        font-size: 0.85rem;
+        font-family: 'Outfit', sans-serif;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        strong {
+            color: var(--buca-blue);
+            font-weight: 800;
+        }
+    }
+}
+
+@keyframes slide-down-fade {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.navbar-brand-premium {
+    gap: 10px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    &:hover {
+        transform: scale(1.02);
+        
+        .logo-aura {
+            opacity: 0.6;
+            transform: scale(1.15);
+        }
+    }
+}
+
+.logo-neural-container {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(124, 58, 237, 0.08) 100%);
+    border: 1.5px solid rgba(59, 130, 246, 0.28);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.1);
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+    .logo-img-premium {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+        z-index: 2;
+        transition: transform 0.3s ease;
+    }
+
+    .logo-aura {
+        position: absolute;
+        inset: -2px;
+        background: radial-gradient(circle, rgba(124, 58, 237, 0.3) 0%, transparent 70%);
+        opacity: 0.25;
+        border-radius: inherit;
+        filter: blur(6px);
+        transition: all 0.4s ease;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    &:hover {
+        border-color: rgba(99, 102, 241, 0.5);
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.18) 0%, rgba(124, 58, 237, 0.14) 100%);
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.22);
+        transform: scale(1.04);
+
+        .logo-img-premium {
+            transform: scale(1.08);
+        }
+
+        .logo-aura {
+            opacity: 0.7;
+            transform: scale(1.2);
+        }
+    }
+}
+
+.brand-typography {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+
+    .brand-name-main {
+        font-family: 'Outfit', sans-serif;
+        font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+        font-weight: 900;
+        color: var(--text-main);
+        letter-spacing: -0.3px;
+        line-height: 1.1;
+        white-space: nowrap;
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+        margin: 0;
+
+        .text-gradient-ai {
+            display: inline-block;
+            background: linear-gradient(135deg, #2563eb 0%, #6366f1 50%, #9333ea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-style: italic;
+            font-weight: 900;
+            padding-right: 6px;
+            padding-left: 2px;
+            margin-right: -2px;
+            filter: drop-shadow(0 2px 8px rgba(124, 58, 237, 0.3));
+            line-height: 1.2;
+        }
+
+        @media screen and (max-width: 480px) {
+            font-size: 0.95rem;
+        }
+    }
+
+    .brand-tagline {
+        font-size: clamp(0.5rem, 1.2vw, 0.64rem);
+        font-weight: 800;
+        color: var(--text-muted);
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        margin-top: 2px;
+        opacity: 0.95;
+        white-space: nowrap;
+        line-height: 1;
+
+        @media screen and (max-width: 576px) {
+            letter-spacing: 0.8px;
+            font-size: 0.52rem;
+        }
+    }
+}
+
+.ws-search-capsule {
+    margin-left: 8px;
+    flex: 1 1 200px;
+    max-width: 270px;
+    min-width: 120px;
+    transition: all 0.3s ease;
+
+    @include respond-below('xl') {
+        max-width: 180px;
+    }
+
+    @include respond-below('lg') {
+        max-width: 150px;
+    }
+
+    .search-inner-wrapper {
+        background: rgba(0, 0, 0, 0.035);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 50px;
+        height: 36px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 100%;
+
+        .search-icon-neural {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-right: 6px;
+            transition: color 0.25s;
+            flex-shrink: 0;
+        }
+
+        .search-input-field {
+            font-size: 0.82rem;
+            color: var(--text-main);
+            width: 100%;
+            outline: none;
+            background: transparent;
+            border: none;
+            min-width: 0;
+
+            &::placeholder {
+                color: var(--text-muted);
+                opacity: 0.65;
+            }
+        }
+
+        .search-kbd-hint {
+            opacity: 0.45;
+            flex-shrink: 0;
+            margin-left: 4px;
+            
+            .kbd-key {
+                background: rgba(0, 0, 0, 0.06);
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                border-radius: 4px;
+                padding: 1px 4px;
+                font-size: 0.62rem;
+                font-weight: 700;
+                color: var(--text-main);
+                line-height: 1.1;
+            }
+        }
+
+        &:focus-within {
+            background: var(--surface-solid);
+            border-color: var(--buca-blue);
+            box-shadow: 0 2px 10px rgba(37, 99, 235, 0.12);
+
+            .search-icon-neural {
+                color: var(--buca-blue);
+            }
+        }
+    }
+}

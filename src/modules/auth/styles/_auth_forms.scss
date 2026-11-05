@@ -1,0 +1,310 @@
+@use "@/shared/styles/neural/abstracts/variables" as v;
+@use "@/shared/styles/neural/abstracts/mixins" as m;
+
+/* ==========================================================================
+   BUCA AUTH - FORMS, INPUTS & ACTIONS
+   Aislamiento Modular Atómico: Controles de Formulario, Botonería y Alertas
+   ========================================================================== */
+
+.glass-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .form-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 4px;
+
+            @media (max-height: 750px) {
+                font-size: 0.7rem;
+            }
+        }
+    }
+
+    .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+
+        i.bi {
+            position: absolute;
+            left: 1.25rem;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            pointer-events: none;
+
+            @media (max-height: 750px) {
+                font-size: 0.95rem;
+                left: 1rem;
+            }
+        }
+
+        .glass-input {
+            width: 100%;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1.5px solid rgba(226, 232, 240, 0.8);
+            padding: 0 1.25rem 0 3.2rem;
+            border-radius: 14px;
+            color: #0f172a;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            caret-color: var(--buca-blue);
+
+            @media (max-height: 750px) {
+                height: 38px;
+                padding: 0 1rem 0 2.8rem;
+                font-size: 0.9rem;
+            }
+
+            &::placeholder { color: #94a3b8; font-weight: 500; }
+
+            &:focus {
+                background: white;
+                border-color: var(--buca-blue);
+                box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+                outline: none;
+
+                + i.bi { color: var(--buca-blue); transform: scale(1.1); }
+            }
+        }
+
+        .btn-toggle-password {
+            position: absolute;
+            right: 0.5rem;
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+
+            &:hover {
+                color: var(--buca-blue);
+                background: rgba(37, 99, 235, 0.05);
+            }
+        }
+    }
+
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 4px;
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+
+            input { display: none; }
+            .checkmark {
+                width: 20px;
+                height: 20px;
+                background: rgba(255, 255, 255, 0.8);
+                border: 2px solid #cbd5e1;
+                border-radius: 6px;
+                position: relative;
+                transition: all 0.2s;
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    left: 6px;
+                    top: 2px;
+                    width: 5px;
+                    height: 10px;
+                    border: solid white;
+                    border-width: 0 2px 2px 0;
+                    transform: rotate(45deg) scale(0);
+                    transition: transform 0.2s;
+                }
+            }
+
+            input:checked + .checkmark {
+                background: var(--buca-blue);
+                border-color: var(--buca-blue);
+                &::after { transform: rotate(45deg) scale(1); }
+            }
+        }
+
+        .forgot-link {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--buca-blue);
+            text-decoration: none;
+            &:hover { text-decoration: underline; }
+        }
+    }
+}
+
+.btn-primary {
+    width: 100%;
+    height: 44px;
+    background: linear-gradient(to bottom, #2563eb, #1d4ed8);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-weight: 800;
+    font-size: 1.05rem;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(37, 99, 235, 0.4);
+        filter: brightness(1.1);
+
+        @media (max-height: 750px) {
+            transform: translateY(-2px);
+        }
+    }
+
+    &:active {
+        transform: translateY(-1px);
+    }
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+}
+
+.btn-secondary-glass {
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: white;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+}
+
+.auth-feedback-area {
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    &.error {
+        background: rgba(239, 68, 68, 0.1);
+        color: #b91c1c;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    &.success {
+        background: rgba(16, 185, 129, 0.1);
+        color: #065f46;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+}
+
+[data-buca-perf="ignore"] {
+    animation-play-state: running !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.buca-spinner {
+    &[data-buca-perf="ignore"] {
+        animation: spin 1s linear infinite !important;
+    }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.auth-minimal-footer {
+    padding-bottom: 2.5rem;
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    @media (max-height: 750px) {
+        padding-bottom: 1rem;
+    }
+    
+    .footer-legal {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #94a3b8;
+        font-size: 0.72rem;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 6px 18px;
+        border-radius: 100px;
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+
+        .sep { opacity: 0.4; }
+        a {
+            color: #64748b;
+            text-decoration: none;
+            &:hover { color: var(--buca-blue); text-decoration: underline; }
+        }
+    }
+}
+
+.auth-footer {
+    margin-top: 2.5rem;
+    text-align: center;
+    p {
+        font-size: 0.9rem;
+        color: #64748b;
+        font-weight: 500;
+        .forgot-link {
+            color: var(--buca-blue);
+            font-weight: 800;
+            text-decoration: none;
+            margin-left: 5px;
+            &:hover { text-decoration: underline; }
+        }
+    }
+}

@@ -1,0 +1,136 @@
+@use "@/shared/styles/neural/abstracts/variables" as v;
+@use "@/shared/styles/neural/abstracts/mixins" as m;
+
+/* ==========================================================================
+   BUCA AUTH - BASE ATMOSPHERE & ORBITALS
+   Aislamiento Modular Atómico: Contenedor Base, Luces y Entorno
+   ========================================================================== */
+
+.auth-shell {
+    width: 100%;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden !important;
+    background: #f8fafc;
+    
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        opacity: 0.015;
+        pointer-events: none;
+        z-index: 1;
+    }
+}
+
+.auth-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 1) 0%, rgba(226, 232, 240, 1) 100%);
+
+    .gradient-orb {
+        position: absolute;
+        filter: blur(100px);
+        opacity: 0.5;
+        border-radius: 50%;
+        animation: orbFloat 20s infinite alternate ease-in-out;
+
+        &.orb-1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+            top: -100px;
+            right: -100px;
+        }
+
+        &.orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, transparent 70%);
+            bottom: -50px;
+            left: -50px;
+            animation-delay: -5s;
+        }
+    }
+}
+
+@keyframes orbFloat {
+    from { transform: translate(0, 0) scale(1) rotate(0deg); }
+    to { transform: translate(40px, 50px) scale(1.1) rotate(5deg); }
+}
+
+.auth-floating-ecosystem {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    pointer-events: none;
+
+    .floating-icon {
+        position: absolute;
+        width: 56px;
+        height: 56px;
+        background: rgba(255, 255, 255, 0.6);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        pointer-events: auto;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+        img, i {
+            width: 28px;
+            height: 28px;
+            font-size: 1.5rem;
+            color: #1e293b;
+            object-fit: contain;
+        }
+
+        &:hover {
+            transform: scale(1.1) translateY(-5px) rotate(5deg);
+            border-color: var(--buca-blue);
+            background: white;
+            box-shadow: 0 15px 40px rgba(37, 99, 235, 0.15);
+        }
+
+        &.google { top: 10%; right: 8%; animation: orbit 15s infinite ease-in-out; }
+        &.microsoft { bottom: 12%; left: 8%; animation: orbit 18s infinite ease-in-out reverse; }
+        &.apple { bottom: 15%; right: 10%; animation: orbit 20s infinite ease-in-out -5s; }
+        &.extra { top: 12%; left: 8%; animation: orbit 22s infinite ease-in-out -2s; }
+
+        @media (max-height: 750px) {
+            display: none !important;
+        }
+    }
+}
+
+@keyframes orbit {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+html, body[data-layout-mode="auth"] {
+    overflow: hidden !important;
+    height: 100% !important;
+}
+
+@media (max-width: 640px) {
+    .auth-floating-ecosystem { display: none; }
+}

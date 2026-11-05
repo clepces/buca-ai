@@ -1,0 +1,1052 @@
+/* =========================================================================
+   COMPONENTS: PANELS — Sistema Unificado de Paneles Desplegables
+   =========================================================================
+   Tres variantes: MINI, STANDARD, RICH.
+   Paneles se renderizan en el body (portal) para evitar Stacking Context.
+   En mobile (≤767px): TODOS los paneles son Bottom Sheet (deslizar desde abajo).
+   Soporte de touch nativo: swipe-down para cerrar (implementado en Header.js).
+   ========================================================================= */
+
+@use "../abstracts" as *;
+
+/* ─────────────────────────────────────────────────────────
+   DROPDOWN WRAPPER — Contenedor trigger en el header
+   Mantiene position:relative para que JS pueda calcular
+   la posición del panel vía getBoundingClientRect().
+   ───────────────────────────────────────────────────────── */
+.dropdown-wrapper {
+    position: relative;
+    cursor: pointer;
+}
+
+/* ─────────────────────────────────────────────────────────
+   OVERLAY DE FONDO (para mobile bottom sheets)
+   ───────────────────────────────────────────────────────── */
+.panel-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--panel-overlay-bg);
+    z-index: z('panel-overlay');
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s;
+    -webkit-backdrop-filter: blur(var(--blur-intensity));
+    backdrop-filter: blur(var(--blur-intensity));
+
+    &.active {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   BASE DEL PANEL — Renderizado en body (portal).
+   JS maneja el posicionamiento vía _positionPanel().
+   ───────────────────────────────────────────────────────── */
+.glass-panel {
+    position: fixed;
+
+    @include glass-surface(var(--surface-glass), var(--blur-intensity), 20px);
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px) scale(0.97);
+    transition: 
+        opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0.25s,
+        transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: z('panel');
+    overflow: hidden;
+    pointer-events: none;
+
+    &.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+
+    /* En mobile: el estado inicial es translateY(100%) no translateY(8px).
+       La transición se sobreescribe en el @media bloque más abajo. */
+}
+
+/* ─────────────────────────────────────────────────────────
+   VARIANTE MINI — Idioma, opciones simples
+   ───────────────────────────────────────────────────────── */
+.glass-panel--mini {
+    width: 220px;
+    padding: 6px 0;
+}
+
+/* ─────────────────────────────────────────────────────────
+   VARIANTE STANDARD — Notificaciones, listas
+   ───────────────────────────────────────────────────────── */
+.glass-panel--standard {
+    width: 320px;
+    padding: 6px 0;
+}
+
+/* ─────────────────────────────────────────────────────────
+   VARIANTE RICH — Perfil de usuario Enterprise
+   Solo el panel tiene scroll (NO doble scrollbar)
+   ───────────────────────────────────────────────────────── */
+.glass-panel--rich {
+    width: 340px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column; /* Perfil arriba, scroll en medio, footer abajo */
+    overflow: hidden;       /* SIN scroll en el panel — solo en .panel-scroll-area */
+}
+
+/* ─────────────────────────────────────────────────────────
+   CONTENIDO INTERIOR DE PANELES
+   ───────────────────────────────────────────────────────── */
+
+/* Encabezado de cualquier panel */
+.panel-header {
+    padding: 14px 18px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-glass);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Estado vacío (ej: sin notificaciones) */
+.panel-empty {
+    padding: 28px 18px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    i {
+        font-size: 1.6rem;
+        opacity: 0.4;
+    }
+}
+
+/* Títulos de sección */
+.panel-section-title {
+    display: block;
+    padding: 12px 18px 6px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 1.2px;
+}
+
+    /* Badges (ENTERPRISE / BALANCED / ECO) - Movidos a _elements.scss para estandarización */
+    .badge {
+        margin-left: auto;
+    }
+
+/* Item genérico de lista dentro del panel */
+.panel-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 18px;
+    border: none;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Outfit', sans-serif;
+    position: relative;
+    color: var(--text-main);
+
+    .item-icon-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: var(--hover-glass);
+        border: 1px solid var(--border-glass);
+        border-radius: 10px;
+        margin-right: 14px;
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        flex-shrink: 0;
+    }
+
+    .item-text-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 0; /* Fix text overflow */
+        
+        .item-label {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .item-subtext {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 1px;
+            font-weight: 400;
+        }
+    }
+
+    .item-arrow {
+        margin-left: auto;
+        font-size: 0.8rem;
+        color: var(--border-glass);
+        opacity: 0;
+        transition: all 0.2s;
+    }
+
+    &:hover {
+        background: var(--hover-glass);
+        
+        .item-icon-box {
+            background: var(--buca-blue);
+            color: white;
+            border-color: var(--buca-blue);
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .item-arrow {
+            opacity: 1;
+            transform: translateX(4px);
+        }
+    }
+
+    /* Variante peligro */
+    &--danger {
+        .item-icon-box { color: var(--color-error); }
+        .item-label { color: var(--color-error); }
+        &:hover {
+            background: rgba(239, 68, 68, 0.08);
+            .item-icon-box {
+                background: var(--color-error);
+                border-color: var(--color-error);
+            }
+        }
+    }
+}
+
+/* Separador visual */
+.panel-divider {
+    height: 1px;
+    background: var(--border-glass);
+    margin: 8px 18px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   VARIANTE IDIOMA — Items con banderas
+   ───────────────────────────────────────────────────────── */
+.panel-item--lang {
+    gap: 10px;
+    padding: 11px 18px;
+    
+    .lang-flag-sm {
+        font-size: 1.3rem;
+        line-height: 1;
+    }
+
+    .item-label {
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--text-main);
+    }
+
+    .item-check {
+        margin-left: auto;
+        color: var(--buca-blue);
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+
+    &.active {
+        background: rgba(37, 99, 235, 0.06);
+        .item-label { font-weight: 700; }
+    }
+
+    &:hover {
+        background: var(--hover-glass);
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   ZONA DE PERFIL (solo variante RICH)
+   ───────────────────────────────────────────────────────── */
+.panel-profile-zone {
+    padding: 24px 18px 16px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, transparent 100%);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    border-bottom: 1px solid var(--border-glass);
+
+    .profile-avatar-lg {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        position: relative;
+        background: linear-gradient(135deg, var(--buca-blue), #60a5fa);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 800;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        box-shadow: 0 6px 14px var(--buca-blue-glow);
+        border: 2px solid white;
+
+        .status-dot {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            bottom: 2px;
+            right: 2px;
+            border-width: 3px;
+            pointer-events: none;
+            z-index: 2;
+        }
+    }
+
+    .profile-info {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-width: 0;
+
+        .profile-name {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--text-main);
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .profile-email {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: -1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   ACCESOS RÁPIDOS (Quick Controls)
+   Diseño con scroll horizontal para soportar múltiples acciones
+   sin saturar verticalmente el panel.
+   ───────────────────────────────────────────────────────── */
+.panel-quick-controls {
+    display: flex;
+    align-items: center;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border-glass);
+    background: rgba(37, 99, 235, 0.02);
+    overflow: hidden;
+
+    .qc-scroll-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 4px 2px;
+
+        @include hide-scrollbar;
+
+        scroll-snap-type: x mandatory;
+        flex: 1;
+        min-width: 0;
+
+        /* Limitar visualmente a ~5 botones (34px + 10px gap) * 5 ≈ 210px-220px */
+        /* Pero permitimos que crezca si el panel es ancho */
+    }
+
+    .qc-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 4px;
+        transition: all 0.2s;
+        opacity: 0.6;
+
+        &:hover {
+            color: var(--buca-blue);
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        &--left { margin-right: 2px; }
+        &--right { margin-left: 2px; }
+    }
+}
+
+.qc-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: 1px solid var(--border-glass);
+    background: var(--surface-glass);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    flex-shrink: 0;
+    scroll-snap-align: start;
+
+    &:hover {
+        background: var(--buca-blue);
+        color: #fff;
+        border-color: var(--buca-blue);
+        transform: translateY(-2px) scale(1.1);
+        box-shadow: 0 4px 12px var(--buca-blue-glow);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   SCROLL AREA INTERNA (evita doble scrollbar)
+   ───────────────────────────────────────────────────────── */
+.panel-scroll-area {
+    flex: 1;            /* Ocupa todo el espacio disponible en el flex column */
+    min-height: 0;      /* Permite que flex shrink funcione */
+    overflow: hidden auto;
+
+    @supports (scrollbar-width: thin) {
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-glass) transparent;
+    }
+
+    &::-webkit-scrollbar {
+        width: 3px;
+    }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: var(--border-glass);
+        border-radius: 3px;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   FOOTER BAR — Concepto A "Split Bar"
+   ─────────────────────────────────────────────────────────
+   Layout:
+     [ 🔴 Logout ]  │  [ ? Help ]  [ ¡ Info ]
+     ← izquierda →  │  ←     derecha        →
+   
+   - Acción destructiva aislada a la izquierda
+   - Separador vertical de vidrio
+   - Utilidades agrupadas a la derecha
+   - Hover en un botón: se expande mostrando texto,
+     hermanos en la misma zona se comprimen.
+   ───────────────────────────────────────────────────────── */
+.panel-footer-bar {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid var(--border-glass);
+    padding: 8px 12px;
+    gap: 0; /* El gap lo manejan las zonas */
+}
+
+/* ── ZONAS (izquierda / derecha) ── */
+.footer-zone {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.footer-zone--left {
+    flex-shrink: 0;
+}
+
+.footer-zone--right {
+    flex: 1;
+    justify-content: flex-end;
+}
+
+/* ── SEPARADOR GLASS VERTICAL ── */
+.footer-separator {
+    width: 1px;
+    height: 28px;
+    background: var(--border-glass);
+    margin: 0 10px;
+    flex-shrink: 0;
+    border-radius: 1px;
+
+    @media (max-width: 400px) {
+        display: none;
+    }
+}
+
+.panel-footer-bar {
+    @media (max-width: 400px) {
+        flex-direction: column;
+        gap: 8px;
+        .footer-zone { 
+            width: 100%; 
+            justify-content: center;
+            gap: 12px;
+        }
+    }
+}
+
+/* ── BOTÓN DE ACCIÓN ── */
+.footer-action {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid var(--border-glass);
+    background: var(--hover-glass);
+    border-radius: 12px;
+    padding: 7px;
+    cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+    flex: 0 0 auto;
+    transition:
+        flex 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        background 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        padding 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        gap 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-main);
+
+    /* ── Icono ── */
+    .footer-action__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        font-size: 1rem;
+        color: var(--text-muted);
+        flex-shrink: 0;
+        transition: color 0.25s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* ── Texto (oculto por defecto) ── */
+    .footer-action__text {
+        display: flex;
+        flex-direction: column;
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition:
+            max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 0.2s ease 0.08s;
+    }
+
+    .footer-action__label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        line-height: 1.15;
+        color: var(--text-main);
+    }
+
+    .footer-action__sub {
+        font-size: 0.65rem;
+        font-weight: 400;
+        color: var(--text-muted);
+        line-height: 1.1;
+    }
+
+    /* ── Hover: expansión ── */
+    &:hover {
+        flex: 1 1 auto;
+        gap: 10px;
+        padding: 7px 14px 7px 7px;
+        background: var(--surface-glass);
+        border-color: var(--buca-blue);
+        box-shadow: 0 2px 10px var(--buca-blue-glow);
+
+        .footer-action__icon {
+            color: var(--buca-blue);
+            transform: scale(1.15) rotate(-5deg);
+        }
+
+        .footer-action__text {
+            max-width: 180px;
+            opacity: 1;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .footer-action__text {
+            max-width: 150px;
+            opacity: 1;
+        }
+
+        gap: 8px;
+        padding: 7px 10px;
+    }
+
+    /* ── VARIANTE DANGER (Cerrar Sesión) ── */
+    &--danger {
+        background: rgba(239, 68, 68, 0.05);
+        border-color: rgba(239, 68, 68, 0.15);
+
+        .footer-action__icon { color: var(--color-error); }
+
+        &:hover {
+            border-color: var(--color-error);
+            background: rgba(239, 68, 68, 0.08);
+            box-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);
+
+            .footer-action__icon {
+                color: #fff;
+                background: var(--color-error);
+                border-radius: 8px;
+                transform: scale(1.15) rotate(-5deg);
+            }
+            .footer-action__label { color: var(--color-error); }
+        }
+    }
+}
+
+/* Cuando una zona tiene un botón hovered,
+   los hermanos NO hovered se comprimen */
+.footer-zone:hover .footer-action:not(:hover) {
+    flex: 0 0 auto;
+    padding: 7px;
+    gap: 0;
+
+    .footer-action__text {
+        max-width: 0;
+        opacity: 0;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   BOTTOM SHEET — TODOS los paneles en Mobile (≤767px)
+   ─────────────────────────────────────────────────────────
+   Estrategia: en mobile todos los paneles salen desde abajo.
+   Esto es más natural en táctil (como Edge, Sheets, apps nativas).
+   JS limpia los estilos inline → CSS toma el control aquí.
+   ───────────────────────────────────────────────────────── */
+@media screen and (max-width: 767px) {
+
+    /* ── Base para TODOS los paneles como bottom sheet ──
+       ESTRATEGIA DE OCULTAMIENTO DUAL:
+       Estado CERRADO:  opacity:0 + translateY(100%) → invisible Y fuera del viewport
+       Estado ABIERTO:  opacity:1 + translateY(0)   → visible y en posición
+       
+       Usar AMBOS mecanismos evita que inline styles residuales del drag
+       dejen el panel visible por accidente (ej: transform:translateY(0) residual). */
+    .panel-overlay {
+        z-index: z('panel-overlay') !important;
+    }
+
+    .glass-panel {
+        position: fixed !important;
+        inset: auto 0 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 24px 24px 0 0;
+        z-index: z('panel') !important;
+        /* Estado CERRADO: invisible + fuera de pantalla */
+        transform: translateY(100%) !important;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        /* Animar AMBAS propiedades para entrada fluida */
+        transition:
+            transform  0.32s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity    0.20s ease,
+            visibility 0.32s !important;
+        overscroll-behavior: contain;
+        border-bottom: none !important;
+        will-change: transform, opacity;
+
+        /* Estado ABIERTO: visible + en posición */
+        &.active {
+            transform: translateY(0) !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto;
+            box-shadow: 0 -16px 60px rgba(0, 0, 0, 0.3);
+        }
+    }
+
+    /* Panel rich: más alto porque tiene scroll */
+    .glass-panel--rich {
+        max-height: 90vh;
+        border-radius: 28px 28px 0 0;
+        box-shadow: 0 -20px 80px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Paneles compactos: altura reducida */
+    .glass-panel--standard,
+    .glass-panel--mini {
+        max-height: 70vh;
+        border-radius: 20px 20px 0 0;
+
+        .panel-header {
+            padding: 16px 20px 12px;
+        }
+    }
+
+    /* ── Drag Handle — barra visual de arrastre táctil ── */
+    .glass-panel::before {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--border-glass);
+        margin: 10px auto 6px;
+        flex-shrink: 0;
+        touch-action: none;
+    }
+
+    /* Handle más prominente en el panel rico */
+    .glass-panel--rich::before {
+        width: 46px;
+        height: 5px;
+        margin: 12px auto 8px;
+        cursor: grab;
+    }
+
+    .glass-panel--rich:active::before {
+        cursor: grabbing;
+        background: var(--text-muted);
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   RESPONSIVE — Tablet (768-1024px)
+   ───────────────────────────────────────────────────────── */
+@media screen and (max-width: 1100px) {
+    .glass-panel--rich {
+        width: 310px;
+    }
+    .panel-profile-zone {
+        padding: 18px 14px 14px;
+        gap: 12px;
+    }
+    .panel-item {
+        padding: 9px 14px;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   FIX: ORIENTACIÓN LANDSCAPE (Móvil Horizontal)
+   ───────────────────────────────────────────────────────── */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .glass-panel {
+        max-height: 94vh !important;
+        
+        &--rich {
+            width: 70% !important;
+            margin: 0 auto;
+            left: 15% !important;
+        }
+
+        &--standard, &--mini {
+            width: 60% !important;
+            margin: 0 auto;
+            left: 20% !important;
+        }
+
+        .panel-scroll-area {
+            max-height: 50vh;
+        }
+    }
+
+    .panel-footer-bar {
+        padding: 6px 12px;
+    }
+}
+
+@keyframes pulse-update {
+    0% { transform: scale(1); box-shadow: 0 0 0 rgba(37, 99, 235, 0); }
+    50% { transform: scale(1.05); box-shadow: 0 0 15px var(--buca-blue-glow); }
+    100% { transform: scale(1); box-shadow: 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+.pulse-update {
+    animation: pulse-update 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─────────────────────────────────────────────────────────
+   PROFILE PANEL REFINED CONTROLS (Zero Deformation & Eye Friendly)
+   ───────────────────────────────────────────────────────── */
+.profile-quick-action {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    min-height: 38px;
+    max-width: 38px;
+    max-height: 38px;
+    border-radius: 50%;
+    aspect-ratio: 1 / 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    border: 1px solid var(--border-glass);
+    background: var(--surface-glass);
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    flex-shrink: 0;
+    line-height: 1;
+
+    i {
+        font-size: 1rem;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+    }
+
+    &:hover {
+        background: var(--buca-blue);
+        color: #ffffff;
+        border-color: var(--buca-blue);
+        transform: translateY(-2px) scale(1.08);
+        box-shadow: 0 4px 12px var(--buca-blue-glow);
+
+        i {
+            transform: scale(1.1);
+        }
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
+.profile-logout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 15px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    cursor: pointer;
+    transition: all 0.25s ease;
+
+    i {
+        font-size: 0.95rem;
+        transition: transform 0.25s ease;
+    }
+
+    &:hover {
+        background: rgba(239, 68, 68, 0.16);
+        border-color: rgba(239, 68, 68, 0.35);
+        color: #dc2626;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+
+        i {
+            transform: translateX(3px);
+        }
+    }
+
+    &:active {
+        transform: scale(0.97);
+    }
+}
+
+.profile-settings-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 12px;
+    border: 1px solid var(--border-glass);
+    background: var(--surface-glass);
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 0;
+
+    i {
+        font-size: 1.05rem;
+        line-height: 1;
+        transition: transform 0.4s ease, color 0.2s ease;
+    }
+
+    &:hover {
+        background: var(--surface-glass-bright);
+        color: var(--buca-blue);
+        border-color: var(--buca-blue);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px var(--buca-blue-glow);
+
+        i {
+            transform: rotate(45deg);
+        }
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   NOTIFICATION TRAY REFINED STYLES
+   ───────────────────────────────────────────────────────── */
+.notification-tray-panel {
+    width: 360px;
+    border-radius: 20px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+
+    .notif-header-icon-box {
+        width: 28px;
+        height: 28px;
+        background: rgba(37, 99, 235, 0.12);
+        color: var(--buca-blue, #2563eb);
+        font-size: 0.85rem;
+    }
+
+    .notif-header-title {
+        font-size: 0.85rem;
+    }
+
+    .notif-badge-pill {
+        font-size: 0.65rem;
+    }
+
+    .tray-filter-tabs {
+        background: rgba(0, 0, 0, 0.02);
+    }
+
+    .tray-tab-btn {
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 0.7rem;
+        font-weight: 600;
+
+        &:hover {
+            background: var(--hover-glass);
+            color: var(--text-main);
+        }
+
+        &.active-tab {
+            background: var(--buca-blue);
+            color: #ffffff;
+            box-shadow: 0 2px 8px var(--buca-blue-glow);
+        }
+    }
+
+    .area-header {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .notification-item {
+        border-radius: 8px;
+        border: 1px solid var(--border-glass, rgba(0, 0, 0, 0.06));
+        transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+
+        &:hover {
+            background: var(--hover-glass);
+            transform: translateX(2px);
+        }
+
+        &.item-unread {
+            background: var(--hover-glass, rgba(37, 99, 235, 0.04));
+            border-color: rgba(37, 99, 235, 0.2);
+            border-left: 3.5px solid var(--notif-accent, var(--buca-blue, #2563eb));
+        }
+
+        &.item-read {
+            background: transparent;
+            opacity: 0.65;
+            border-left: 3.5px solid transparent;
+
+            &:hover {
+                opacity: 0.9;
+            }
+        }
+
+        .notif-type-icon {
+            width: 28px;
+            height: 28px;
+            font-size: 0.85rem;
+            background: var(--notif-bg, rgba(37, 99, 235, 0.12));
+            color: var(--notif-color, #2563eb);
+        }
+
+        .notif-title {
+            font-size: 0.78rem;
+        }
+
+        .notif-time {
+            font-size: 0.62rem;
+            font-weight: 500;
+        }
+
+        .notif-desc {
+            font-size: 0.72rem;
+            line-height: 1.35;
+            word-break: break-word;
+        }
+
+        .notif-badge {
+            font-size: 0.58rem;
+            background: var(--notif-bg, rgba(37, 99, 235, 0.12));
+            color: var(--notif-color, #2563eb);
+            padding: 1px 6px;
+        }
+
+        .notif-action-btn {
+            font-size: 0.65rem;
+        }
+
+        .notif-read-indicator {
+            font-size: 0.62rem;
+            opacity: 0.7;
+        }
+    }
+
+    .panel-footer-clean {
+        background: rgba(0, 0, 0, 0.015);
+        font-size: 0.7rem;
+    }
+}
+

@@ -1,0 +1,95 @@
+/* =========================================================================
+   BASE: RESPONSIVE (Global Overrides & Centralized Scaling)
+   ========================================================================= */
+
+@use "../abstracts" as *;
+
+/* ─────────────────────────────────────────────────────────
+   MOBILE & TABLET ADJUSTMENTS (Prevention of Collapse)
+   ───────────────────────────────────────────────────────── */
+
+/* Mobile XS (Small Phones) */
+@media screen and (max-width: 420px) {
+    html { font-size: 14px; }
+    
+    .workspace-area {
+        padding-top: 10px;
+    }
+
+    .container-max {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
+
+/* Tablet / Large Mobile */
+@include respond-between('md', 'lg') {
+    .workspace-internal {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   HIGH RESOLUTION & ULTRA-WIDE (Phase 5)
+   ───────────────────────────────────────────────────────── */
+
+/* 4K / Ultra-Wide Displays */
+@media screen and (min-width: 1920px) {
+    html {
+        font-size: 18px;
+    }
+
+    .app-header {
+        padding: 0 40px;
+        --header-height: 78px;
+        height: var(--header-height);
+    }
+
+    .container-max {
+        max-width: 1600px;
+    }
+
+    .dock {
+        max-width: 55vw;
+        gap: 15px;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   LANDSCAPE & LOW HEIGHT RECOVERY
+   ───────────────────────────────────────────────────────── */
+
+/* Landscape Mobile / Low Height Fixes */
+@media screen and (max-height: 520px) {
+    .workspace-area {
+        padding-top: 5px;
+        padding-bottom: 0;
+    }
+
+    .workspace-internal {
+        padding-bottom: 90px;
+    }
+
+    .dock-container {
+        bottom: 4px;
+        transform: scale(0.9);
+        transform-origin: bottom center;
+    }
+
+    /* Hide less critical elements in low height */
+    .brand-tagline, .banner-badge {
+        display: none !important;
+    }
+}
+
+/* Fix for potential container collapse on dynamic content */
+#app, .workspace-area, .workspace-internal {
+    min-height: 1px;
+    display: flex;
+    flex-direction: column;
+}
+
+.workspace-internal {
+    flex: 1 0 auto; /* Ensure it grows and doesn't collapse */
+}

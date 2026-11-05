@@ -1,0 +1,123 @@
+/* =========================================================================
+   NEURAL UTILITIES: UNIFIED SCROLL & PROGRESS TOKENS (Atomic System)
+   ========================================================================= */
+
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * .buca-scroll-area — CLASE ÚNICA Y GLOBAL PARA DESPLAZAMIENTO DE CONTENIDO
+ * Unifica el comportamiento de scroll en toda la plataforma BUCA (modales,
+ * paneles, tarjetas y vistas operativas) eliminando ramas de CSS redundantes.
+ */
+.buca-scroll-area,
+.panel-scroll-area {
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+    padding-right: 4px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+
+    @supports (scrollbar-width: thin) {
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-glass, rgba(0, 0, 0, 0.15)) transparent;
+    }
+
+    &::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--border-glass, rgba(0, 0, 0, 0.15));
+        border-radius: 4px;
+        transition: background 0.2s ease;
+
+        &:hover {
+            background: var(--buca-blue, #2563eb);
+        }
+    }
+
+    /* Modificadores atómicos de altura estándar */
+    &--xs {
+        max-height: 180px;
+    }
+
+    &--sm {
+        max-height: 250px;
+    }
+
+    &--md {
+        max-height: 420px;
+    }
+
+    &--lg {
+        max-height: 600px;
+    }
+
+    &--full {
+        max-height: 100%;
+    }
+}
+
+/**
+ * .progress-w-* — Utilidades atómicas de progreso para métricas y cuotas
+ * Reemplazan estilos en línea style="width: XX%" por clases escalables.
+ */
+.progress-w-3   { width: 3%; }
+.progress-w-5   { width: 5%; }
+.progress-w-8   { width: 8%; }
+.progress-w-10  { width: 10%; }
+.progress-w-15  { width: 15%; }
+.progress-w-20  { width: 20%; }
+.progress-w-25  { width: 25%; }
+.progress-w-50  { width: 50%; }
+.progress-w-75  { width: 75%; }
+.progress-w-100 { width: 100%; }
+
+/**
+ * Utilidades de dimensionado e iconos
+ */
+.u-icon-hero {
+    font-size: 3rem;
+}
+
+.u-center-pad-40 {
+    padding: 40px;
+    text-align: center;
+}
+
+.rif-prefix-select {
+    width: 75px;
+}
+
+.u-max-w-420 {
+    max-width: 420px;
+}
+
+.u-max-w-480 {
+    max-width: 480px;
+}
+
+.u-max-w-650 {
+    max-width: 650px;
+}
+
+.u-z-under {
+    z-index: -1;
+}
+
+.u-z-content {
+    z-index: 10;
+}
+
+.spinner-lg-hero {
+    width: 2.75rem;
+    height: 2.75rem;
+}
+

@@ -1,0 +1,92 @@
+@use "@/shared/styles/neural/abstracts/variables" as v;
+@use "@/shared/styles/neural/abstracts/mixins" as m;
+
+/* ==========================================================================
+   BUCA AUTH - PIN VERIFICATION
+   Aislamiento Modular Atómico: Grid de PIN, Campos y Acciones de Reenvío
+   ========================================================================== */
+
+.pin-verification-container {
+    padding: 0 1rem;
+    
+    .highlight-email {
+        color: var(--buca-blue);
+        font-weight: 800;
+        font-size: 1rem;
+    }
+}
+
+.pin-grid {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 2rem 0;
+
+    .pin-field {
+        width: 50px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.4);
+        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px);
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        border-radius: 16px;
+        text-align: center;
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #1e293b;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+
+        &::placeholder { color: #cbd5e1; opacity: 0.5; }
+
+        &:focus {
+            border-color: var(--buca-blue);
+            background: white;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15);
+            outline: none;
+            transform: translateY(-5px) scale(1.05);
+
+            @media (max-height: 750px) {
+                transform: translateY(-2px) scale(1.02);
+            }
+        }
+
+        &.filled {
+            border-color: var(--buca-blue);
+            background: rgba(37, 99, 235, 0.05);
+            color: var(--buca-blue);
+        }
+
+        @media (max-height: 750px) {
+            width: 44px;
+            height: 56px;
+            font-size: 1.4rem;
+            border-radius: 12px;
+        }
+    }
+}
+
+.pin-footer-actions {
+    .resend-link {
+        color: var(--buca-blue);
+        font-weight: 800;
+        text-decoration: none;
+        &:hover { text-decoration: underline; }
+    }
+
+    .btn-back-auth {
+        background: transparent;
+        border: none;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin: 0 auto;
+        cursor: pointer;
+        transition: all 0.2s;
+        &:hover { color: var(--buca-blue); transform: translateX(-4px); }
+    }
+}

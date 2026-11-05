@@ -1,0 +1,86 @@
+/* =========================================================================
+   COMPONENTS: BUTTONS (Corporate Hybrid Glass)
+   ========================================================================= */
+
+@use "../abstracts" as *;
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    @include auto-profile-scaling(1.02);
+
+    border: 1px solid transparent;
+    font-family: inherit;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &:active {
+        transform: scale(0.96);
+    }
+}
+
+/* Primary Button */
+.btn-primary {
+    background: var(--buca-blue);
+    color: white;
+    box-shadow: 0 4px 12px var(--buca-blue-glow);
+
+    &:hover {
+        background: var(--buca-blue-dark);
+        box-shadow: 0 8px 20px var(--buca-blue-glow);
+    }
+}
+
+/* Ghost Button */
+.btn-ghost {
+    background: transparent;
+    color: var(--text-main);
+    border-color: var(--border-glass);
+
+    &:hover {
+        background: var(--hover-glass);
+        border-color: var(--buca-blue);
+        color: var(--buca-blue);
+    }
+}
+
+/* Action Buttons (Generic) */
+.accion-btn, .accion-group-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--surface-glass);
+    border: 1px solid var(--border-glass);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--anim-duration) ease;
+    cursor: pointer;
+
+    @include auto-profile-scaling(1.1);
+
+    &:hover {
+        background: var(--buca-blue);
+        color: white;
+        border-color: var(--buca-blue);
+    }
+}
+
+/* Utility Classes */
+.px-4 { padding-left: 1.5rem; padding-right: 1.5rem; }
+
+.action-capsule-btn {
+    pointer-events: auto !important;
+}
