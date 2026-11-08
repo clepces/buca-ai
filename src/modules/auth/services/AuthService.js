@@ -54,15 +54,15 @@ export const AuthService = {
                 console.warn('[AuthService] Could not fetch firestore profile:', err.message);
             }
 
-            const meta = DEMO_ROLES[user.email] || {};
-            const role = profileData.platform_role || meta.role || 'user';
+            const tokenResult = await user.getIdTokenResult().catch(() => null);
+            const role = tokenResult?.claims?.role || profileData.platform_role || 'user';
             
             sessionState.set({
                 isAuthenticated: true,
                 user: {
                     uid: user.uid,
                     email: user.email,
-                    displayName: profileData.firstName ? `${profileData.firstName} ${profileData.lastName || ''}`.trim() : (user.displayName || meta.displayName || user.email.split('@')[0]),
+                    displayName: profileData.firstName ? `${profileData.firstName} ${profileData.lastName || ''}`.trim() : (user.displayName || user.email.split('@')[0]),
                     role: role
                 },
                 currentRole: role
@@ -76,32 +76,6 @@ export const AuthService = {
                 console.warn('[AuthService] Credenciales inválidas. Verifique el email o contraseña.');
             }
 
-            // Fallback para pruebas solo si está permitido y no estamos en producción
-            const isProd = CONFIG?.ENV?.IS_PRODUCTION || CONFIG?.ENV?.MODE === 'production';
-            const allowDemoFallback = !isProd && Boolean(CONFIG?.ENV?.SHOW_DEMO_ACCOUNTS);
-
-            const isKnownDemo = DEMO_ROLES[email] && (
-                (email === 'admin@buca.com.ve' && password === 'admin123') ||
-                (email === 'asicodia@gmail.com' && password === 'soporte123') ||
-                (email === 'elexdy.publice@gmail.com' && password === 'owner123') ||
-                password === '123456' || password === 'Password123!'
-            );
-
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            const isDevPreview = isLocal || window.location.hostname.includes('run.app') || window.location.hostname.includes('ai.studio');
-            if (allowDemoFallback && isDevPreview && isKnownDemo) {
-                console.info('[AuthService] Modo de pruebas activo: Aplicando acceso de demostración.');
-                const meta = DEMO_ROLES[email] || {};
-                const mockUser = {
-                    uid: meta.id || 'dev-user-001',
-                    email,
-                    displayName: meta.displayName || email.split('@')[0],
-                    role: meta.role || 'user'
-                };
-                sessionState.set({ isAuthenticated: true, user: mockUser, currentRole: mockUser.role });
-                eventBus.emit('auth:login-success', { user: mockUser });
-                return { success: true, user: mockUser };
-            }
             eventBus.emit('auth:login-failed', { error });
             return { success: false, error: error.code || error.message };
         }

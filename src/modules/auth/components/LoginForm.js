@@ -5,36 +5,10 @@ import { CONFIG } from '@/core/config/config.js';
  */
 export const LoginForm = {
     render() {
-        const isProd = CONFIG?.ENV?.IS_PRODUCTION || CONFIG?.ENV?.MODE === 'production';
-        const showDemoAccounts = !isProd && Boolean(CONFIG?.ENV?.SHOW_DEMO_ACCOUNTS);
-
         return `
             <form id="login-form" class="glass-form">
                 <!-- Área de Feedback Dinámico -->
                 <div id="login-feedback" class="alert alert-danger d-none animate__animated animate__fadeIn py-2 small mb-4"></div>
-
-                <!-- Selector de Cuentas del Sistema (Acceso Rápido para Desarrollo) -->
-                ${showDemoAccounts ? `
-                <div class="mb-3 p-2 rounded-3 demo-accounts-panel" id="demo-accounts-wrapper">
-                    <div class="d-flex justify-content-between align-items-center mb-2 px-1">
-                        <span class="small fw-bold text-uppercase demo-title-text">
-                            <i class="bi bi-shield-lock-fill me-1 text-primary"></i> Roles del Sistema (Pruebas)
-                        </span>
-                        <span class="badge demo-badge-micro">3 Cuentas</span>
-                    </div>
-                    <div class="d-flex gap-1 flex-wrap" id="demo-accounts-group">
-                        <button type="button" class="btn btn-sm flex-fill demo-acc-btn demo-acc-btn-styled active" data-email="admin@buca.com.ve" data-pwd="admin123">
-                            <i class="bi bi-shield-shaded me-1"></i> Super Admin
-                        </button>
-                        <button type="button" class="btn btn-sm flex-fill demo-acc-btn demo-acc-btn-styled" data-email="asicodia@gmail.com" data-pwd="soporte123">
-                            <i class="bi bi-person-gear me-1"></i> Admin
-                        </button>
-                        <button type="button" class="btn btn-sm flex-fill demo-acc-btn demo-acc-btn-styled" data-email="elexdy.publice@gmail.com" data-pwd="owner123">
-                            <i class="bi bi-person-badge me-1"></i> Usuario
-                        </button>
-                    </div>
-                </div>
-                ` : ''}
 
                 <div class="mb-3 form-group">
                     <label for="email" class="form-label small fw-bold text-uppercase opacity-75">Correo Corporativo</label>
@@ -42,8 +16,7 @@ export const LoginForm = {
                         <i class="bi bi-envelope"></i>
                         <input type="email" id="email" name="email" 
                                autocomplete="username email"
-                               placeholder="${showDemoAccounts ? 'elexdy.publice@gmail.com' : 'usuario@empresa.com'}" 
-                               value="${showDemoAccounts ? 'elexdy.publice@gmail.com' : ''}"
+                               placeholder="usuario@empresa.com" 
                                class="glass-input" required>
                     </div>
                 </div>
@@ -55,7 +28,6 @@ export const LoginForm = {
                         <input type="password" id="password" name="password" 
                                autocomplete="current-password"
                                placeholder="••••••••" 
-                               value="${showDemoAccounts ? 'owner123' : ''}"
                                class="glass-input" required>
                         <button class="btn-toggle-password" type="button" id="toggle-password" aria-label="Mostrar u ocultar contraseña">
                             <i class="bi bi-eye"></i>
@@ -88,19 +60,6 @@ export const LoginForm = {
             const emailInput = document.getElementById('email');
             const pwdInput = document.getElementById('password');
             const btnSubmit = document.getElementById('btn-login-submit');
-
-            // Configurar botones de acceso demo si están presentes en el DOM
-            const demoButtons = document.querySelectorAll('.demo-acc-btn');
-            if (demoButtons && demoButtons.length > 0) {
-                demoButtons.forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        demoButtons.forEach(b => b.classList.remove('active', 'btn-primary'));
-                        btn.classList.add('active');
-                        if (emailInput && btn.dataset.email) emailInput.value = btn.dataset.email;
-                        if (pwdInput && btn.dataset.pwd) pwdInput.value = btn.dataset.pwd;
-                    });
-                });
-            }
 
             // Toggle Password Visibility
             if (togglePwd && pwdInput) {

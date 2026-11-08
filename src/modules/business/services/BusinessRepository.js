@@ -12,7 +12,7 @@ export const BusinessRepository = {
     if (!uid) return [];
     try {
       const dbInstance = getDb();
-      const q = query(collection(dbInstance, 'businesses'), where('ownerUid', '==', uid));
+      const q = query(collection(dbInstance, 'businesses'), where('owner_id', '==', uid));
       const querySnapshot = await getDocs(q);
       const list = [];
       querySnapshot.forEach((docSnap) => {
@@ -31,15 +31,18 @@ export const BusinessRepository = {
       const dbInstance = getDb();
       const businessId = 'biz_' + Date.now();
       const ref = doc(dbInstance, 'businesses', businessId);
+      // Sanitize input data to prevent overwriting critical identity fields
+      const { businessId: _ignoredId, owner_id: _ignoredOwner, ownerUid: _ignoredOwnerUid, createdAt: _ignoredCreated, ...safeData } = businessData || {};
       const payload = {
+        ...safeData,
         businessId,
-        ownerUid: uid,
-        name: businessData.name || 'Mi Negocio BUSA',
-        sector: businessData.sector || 'Tecnología',
-        rif: businessData.rif || 'J-00000000-0',
+        owner_id: uid,
+        ownerUid: uid, // Compatibilidad retroactiva
+        name: safeData.name || 'Mi Negocio BUCA',
+        sector: safeData.sector || 'Tecnología',
+        rif: safeData.rif || 'J-00000000-0',
         status: 'active',
-        createdAt: new Date().toISOString(),
-        ...businessData
+        createdAt: new Date().toISOString()
       };
       await setDoc(ref, payload);
       return payload;

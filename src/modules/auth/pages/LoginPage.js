@@ -107,11 +107,7 @@ export const LoginPage = {
                     if (enteredPin === currentOtpCode) {
                         isValid = true;
                     }
-                    // 2. Clave maestra de desarrollo (123456)
-                    else if (enteredPin === '123456') {
-                        isValid = true;
-                    }
-                    // 3. Verificación matemática TOTP (Google Authenticator)
+                    // 2. Verificación matemática TOTP (Google Authenticator)
                     else if (userTotpSecret) {
                         isValid = await TOTPService.verifyCode(userTotpSecret, enteredPin);
                     }
@@ -199,18 +195,12 @@ export const LoginPage = {
                     clearInterval(interval);
                     bar.style.background = '#22c55e';
                     
-                    const { AuthService } = await import('@/modules/auth/services/AuthService.js');
-                    const meta = AuthService.getDemoMeta(email);
-
-                    sessionState.set({
-                        isAuthenticated: true,
-                        user: {
-                            email,
-                            displayName: meta.displayName || (email ? email.split('@')[0] : 'Super Admin'),
-                            role: meta.role || 'user'
-                        },
-                        currentRole: meta.role || 'user'
-                    });
+                    const currentUser = sessionState.get().user;
+                    if (!currentUser) {
+                        // Si no hay sesión válida, redirigir a login
+                        setTimeout(() => router.navigate('/auth/login'), 500);
+                        return;
+                    }
                     setTimeout(() => router.navigate('/workspace'), 800);
                 }
 

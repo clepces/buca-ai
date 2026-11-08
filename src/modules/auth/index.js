@@ -27,20 +27,32 @@ export const AuthModule = {
 
         // Escuchar cambios de autenticación nativos de Firebase Auth
         try {
-            FirebaseProvider.onAuthStateChanged((user) => {
+            FirebaseProvider.onAuthStateChanged(async (user) => {
                 if (user) {
-                    const meta = AuthService.getDemoMeta(user.email);
+                    let role = 'user';
+                    try {
+                        const tokenResult = await user.getIdTokenResult();
+                        role = tokenResult.claims?.role || 'user';
+                    } catch {
+                        role = 'user';
+                    }
                     sessionState.set({
                         isAuthenticated: true,
                         user: {
                             uid: user.uid,
                             email: user.email,
-                            displayName: user.displayName || meta.displayName || user.email.split('@')[0],
-                            role: meta.role || 'owner'
+                            displayName: user.displayName || user.email.split('@')[0],
+                            role
                         },
-                        currentRole: meta.role || 'owner'
+                        currentRole: role
                     });
                     console.log('[AuthModule] -> Sesión sincronizada con Firebase Auth:', user.email);
+                } else {
+                    sessionState.set({
+                        isAuthenticated: false,
+                        user: null,
+                        currentRole: 'guest'
+                    });
                 }
             });
         } catch (err) {

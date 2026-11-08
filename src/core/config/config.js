@@ -23,7 +23,7 @@ export const CONFIG = {
         MODE: 'development', // 'development' | 'production'
         IS_DEVELOPMENT: true,
         IS_PRODUCTION: false,
-        SHOW_DEMO_ACCOUNTS: true,
+        SHOW_DEMO_ACCOUNTS: false,
         USE_EMULATOR: false
     },
 

@@ -19,7 +19,7 @@ export const ENV = {
     MODE: viteEnv.MODE || 'development',
     IS_DEV: viteEnv.DEV || (viteEnv.MODE === 'development'),
     IS_PROD: viteEnv.PROD || (viteEnv.MODE === 'production'),
-    USE_EMULATOR: (viteEnv.VITE_USE_EMULATOR === 'true' || isLocalNetwork) && (viteEnv.MODE !== 'production'),
+    USE_EMULATOR: viteEnv.VITE_USE_EMULATOR === 'true',
 
     FIREBASE: {
         apiKey: viteEnv.VITE_FIREBASE_API_KEY || 'AIzaSyB-MOCK-API-KEY',

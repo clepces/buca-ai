@@ -11,11 +11,14 @@
     "lint:css": "stylelint \"src/**/*.{css,scss}\"",
     "lint": "npm run lint:js && npm run lint:css",
     "format": "prettier --write \"src/**/*.{js,scss,html,json}\"",
-    "type-check": "tsc --project jsconfig.json --noEmit"
+    "type-check": "tsc --project jsconfig.json --noEmit",
+    "test:rules": "npx firebase-tools emulators:exec --only firestore \"node --test tests/firestore-rules.test.js\"",
+    "test": "npm run test:rules"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@firebase/eslint-plugin-security-rules": "^0.0.2",
+    "@firebase/rules-unit-testing": "^5.0.2",
     "@markuplint/html-parser": "^4.0.0",
     "@markuplint/html-spec": "^4.0.0",
     "eslint": "^10.14.0",

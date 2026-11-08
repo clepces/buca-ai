@@ -35,30 +35,34 @@ self.addEventListener('activate', (event) => {
 
 // Interceptación de peticiones
 self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
+
+    // No interceptar peticiones no GET ni peticiones a APIs externas (Firebase, Google, etc.)
+    if (event.request.method !== 'GET' || url.origin !== self.location.origin) {
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
             const fetchPromise = fetch(event.request).then((networkResponse) => {
-                // Verificar si la respuesta es válida para cachear
                 if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
                     return networkResponse;
                 }
 
-                // CLONAR INMEDIATAMENTE antes de que sea consumida
                 const responseToCache = networkResponse.clone();
-
                 caches.open(CACHE_NAME).then((cache) => {
-                    const url = new URL(event.request.url);
-                    if (event.request.method === 'GET' && (url.protocol === 'http:' || url.protocol === 'https:')) {
-                        cache.put(event.request, responseToCache);
-                    }
+                    cache.put(event.request, responseToCache);
                 });
 
                 return networkResponse;
             }).catch(() => {
-                // Silenciar fallos de red (Offline)
+                return cachedResponse || new Response('Servicio temporalmente fuera de línea', {
+                    status: 503,
+                    statusText: 'Service Unavailable',
+                    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+                });
             });
 
-            // Si está en caché, lo servimos de inmediato. Si no, esperamos a la red.
             return cachedResponse || fetchPromise;
         })
     );

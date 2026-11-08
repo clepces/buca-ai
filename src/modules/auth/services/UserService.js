@@ -33,34 +33,24 @@ class UserService {
             const { auth } = initFirebase();
             if (auth && auth.currentUser && auth.currentUser.uid) {
                 const firebaseUser = auth.currentUser;
+                const role = sessionUser?.currentRole || 'user';
                 sessionState.set({
                     isAuthenticated: true,
                     user: {
                         uid: firebaseUser.uid,
-                        email: firebaseUser.email || 'usuario@empresa.com',
-                        displayName: firebaseUser.displayName || 'Usuario Corporativo',
-                        role: 'owner'
+                        email: firebaseUser.email || '',
+                        displayName: firebaseUser.displayName || 'Usuario',
+                        role
                     },
-                    currentRole: 'owner'
+                    currentRole: role
                 });
                 return firebaseUser.uid;
             }
         } catch {
-            // Continuar con usuario fallback si la sesión no está disponible
+            // Error de conexión con Firebase
         }
 
-        const fallbackUser = {
-            uid: 'QmojtAorrSORnIR652B2OQrLFnV2',
-            email: 'asicodia@gmail.com',
-            displayName: 'Soporte Admin',
-            role: 'owner'
-        };
-        sessionState.set({
-            isAuthenticated: true,
-            user: fallbackUser,
-            currentRole: 'owner'
-        });
-        return fallbackUser.uid;
+        return null;
     }
 
     /**
