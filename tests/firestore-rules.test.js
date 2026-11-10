@@ -2,7 +2,7 @@ import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebas
 import { readFile } from 'node:fs/promises';
 import { describe, it, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 const PROJECT_ID = 'buca-scdbs-test';
 let testEnv;
@@ -34,74 +34,44 @@ describe('B.U.C.A. AI - Firestore Security Rules Tests', () => {
 
     describe('1. Control de Acceso no Autenticado', () => {
         it('Debe rechazar lectura no autenticada de negocios', async () => {
-            const unauthedCtx = testEnv.unauthenticatedContext();
-            const db = unauthedCtx.firestore();
-            const docRef = doc(db, 'businesses', 'biz_123');
-            await assertFails(getDoc(docRef));
+            const db = testEnv.unauthenticatedContext().firestore();
+            await assertFails(getDoc(doc(db, 'businesses', 'biz_123')));
         });
 
         it('Debe rechazar escritura no autenticada de usuarios', async () => {
-            const unauthedCtx = testEnv.unauthenticatedContext();
-            const db = unauthedCtx.firestore();
-            const docRef = doc(db, 'users', 'user_123');
-            await assertFails(setDoc(docRef, { name: 'Intruder' }));
+            const db = testEnv.unauthenticatedContext().firestore();
+            await assertFails(setDoc(doc(db, 'users', 'user_123'), { name: 'Intruder' }));
         });
     });
 
     describe('2. Aislamiento Multi-Tenant (Negocios)', () => {
         it('Usuario A puede crear y leer su propio negocio', async () => {
-            const userA = testEnv.authenticatedContext('user_A');
-            const dbA = userA.firestore();
+            const dbA = testEnv.authenticatedContext('user_A').firestore();
             const bizRefA = doc(dbA, 'businesses', 'biz_A');
-
-            await assertSucceeds(setDoc(bizRefA, {
-                owner_id: 'user_A',
-                name: 'Negocio A',
-                status: 'active'
-            }));
-
+            await assertSucceeds(setDoc(bizRefA, { owner_id: 'user_A', name: 'Negocio A', status: 'active' }));
             await assertSucceeds(getDoc(bizRefA));
         });
 
         it('Usuario B NO puede leer ni modificar el negocio del Usuario A', async () => {
-            // Setup como admin
             await testEnv.withSecurityRulesDisabled(async (context) => {
-                const adminDb = context.firestore();
-                await setDoc(doc(adminDb, 'businesses', 'biz_A'), {
-                    owner_id: 'user_A',
-                    name: 'Negocio A',
-                    status: 'active'
+                await setDoc(doc(context.firestore(), 'businesses', 'biz_A'), {
+                    owner_id: 'user_A', name: 'Negocio A', status: 'active'
                 });
             });
-
-            const userB = testEnv.authenticatedContext('user_B');
-            const dbB = userB.firestore();
+            const dbB = testEnv.authenticatedContext('user_B').firestore();
             const bizRefA = doc(dbB, 'businesses', 'biz_A');
-
-            // Intento de lectura prohibido
             await assertFails(getDoc(bizRefA));
-
-            // Intento de actualización prohibido
             await assertFails(updateDoc(bizRefA, { name: 'Negocio Hackeado' }));
         });
 
         it('Usuario B NO puede acceder a subcolecciones del negocio de Usuario A', async () => {
             await testEnv.withSecurityRulesDisabled(async (context) => {
                 const adminDb = context.firestore();
-                await setDoc(doc(adminDb, 'businesses', 'biz_A'), {
-                    owner_id: 'user_A',
-                    name: 'Negocio A'
-                });
-                await setDoc(doc(adminDb, 'businesses', 'biz_A', 'sales', 'sale_001'), {
-                    amount: 500,
-                    client: 'Cliente VIP'
-                });
+                await setDoc(doc(adminDb, 'businesses', 'biz_A'), { owner_id: 'user_A', name: 'Negocio A' });
+                await setDoc(doc(adminDb, 'businesses', 'biz_A', 'sales', 'sale_001'), { amount: 500, client: 'VIP' });
             });
-
-            const userB = testEnv.authenticatedContext('user_B');
-            const dbB = userB.firestore();
+            const dbB = testEnv.authenticatedContext('user_B').firestore();
             const saleRef = doc(dbB, 'businesses', 'biz_A', 'sales', 'sale_001');
-
             await assertFails(getDoc(saleRef));
             await assertFails(setDoc(saleRef, { amount: 0 }));
         });
@@ -116,6 +86,17 @@ describe('B.U.C.A. AI - Firestore Security Rules Tests', () => {
             await assertFails(setDoc(userRef, {
                 email: 'user_a@empresa.com',
                 platform_role: 'super_admin'
+            }));
+        });
+
+        it('Usuario no puede auto-asignarse subscription_master al crear perfil', async () => {
+            const userA = testEnv.authenticatedContext('user_A');
+            const dbA = userA.firestore();
+            const userRef = doc(dbA, 'users', 'user_A');
+
+            await assertFails(setDoc(userRef, {
+                email: 'user_a@empresa.com',
+                subscription_master: 'enterprise_unlimited'
             }));
         });
 
@@ -194,6 +175,22 @@ describe('B.U.C.A. AI - Firestore Security Rules Tests', () => {
 
             await assertSucceeds(setDoc(ratesRef, { rate: 65.5, currency: 'USD' }));
         });
+
+        it('Usuario ajeno NO puede leer finance_rates de otro negocio', async () => {
+            await testEnv.withSecurityRulesDisabled(async (context) => {
+                const adminDb = context.firestore();
+                await setDoc(doc(adminDb, 'businesses', 'biz_A'), { owner_id: 'user_A' });
+                await setDoc(doc(adminDb, 'finance_rates', 'biz_A'), { rate: 65.5, currency: 'USD' });
+            });
+
+            const userB = testEnv.authenticatedContext('user_B');
+            const dbB = userB.firestore();
+            await assertFails(getDoc(doc(dbB, 'finance_rates', 'biz_A')));
+
+            const userA = testEnv.authenticatedContext('user_A');
+            const dbA = userA.firestore();
+            await assertSucceeds(getDoc(doc(dbA, 'finance_rates', 'biz_A')));
+        });
     });
 
     describe('5. Auditoría y Registro de Actividad', () => {
@@ -202,17 +199,78 @@ describe('B.U.C.A. AI - Firestore Security Rules Tests', () => {
             const dbA = userA.firestore();
             const logRef = doc(dbA, 'activity_log', 'log_001');
 
-            // Intenta loguear con UID ajeno
             await assertFails(setDoc(logRef, {
                 user_id: 'user_B',
                 action: 'DELETE_DATABASE'
             }));
 
-            // Loguear con su propio UID sí es válido
             await assertSucceeds(setDoc(logRef, {
                 user_id: 'user_A',
                 action: 'LOGIN'
             }));
+        });
+
+        it('Usuario A NO puede leer registros de activity_log del Usuario B', async () => {
+            await testEnv.withSecurityRulesDisabled(async (context) => {
+                const adminDb = context.firestore();
+                await setDoc(doc(adminDb, 'activity_log', 'log_B'), {
+                    user_id: 'user_B',
+                    action: 'PASSWORD_RESET'
+                });
+            });
+
+            const userA = testEnv.authenticatedContext('user_A');
+            const dbA = userA.firestore();
+            await assertFails(getDoc(doc(dbA, 'activity_log', 'log_B')));
+
+            const userB = testEnv.authenticatedContext('user_B');
+            const dbB = userB.firestore();
+            await assertSucceeds(getDoc(doc(dbB, 'activity_log', 'log_B')));
+        });
+    });
+
+    describe('6. Blindaje de Staff y Notificaciones', () => {
+        it('Staff puede crear producto pero NO eliminarlo (solo Owner)', async () => {
+            await testEnv.withSecurityRulesDisabled(async (context) => {
+                const adminDb = context.firestore();
+                await setDoc(doc(adminDb, 'businesses', 'biz_A'), { owner_id: 'user_A' });
+                await setDoc(doc(adminDb, 'businesses', 'biz_A', 'staff', 'user_staff'), { role: 'cashier' });
+            });
+
+            const staffCtx = testEnv.authenticatedContext('user_staff');
+            const dbStaff = staffCtx.firestore();
+            const prodRefStaff = doc(dbStaff, 'businesses', 'biz_A', 'products', 'prod_1');
+
+            await assertSucceeds(setDoc(prodRefStaff, { name: 'Café', price: 2.5 }));
+            await assertFails(deleteDoc(prodRefStaff));
+
+            const ownerCtx = testEnv.authenticatedContext('user_A');
+            const dbOwner = ownerCtx.firestore();
+            const prodRefOwner = doc(dbOwner, 'businesses', 'biz_A', 'products', 'prod_1');
+            await assertSucceeds(deleteDoc(prodRefOwner));
+        });
+
+        it('Aislamiento de notificaciones dirigidas a inquilinos específicos', async () => {
+            await testEnv.withSecurityRulesDisabled(async (context) => {
+                const adminDb = context.firestore();
+                await setDoc(doc(adminDb, 'businesses', 'biz_A'), { owner_id: 'user_A' });
+                await setDoc(doc(adminDb, 'notifications', 'notif_biz_A'), {
+                    title: 'Alerta Fiscal',
+                    target_tenant: 'biz_A'
+                });
+                await setDoc(doc(adminDb, 'notifications', 'notif_global'), {
+                    title: 'Mantenimiento del Sistema'
+                });
+            });
+
+            const userB = testEnv.authenticatedContext('user_B');
+            const dbB = userB.firestore();
+            await assertFails(getDoc(doc(dbB, 'notifications', 'notif_biz_A')));
+            await assertSucceeds(getDoc(doc(dbB, 'notifications', 'notif_global')));
+
+            const userA = testEnv.authenticatedContext('user_A');
+            const dbA = userA.firestore();
+            await assertSucceeds(getDoc(doc(dbA, 'notifications', 'notif_biz_A')));
         });
     });
 });

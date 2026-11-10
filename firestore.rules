@@ -19,17 +19,17 @@ service cloud.firestore {
     // Collection: /finance_rates/{tenantId}
     //   - Tenant-specific exchange rates and currency preferences.
     //   - Fields: rate (number), currency (string), updatedAt (string/timestamp), tenantId (string).
-    //   - Mutable by super admins or the business owner of the tenant.
+    //   - Readable by business staff or super admins; mutable by super admins or the business owner.
     //
     // Collection: /activity_log/{logId}
     //   - Immutable append-only audit log.
     //   - Fields: user_id (string, must match request.auth.uid), action, timestamp, details.
-    //   - Create only by owner of entry, updates/deletions forbidden.
+    //   - Read by log owner or super admin; create only by owner of entry, updates/deletions forbidden.
     //
     // Collection: /notifications/{notifId}
     //   - System-wide broadcast alerts and targeted notices.
     //   - Fields: title, message, type, timestamp, author_id, read_by (list of uids), target_tenant.
-    //   - Created by super admins.
+    //   - Created by super admins. Read by targeted tenant staff, global listeners, or super admins.
     //   - Updates restricted strictly to appending caller's own uid to `read_by`.
     //   - Deletions forbidden.
     //
@@ -52,17 +52,17 @@ service cloud.firestore {
     //   - /staff/{staffId}:
     //       Read by business staff or super admins; written by business owner or super admins.
     //   - /products/{productId}:
-    //       Read and write by business staff or super admins.
+    //       Read and written (create/update) by staff or super admins; delete by owner or super admins.
     //   - /sales/{saleId}:
     //       Read and created by business staff or super admins; update/delete by owner or super admins.
     //   - /inventory_lots/{lotId}:
-    //       Read and write by business staff or super admins.
+    //       Read and written (create/update) by staff or super admins; delete by owner or super admins.
     //   - /cash_shifts/{shiftId}:
-    //       Read and write by business staff or super admins.
+    //       Read and written (create/update) by staff or super admins; delete by owner or super admins.
     //   - /transactions/{txId}:
     //       Read and created by business staff or super admins; update/delete by owner or super admins.
     //   - /customers/{custId}:
-    //       Read and write by business staff or super admins.
+    //       Read and written (create/update) by staff or super admins; delete by owner or super admins.
     //
     // ===============================================================
 
@@ -80,8 +80,8 @@ service cloud.firestore {
 
     function isSuperAdmin() {
       return isAuthenticated() && (
-        request.auth.token.role == 'super_admin' ||
-        request.auth.token.admin == true
+        request.auth.token.get('role', '') == 'super_admin' ||
+        request.auth.token.get('admin', false) == true
       );
     }
 
@@ -117,20 +117,27 @@ service cloud.firestore {
 
     // c. Tasas cambiarias operativas (Módulo Finanzas)
     match /finance_rates/{tenantId} {
-      allow read: if isAuthenticated();
+      allow read: if isBusinessStaff(tenantId) || isSuperAdmin();
       allow write: if isSuperAdmin() || isBusinessOwner(tenantId);
     }
 
     // d. Registro de actividad y auditoría (Append-only)
     match /activity_log/{logId} {
-      allow read: if isAuthenticated();
+      allow read: if isSuperAdmin() || (isAuthenticated() && resource.data.user_id == request.auth.uid);
       allow create: if isAuthenticated() && request.resource.data.user_id == request.auth.uid;
       allow update, delete: if false;
     }
 
     // e. Notificaciones (Broadcast & System Alerts)
     match /notifications/{notifId} {
-      allow read: if isAuthenticated();
+      allow read: if isSuperAdmin() || (
+        isAuthenticated() && (
+          !('target_tenant' in resource.data) ||
+          resource.data.target_tenant == null ||
+          resource.data.target_tenant == '' ||
+          isBusinessStaff(resource.data.target_tenant)
+        )
+      );
       allow create: if isSuperAdmin();
       allow update: if isAuthenticated() && (
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read_by']) &&
@@ -144,8 +151,15 @@ service cloud.firestore {
     // f. Perfil de usuario y subcolecciones de espacios de trabajo
     match /users/{userId} {
       allow read: if isUser(userId) || isSuperAdmin();
-      allow create: if isUser(userId) && (!('platform_role' in request.resource.data) || request.resource.data.platform_role == 'user');
-      allow update: if (isUser(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['platform_role', 'role', 'subscription_master', 'is_admin', 'claims'])) || isSuperAdmin();
+      allow create: if isSuperAdmin() || (
+        isUser(userId) &&
+        !request.resource.data.keys().hasAny(['role', 'subscription_master', 'is_admin', 'claims']) &&
+        (!('platform_role' in request.resource.data) || request.resource.data.platform_role == 'user')
+      );
+      allow update: if isSuperAdmin() || (
+        isUser(userId) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['platform_role', 'role', 'subscription_master', 'is_admin', 'claims'])
+      );
       allow delete: if isSuperAdmin();
 
       match /workspaces/{bizId} {
@@ -169,7 +183,8 @@ service cloud.firestore {
       // Catálogo de Productos
       match /products/{productId} {
         allow read: if isBusinessStaff(bizId) || isSuperAdmin();
-        allow write: if isBusinessStaff(bizId) || isSuperAdmin();
+        allow create, update: if isBusinessStaff(bizId) || isSuperAdmin();
+        allow delete: if isBusinessOwner(bizId) || isSuperAdmin();
       }
 
       // Ventas / Facturación
@@ -182,13 +197,15 @@ service cloud.firestore {
       // Lotes de Inventario
       match /inventory_lots/{lotId} {
         allow read: if isBusinessStaff(bizId) || isSuperAdmin();
-        allow write: if isBusinessStaff(bizId) || isSuperAdmin();
+        allow create, update: if isBusinessStaff(bizId) || isSuperAdmin();
+        allow delete: if isBusinessOwner(bizId) || isSuperAdmin();
       }
 
       // Turnos de Caja (Cash Shifts)
       match /cash_shifts/{shiftId} {
         allow read: if isBusinessStaff(bizId) || isSuperAdmin();
-        allow write: if isBusinessStaff(bizId) || isSuperAdmin();
+        allow create, update: if isBusinessStaff(bizId) || isSuperAdmin();
+        allow delete: if isBusinessOwner(bizId) || isSuperAdmin();
       }
 
       // Transacciones Financieras
@@ -201,7 +218,8 @@ service cloud.firestore {
       // Directorio de Clientes
       match /customers/{custId} {
         allow read: if isBusinessStaff(bizId) || isSuperAdmin();
-        allow write: if isBusinessStaff(bizId) || isSuperAdmin();
+        allow create, update: if isBusinessStaff(bizId) || isSuperAdmin();
+        allow delete: if isBusinessOwner(bizId) || isSuperAdmin();
       }
     }
   }
