@@ -164,8 +164,9 @@ export const ProfileController = {
                 if (secretDisplay) secretDisplay.textContent = this._generatedSecret;
                 if (qrSlot) {
                     qrSlot.innerHTML = `
-                        <div class="p-2 bg-white rounded-3 shadow-sm border text-center">
-                            <img src="${qrUrl}" width="160" height="160" class="d-block" alt="Código QR Google Authenticator">
+                        <div class="p-3 bg-body-tertiary rounded-3 border text-center">
+                            <i class="bi bi-shield-lock text-primary fs-3 d-block mb-1"></i>
+                            <span class="x-small text-muted">Ingrese la clave manual en Google Authenticator</span>
                         </div>
                     `;
                 }
@@ -193,15 +194,11 @@ export const ProfileController = {
                     const isValid = await TOTPService.verifyCode(this._generatedSecret, code);
 
                     if (isValid) {
-                        // Persistir en Firestore
+                        // Persistir únicamente configuración de método, NUNCA el secreto en texto plano
                         await userService.updateSecurity({
                             two_factor_enabled: true,
-                            two_factor_method: 'totp',
-                            totp_secret: this._generatedSecret
+                            two_factor_method: 'totp'
                         });
-
-                        // Guardar en almacenamiento local como respaldo seguro
-                        localStorage.setItem(`buca_totp_${userEmail}`, this._generatedSecret);
 
                         this._showTotpFeedback('¡Google Authenticator vinculado exitosamente!', false);
                         if (toggle2FA) toggle2FA.checked = true;

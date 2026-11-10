@@ -23,8 +23,8 @@ export const userProfileFullTemplate = (userData = {}) => {
     const lastName = profile.lastName || 'Corp';
     const email = profile.mail || userData.email || 'asicodia@gmail.com';
     const username = profile.username || (email ? email.split('@')[0] : 'asicodia');
-    const platformRole = (profile.platform_role || 'super_admin').toUpperCase();
-    const activeMode = profile.active_mode || 'owner';
+    const platformRole = (profile.platform_role || 'user').toUpperCase();
+    const activeMode = profile.active_mode || 'user';
 
     const initials = (firstName && lastName) 
         ? `${firstName[0]}${lastName[0]}`.toUpperCase() 
@@ -117,7 +117,7 @@ export const userProfileFullTemplate = (userData = {}) => {
     };
 
     const securityData = {
-        pinCode: profile.pin_code || '',
+        pinCode: '',
         twoFactor: sec.two_factor_enabled !== false,
         recoveryMail: sec.recovery_email || email,
         twoFactorMethod: sec.two_factor_method || 'email',

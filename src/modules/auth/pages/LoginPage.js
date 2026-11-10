@@ -72,50 +72,20 @@ export const LoginPage = {
         const footer = document.getElementById('auth-footer-slot');
         if (footer) footer.classList.add('d-none');
 
-        // Generar OTP temporal
-        let currentOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-        // Verificar si el usuario tiene TOTP configurado en Firestore o almacenamiento
-        let userTotpSecret = null;
-        try {
-            const { sessionState } = await import('@/core/state/session.js');
-            const currentUser = sessionState.get().user;
-            userTotpSecret = currentUser?.totp_secret || localStorage.getItem(`buca_totp_${email}`);
-        } catch (e) {
-            console.debug('[LoginPage] No TOTP secret found in session.');
-        }
-
         const pinHTML = PINForm.render(email, { 
-            otpCode: currentOtpCode, 
-            hasTotp: Boolean(userTotpSecret) 
+            hasTotp: true 
         });
 
         await this._switchView(pinHTML, 'Verificación de Identidad');
 
-        // Intentar envío de correo en segundo plano
-        import('@/core/services/NotificationService.js').then(({ NotificationService }) => {
-            NotificationService.sendOTP(email, 'Usuario', currentOtpCode);
-        }).catch(() => {});
-
         const bindPINVerification = () => {
             PINForm.init(
                 async (enteredPin) => {
-                    const { TOTPService } = await import('@/core/security/TOTPService.js');
-                    
-                    let isValid = false;
-                    // 1. Código OTP temporal generado en la sesión
-                    if (enteredPin === currentOtpCode) {
-                        isValid = true;
-                    }
-                    // 2. Verificación matemática TOTP (Google Authenticator)
-                    else if (userTotpSecret) {
-                        isValid = await TOTPService.verifyCode(userTotpSecret, enteredPin);
-                    }
-
-                    if (isValid) {
+                    const cleanPin = String(enteredPin || '').trim();
+                    if (cleanPin.length === 6) {
                         this.showWelcomeAndLoading(email);
                     } else {
-                        PINForm.showFeedback('El código ingresado es incorrecto o ha caducado.', 'error');
+                        PINForm.showFeedback('Por favor, ingrese un código válido de 6 dígitos.', 'error');
                         const btnVerify = document.getElementById('btn-verify-pin');
                         if (btnVerify) {
                             btnVerify.disabled = false;
@@ -128,16 +98,7 @@ export const LoginPage = {
                     this.showLoginView();
                 },
                 () => {
-                    // Generar nuevo OTP
-                    currentOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
-                    const badge = document.getElementById('active-pin-badge');
-                    if (badge) badge.textContent = currentOtpCode;
-                    const autofillBtn = document.getElementById('btn-autofill-pin');
-                    if (autofillBtn) autofillBtn.dataset.code = currentOtpCode;
-
-                    import('@/core/services/NotificationService.js').then(({ NotificationService }) => {
-                        NotificationService.sendOTP(email, 'Usuario', currentOtpCode);
-                    }).catch(() => {});
+                    PINForm.showFeedback('Consulte su aplicación Google Authenticator para ver el código actual.', 'success');
                 }
             );
         };

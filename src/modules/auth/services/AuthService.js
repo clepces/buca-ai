@@ -14,7 +14,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 const DEMO_ROLES = {
     'admin@buca.com.ve': { role: 'super_admin', displayName: 'Super Admin Buca', id: 'nhWRyJPvuMUtiOYpCDAa7BwkNOx1' },
     'asicodia@gmail.com': { role: 'admin', displayName: 'Soporte Admin', id: 'QmojtAorrSORnIR652B2OQrLFnV2' },
-    'elexdy.publice@gmail.com': { role: 'owner', displayName: 'Owner Elexdy', id: 'rztfsvfopefrflIa6natw4tHFMh2' }
+    'elexdy.publice@gmail.com': { role: 'user', displayName: 'Owner Elexdy', id: 'rztfsvfopefrflIa6natw4tHFMh2' }
 };
 
 export const AuthService = {

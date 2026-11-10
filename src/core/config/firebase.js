@@ -1,136 +1,113 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator, doc, getDocFromServer } from 'firebase/firestore';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import { ENV } from './environment.js';
 import { CONFIG } from './config.js';
 import firebaseConfig from '../../../firebase-applet-config.json';
+import { uiState } from '@/core/state/ui.js';
 
 /**
  * Firebase Module - BUCA Modular
  * =========================================================================
- * Maneja la inicialización de Firebase siguiendo el patrón de arquitectura centralizada.
+ * Maneja la inicialización de Firebase con blindaje de emuladores para evitar
+ * escrituras accidentales en la base de datos de producción.
+ * =========================================================================
  */
 
-let app;
-let auth;
-let db;
-let functions;
+export let app = null;
+export let auth = null;
+export let db = null;
+export let functions = null;
 
-import { doc, getDocFromServer } from 'firebase/firestore';
-import { uiState } from '@/core/state/ui.js';
+let emulatorsConnected = false;
+let connectionTested = false;
 
 export const initFirebase = () => {
-    if (!db) {
-        try {
-            if (!app) {
-                app = initializeApp(firebaseConfig);
-            }
-            if (!auth) {
-                auth = getAuth(app);
-            }
-            const dbId = (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)')
-                ? firebaseConfig.firestoreDatabaseId
-                : undefined;
-            db = dbId ? getFirestore(app, dbId) : getFirestore(app);
-        } catch (e) {
-            console.error('[Firebase] Emergency sync init db error:', e);
-            db = getFirestore(app);
-        }
+    if (app && auth && db) {
+        return { app, auth, db, functions };
     }
 
-    if (!app) {
-        console.log('[Firebase] Initializing Modular Services...');
-        uiState.set({ isConnecting: true });
+    try {
+        app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+        auth = getAuth(app);
+
+        const dbId = (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)')
+            ? firebaseConfig.firestoreDatabaseId
+            : undefined;
+
+        db = dbId ? getFirestore(app, dbId) : getFirestore(app);
 
         try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            
-            const dbId = (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)')
-                ? firebaseConfig.firestoreDatabaseId
-                : undefined;
+            functions = getFunctions(app);
+        } catch (fnErr) {
+            console.warn('[Firebase] Functions init warning:', fnErr);
+        }
 
-            console.log(`[Firebase] Target Database ID: ${dbId || '(default)'}`);
+        // [BLINDAJE DE ENTORNO: FORZAR EMULADORES EN DESARROLLO/LOCALHOST]
+        const isProduction = CONFIG?.ENV?.IS_PRODUCTION || CONFIG?.ENV?.MODE === 'production' || ENV.IS_PROD;
+        const isLocalhost = typeof window !== 'undefined' && (
+            window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname.endsWith('.nip.io') ||
+            /^192\.168\.|^10\.|^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(window.location.hostname)
+        );
+
+        const shouldConnectEmulator = (!isProduction || isLocalhost || ENV.USE_EMULATOR) && !CONFIG?.ENV?.FORCE_PRODUCTION;
+
+        if (shouldConnectEmulator && !emulatorsConnected) {
+            const authHost = ENV.EMULATOR_HOSTS?.AUTH || 'http://127.0.0.1:9099';
+            const dbHost = ENV.EMULATOR_HOSTS?.FIRESTORE || '127.0.0.1';
+            const dbPort = ENV.EMULATOR_HOSTS?.FIRESTORE_PORT || 8080;
+            const fnPort = ENV.EMULATOR_HOSTS?.FUNCTIONS_PORT || 5001;
 
             try {
-                db = dbId ? getFirestore(app, dbId) : getFirestore(app);
-                console.log(`[Firebase] Firestore initialized on DB: ${dbId || '(default)'}`);
-            } catch (fsErr) {
-                console.error('[Firebase] Critical Firestore init failure:', fsErr);
-                uiState.set({ isConnecting: false, isOnline: false });
+                if (auth) connectAuthEmulator(auth, authHost, { disableWarnings: true });
+                if (db) connectFirestoreEmulator(db, dbHost, dbPort);
+                if (functions) connectFunctionsEmulator(functions, dbHost, fnPort);
+                emulatorsConnected = true;
+                console.warn(
+                    '%c 🛡️ BUCA SECURITY: EMULADORES ACTIVOS Y FORZADOS (Producción Bloqueada) ',
+                    'background: #2563eb; color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px;'
+                );
+            } catch (emuErr) {
+                console.error('[Firebase] Error conectando a emuladores locales:', emuErr);
+                if (isLocalhost || !isProduction) {
+                    uiState.set({ isConnecting: false, isOnline: false });
+                    throw new Error(
+                        '[BUCA SECURITY] Falló la conexión a los emuladores locales. Se aborta la operación para proteger la base de datos de producción.',
+                        { cause: emuErr }
+                    );
+                }
             }
+        }
 
-            // [CRITICAL] Validate Connection to Firestore
-            const testConnection = async () => {
-                try {
-                    console.log('[Firebase] Testing connection to Firestore...');
-                    await getDocFromServer(doc(db, '_internal_', 'connection_test'));
-                    console.log('[Firebase] Connection established successfully.');
+        // Prueba de conectividad segura contra el emulador local
+        if (!connectionTested && db) {
+            connectionTested = true;
+            uiState.set({ isConnecting: true });
+            getDocFromServer(doc(db, '_internal_', 'connection_test'))
+                .then(() => {
                     uiState.set({ isConnecting: false, isOnline: true });
-                } catch (error) {
+                })
+                .catch((err) => {
                     uiState.set({ isConnecting: false });
-                    
-                    if (error.code === 'unavailable') {
-                        console.error('[Firebase] CRITICAL: Firestore backend is unavailable.');
-                        uiState.set({ isOnline: false });
-                        
-                        if (dbId) {
-                            console.warn('[Firebase] Retrying with default database as fallback...');
-                            try {
-                                db = getFirestore(app);
-                                await getDocFromServer(doc(db, '_internal_', 'connection_test'));
-                                console.log('[Firebase] Success with default database.');
-                                uiState.set({ isOnline: true });
-                            } catch (e2) {
-                                console.error('[Firebase] Fallback failed:', e2.message);
-                            }
-                        }
-                    } else if (error.code === 'permission-denied') {
-                        console.log('[Firebase] Connection test: Network is reachable.');
+                    if (err.code === 'permission-denied') {
                         uiState.set({ isOnline: true });
+                    } else if (err.code === 'unavailable') {
+                        uiState.set({ isOnline: false });
+                        console.warn('[Firebase] Emulador Firestore no disponible:', err.message);
                     } else {
-                        console.warn('[Firebase] Connection test status:', error.code || error.message);
-                        uiState.set({ isOnline: navigator.onLine });
+                        uiState.set({ isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true });
                     }
-                }
-            };
-            testConnection();
-
-            try {
-                functions = getFunctions(app);
-            } catch (fnErr) {
-                console.warn('[Firebase] Functions init warning:', fnErr);
-            }
-
-            // [GUARDIÁN DE ENTORNO Y PRESUPUESTO]
-            const isProduction = CONFIG?.ENV?.IS_PRODUCTION || CONFIG?.ENV?.MODE === 'production';
-            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            
-            const shouldConnectEmulator = !isProduction && isLocalhost && (CONFIG?.ENV?.USE_EMULATOR || ENV.USE_EMULATOR);
-
-            if (shouldConnectEmulator) {
-                console.warn('%c 🛡️ BUCA SECURITY: MODO EMULADOR ACTIVO ', 'background: #2563eb; color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px;');
-                
-                const authHost = 'http://localhost:9099';
-                const dbHost = 'localhost';
-                const dbPort = 8080;
-                const fnPort = 5001;
-
-                try {
-                    if (auth) connectAuthEmulator(auth, authHost, { disableWarnings: true });
-                    if (db) connectFirestoreEmulator(db, dbHost, dbPort);
-                    if (functions) connectFunctionsEmulator(functions, dbHost, fnPort);
-                    console.log(`[Firebase] Emulators connected: Auth(${authHost}), Firestore(${dbHost}:${dbPort})`);
-                } catch (emuErr) {
-                    console.warn('[Firebase] Emulator connection warning:', emuErr);
-                }
-            }
-        } catch (error) {
-            console.error('[Firebase] Critical Initialization Error:', error);
-            uiState.set({ isConnecting: false, isOnline: navigator.onLine });
+                });
         }
+    } catch (error) {
+        console.error('[Firebase] Critical Initialization Error:', error);
+        uiState.set({ isConnecting: false, isOnline: false });
+        throw error;
     }
+
     return { app, auth, db, functions };
 };
 

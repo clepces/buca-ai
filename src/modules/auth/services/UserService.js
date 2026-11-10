@@ -93,7 +93,7 @@ class UserService {
                     tax_id: 'J-50192837-0',
                     fiscal_address: 'Av. Francisco de Miranda, Centro Empresarial B.U.C.A., Piso 12',
                     city_state: 'Caracas, Distrito Capital',
-                    platform_role: email === 'asicodia@gmail.com' ? 'super_admin' : (sessionUser.role || 'owner'),
+                    platform_role: email === 'asicodia@gmail.com' ? 'super_admin' : (sessionUser.role || 'user'),
                     active_mode: 'owner',
                     avatar_url: '',
                     timezone: 'America/Caracas',
@@ -202,7 +202,6 @@ class UserService {
                 'profile.fiscal_address': validData.fiscal_address || '',
                 'profile.city_state': validData.city_state || '',
                 'profile.active_mode': validData.active_mode,
-                'profile.pin_code': validData.pin_code || '',
                 'profile.session_timeout_mins': validData.session_timeout_mins ?? 30,
                 'profile.timezone': validData.timezone || 'America/Caracas',
                 'profile.preferred_currency': validData.preferred_currency || 'VES_BCV',
@@ -293,9 +292,6 @@ class UserService {
             }
             if (securityUpdates.two_factor_method) {
                 updates['security.two_factor_method'] = securityUpdates.two_factor_method;
-            }
-            if (securityUpdates.totp_secret) {
-                updates['security.totp_secret'] = securityUpdates.totp_secret;
             }
             if (securityUpdates.recovery_email) {
                 updates['security.recovery_email'] = securityUpdates.recovery_email;

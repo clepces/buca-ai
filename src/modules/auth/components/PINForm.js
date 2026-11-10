@@ -7,9 +7,6 @@
  */
 export const PINForm = {
     render(email = 'usuario@empresa.com', options = {}) {
-        const { otpCode = '', hasTotp = false } = options;
-        const displayCode = otpCode || '123456';
-
         return `
             <div class="pin-verification-container animate__animated animate__fadeInUp">
                 <div class="text-center mb-3">
@@ -18,25 +15,9 @@ export const PINForm = {
                     </div>
                     <h3 class="h6 fw-bold mb-1 text-main">Verificación de Seguridad (2FA)</h3>
                     <p class="text-muted small mb-1">
-                        ${hasTotp 
-                            ? 'Ingrese el código de su aplicación <strong>Google Authenticator</strong>:' 
-                            : 'Hemos generado su código de verificación para:'}
+                        Ingrese el código de su aplicación <strong>Google Authenticator</strong> para la cuenta:
                     </p>
                     <span class="fw-bold text-primary font-monospace">${email}</span>
-
-                    <!-- Indicador de Código y Autocompletado (Desarrollo / Respaldo Resiliente) -->
-                    <div class="mt-3 p-2 rounded-3 border-glass bg-white-5 text-center d-flex flex-column align-items-center justify-content-center gap-1.5" id="pin-assist-box">
-                        <div class="d-flex align-items-center gap-1 text-muted x-small">
-                            <i class="bi ${hasTotp ? 'bi-phone' : 'bi-key-fill'} text-warning"></i>
-                            <span>${hasTotp ? 'Google Authenticator o Código de Emergencia' : 'Código de Verificación Activo'}</span>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-center gap-2">
-                            <span class="fs-5 fw-bold font-monospace text-primary tracking-wide" id="active-pin-badge">${displayCode}</span>
-                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill x-small fw-bold" id="btn-autofill-pin" data-code="${displayCode}" title="Autocompletar código">
-                                <i class="bi bi-magic me-1"></i> Autocompletar
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="d-flex justify-content-between mb-4 pin-inputs-row gap-1.5" id="pin-inputs">
@@ -73,7 +54,6 @@ export const PINForm = {
         const btnVerify = document.getElementById('btn-verify-pin');
         const backBtn = document.getElementById('back-to-login');
         const resendBtn = document.getElementById('resend-pin');
-        const autofillBtn = document.getElementById('btn-autofill-pin');
 
         const populateCode = (codeStr) => {
             const digits = String(codeStr).replace(/\D/g, '').slice(0, 6);
@@ -86,17 +66,6 @@ export const PINForm = {
                 btnVerify.focus();
             }
         };
-
-        // Soporte para botón Autocompletar
-        if (autofillBtn) {
-            autofillBtn.onclick = () => {
-                const code = autofillBtn.dataset.code;
-                if (code) {
-                    populateCode(code);
-                    this.showFeedback('Código cargado. Presione Verificar.', 'success');
-                }
-            };
-        }
 
         // Auto-foco y navegación entre campos
         inputs.forEach((input, idx) => {

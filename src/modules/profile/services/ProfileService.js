@@ -1,11 +1,17 @@
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../../../core/config/firebase.js';
+import { initFirebase } from '@/core/config/firebase.js';
+
+const getDb = () => {
+  const { db } = initFirebase();
+  if (!db) throw new Error('[ProfileService] Firestore no disponible.');
+  return db;
+};
 
 export const ProfileService = {
   async getProfile(uid) {
     if (!uid) return null;
     try {
-      const ref = doc(db, 'users', uid);
+      const ref = doc(getDb(), 'users', uid);
       const snap = await getDoc(ref);
       if (snap.exists()) {
         return snap.data();
@@ -20,7 +26,7 @@ export const ProfileService = {
   async updateProfile(uid, data) {
     if (!uid) throw new Error('UID is required');
     try {
-      const ref = doc(db, 'users', uid);
+      const ref = doc(getDb(), 'users', uid);
       await updateDoc(ref, {
         ...data,
         updatedAt: new Date().toISOString()
@@ -35,7 +41,7 @@ export const ProfileService = {
   async createProfile(uid, data) {
     if (!uid) throw new Error('UID is required');
     try {
-      const ref = doc(db, 'users', uid);
+      const ref = doc(getDb(), 'users', uid);
       const payload = {
         uid,
         email: data.email || '',

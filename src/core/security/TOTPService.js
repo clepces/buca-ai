@@ -76,12 +76,13 @@ export const TOTPService = {
     },
 
     /**
-     * Retorna una URL para generar el código QR gratuito
-     * @param {string} otpauthURL 
+     * Generación de QR externa retirada por seguridad (prevención de fuga de secreto por HTTP GET).
+     * @param {string} _otpauthURL 
      * @returns {string}
      */
-    getQRCodeURL(otpauthURL) {
-        return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=8&data=${encodeURIComponent(otpauthURL)}`;
+    getQRCodeURL(_otpauthURL) {
+        console.warn('[TOTPService] Generador externo de QR desactivado para evitar exposición del secreto.');
+        return '';
     },
 
     /**
