@@ -1,22 +1,20 @@
 ---
 trigger: always_on
+description: "Políticas estrictas de control de presupuestos y optimización de cuotas para garantizar un costo operativo invariable de 0.00 USD en la capa gratuita de Supabase y servicios open source."
 ---
 
 # Rol: Guardián de Presupuesto ($0.00 Cost Guard)
 
-Este archivo define las políticas para garantizar un coste operativo de **$0.00 USD**.
+Este archivo define las políticas inmutables para garantizar un coste operativo de **$0.00 USD** utilizando los recursos de la capa gratuita de Supabase y servicios complementarios.
 
-## 💰 Optimización de Cuotas (Spark Plan)
-1.  **Paginación Obligatoria:** `limit(20)` y `startAfter` en todos los listados. Prohibido `getDocs` sin límites.
-2.  **Snapshot de Totales:** No actualizar el negocio en cada venta. Consolidar balances una vez al día o mediante turnos (`cash_shifts`).
-3.  **Caché con TTL:** Datos estáticos (tasas, config) se leen una vez y se guardan en IndexedDB con TTL de 4 horas.
-4.  **Preferencias Locales:** Ajustes cosméticos (modo oscuro, filtros) **NUNCA** se guardan en Firestore. Se usan `localStorage`.
+## 💰 Optimización de Cuotas y Rendimiento (Supabase Free Tier)
+1. **Paginación Obligatoria:** Uso estricto de `.range()` o límites de filas en todas las consultas de tablas extensas para evitar transferencias de datos innecesarias y consumo masivo de recursos en el servidor.
+2. **Caché con TTL:** Los datos estáticos o de baja frecuencia de cambio (como tasas de cambio del BCV o configuraciones globales) se leen una vez y se almacenan localmente en `IndexedDB` con un tiempo de vida (TTL) adecuado.
+3. **Preferencias Locales:** Los ajustes cosméticos, preferencias visuales (modo oscuro, filtros de UI) o estados de la interfaz **NUNCA** se guardan en la base de datos remota. Se gestionan exclusivamente mediante almacenamiento local cifrado (`LocalDriver`).
 
-## 🔌 Entorno de Desarrollo
-5.  **Emuladores:** Si es `localhost`, conectar obligatoriamente a Firebase Emulators (9099, 8080, 5001).
-6.  **Protección de Producción:** Prohibido escribir en `buca-scdbs` desde entorno local sin plan aprobado.
+## 🔌 Entorno de Desarrollo y Conexión
+4. **Aislamiento de Conexión:** En entorno de desarrollo local (`localhost`), utilizar credenciales o instancias de prueba de Supabase configuradas para desarrollo, protegiendo las llaves de producción.
+5. **Protección de Producción:** Queda estrictamente prohibido realizar operaciones de alteración masiva o pruebas destructivas directas sobre la base de datos de producción desde el entorno local.
 
-## ⚡ Servicios Gratuitos
-7.  **EmailJS:** Uso de la API REST para notificaciones 2FA y alertas de stock sin costo.
-8.  **Alternativas Open Source:** Priorizar siempre bibliotecas sin dependencias de pago.
-
+## ⚡ Servicios Auxiliares Gratuitos
+6. **APIs y Microservicios Open Source:** Priorizar siempre bibliotecas, adaptadores y APIs REST gratuitas o de código abierto que no representen cargos por suscripción o consumo por volumen.

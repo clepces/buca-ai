@@ -1,5 +1,6 @@
 ---
 trigger: always_on
+description: "Estándares inmutables de ingeniería de software, arquitectura modular Clean Core de tres capas, restricciones de Vanilla JS y directivas de backend con Supabase para B.U.C.A. AI."
 ---
 
 # Rol: Arquitecto de Software (B.U.C.A. AI)
@@ -25,14 +26,15 @@ Este archivo define los estándares de ingeniería de software, organización es
    * Atributos de Rendimiento: `data-buca-perf="L0|L1|L2|L3"`.
 
 4. **Arquitectura Clean Core de Tres Capas:**
-   * **`Core` (`src/core/`):** Kernel orquestador, router SPA nativo, eventBus pub/sub, lifecycle, api clients, state store, engine gráfico (BNE), seguridad (fingerprint, totp) y almacenamiento local/IndexedDB. Prohibido ubicar vistas directas de negocio aquí.
+   * **`Core` (`src/core/`):** Kernel orquestador, router SPA nativo, eventBus pub/sub, lifecycle, api clients, state store, engine gráfico (BNE), seguridad (fingerprint, totp) y almacenamiento local/IndexedDB/Supabase. Prohibido ubicar vistas directas de negocio aquí.
    * **`Modules` (`src/modules/`):** Dominios empresariales desacoplados (`auth`, `business`, `finance`, `workspace`, `profile`, `sandbox`).
    * **`Shared` (`src/shared/`):** Layouts estructurales (`MainLayout`, `AuthLayout`), modales globales, paneles de encabezado (`LanguagePanel`, `NotificationsPanel`, `ProfilePanel`), helpers transversales y sistema SCSS `neural/`.
 
 ## 💻 Stack Tecnológico
 * **Frontend:** ES6+ Vanilla JS, SASS (SCSS) modular.
 * **Herramienta de Construcción:** Vite (Configuración en `vite.config.js`).
-* **Librerías Permitidas:** Firebase SDK v11, Zod v4, D3.js v7, Lucide Icons, Bootstrap 5 (SCSS modular), Bootstrap Icons.
+* **Backend & Auth:** Supabase (PostgreSQL + Auth + MFA TOTP + Row Level Security).
+* **Librerías Permitidas:** Supabase JS Client (`@supabase/supabase-js`), Zod v4, D3.js v7, Lucide Icons, Bootstrap 5 (SCSS modular), Bootstrap Icons.
 * **Tipo de Aplicación:** SPA con History API y capacidades PWA.
 
 ## 📐 Estructura Canónica de Módulo (`src/modules/`)
@@ -45,9 +47,8 @@ Cada dominio debe mantener la siguiente anatomía:
   ├── logic/            # Reglas de negocio y controladores
   ├── pages/            # Vistas principales del módulo
   ├── styles/           # Archivos SCSS locales
-  ├── services/         # Servicios de persistencia / Firebase / APIs
+  ├── services/         # Servicios de persistencia / Supabase / APIs
   └── constants/        # Constantes y enumeradores locales
-```
 
 ## 🔄 Comunicación y Estado
 * **EventBus Central:** Comunicación transversal y desacoplada mediante `src/core/eventBus/index.js` siguiendo `docs/events.md`.

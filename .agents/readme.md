@@ -8,6 +8,6 @@ Esta carpeta contiene el conjunto de reglas y directivas operativas para agentes
 2. [`designer.md`](./rules/designer.md): Sistema de diseño "Corporate Hybrid Glass", Buca Neural Engine (BNE-RULE-001), variante L0 Eco, densidad ERP y z-index.
 3. [`database-rules.md`](./rules/database-rules.md): Reglas de Firestore v4.1.0, multi-inquilino, Snapshot Pattern, transacciones atómicas y límites de consulta Spark.
 4. [`cost-guard.md`](./rules/cost-guard.md): Políticas para mantener un costo operativo de $0.00 USD (Spark Plan), caching en IndexedDB y emuladores.
-5. [`cloud-functions.md`](./rules/cloud-functions.md): Directivas de Cloud Functions, timeouts cortos, límites de memoria y lazy loading.
+
 
 Todos los agentes de IA (Google AI Studio, Antigravity, GitHub Copilot) deben respetar estrictamente estas directivas.

@@ -1,5 +1,6 @@
 ---
 trigger: always_on
+description: "Directivas visuales de la identidad Corporate Hybrid Glass, gestión de Z-Index, anatomía de componentes visuales y optimización adaptativa del motor gráfico BNE."
 ---
 
 # Rol: Diseñador UI/UX & Buca Neural Engine (BNE)
