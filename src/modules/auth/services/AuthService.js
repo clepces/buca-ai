@@ -1,149 +1,184 @@
 /**
- * AuthService - Comunicador con Firebase Auth
+ * AuthService - Orquestador de Autenticación & MFA Nativo de Supabase
  * =========================================================================
- * Orquestador de la lógica de autenticación del módulo Auth.
+ * Maneja login con signInWithPassword, registro, recuperación y TOTP MFA
+ * oficial provisto por Supabase en capa gratuita.
  * =========================================================================
  */
-import FirebaseProvider from './FirebaseProvider.js';
+import { SupabaseProvider } from './SupabaseProvider.js';
+import { getSupabase } from '@/core/config/supabase.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { sessionState } from '@/core/state/session.js';
-import { CONFIG } from '@/core/config/config.js';
-import { initFirebase } from '@/core/config/firebase.js';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-
-const DEMO_ROLES = {
-    'admin@buca.com.ve': { role: 'super_admin', displayName: 'Super Admin Buca', id: 'nhWRyJPvuMUtiOYpCDAa7BwkNOx1' },
-    'asicodia@gmail.com': { role: 'admin', displayName: 'Soporte Admin', id: 'QmojtAorrSORnIR652B2OQrLFnV2' },
-    'elexdy.publice@gmail.com': { role: 'user', displayName: 'Owner Elexdy', id: 'rztfsvfopefrflIa6natw4tHFMh2' }
-};
 
 export const AuthService = {
     /**
-     * Devuelve la metadata de roles para usuarios demo.
-     * @param {string} email 
-     * @returns {Object}
-     */
-    getDemoMeta(email) {
-        return DEMO_ROLES[email] || {};
-    },
-
-    /**
-     * Intenta iniciar sesión y emite eventos según el resultado.
+     * Intenta iniciar sesión con email y contraseña.
      * @param {string} email 
      * @param {string} password 
-     * @returns {Promise<Object>} Resultado de la operación
      */
     async login(email, password) {
-        console.log(`[AuthService] -> Intentando login para ${email}`);
+        console.log(`[AuthService] -> Intentando login con Supabase para ${email}`);
 
         try {
-            const userCredential = await FirebaseProvider.login(email, password);
-            const user = userCredential.user;
-            
-            // Intentar cargar perfil desde Firestore
-            let profileData = {};
+            const data = await SupabaseProvider.login(email, password);
+            const user = data.user;
+
+            // Verificar si el usuario tiene un factor MFA TOTP pendiente (AAL2)
             try {
-                const { db } = initFirebase();
-                if (db) {
-                    const userDoc = await getDoc(doc(db, 'users', user.uid));
-                    if (userDoc.exists()) {
-                        profileData = userDoc.data().profile || {};
+                const aal = await SupabaseProvider.getAssuranceLevel();
+                if (aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+                    console.log('[AuthService] -> MFA Requerido (AAL2)');
+                    const factors = await SupabaseProvider.mfaListFactors();
+                    const totpFactor = factors?.totp?.[0];
+
+                    if (totpFactor) {
+                        eventBus.emit('auth:mfa-required', { factorId: totpFactor.id, user });
+                        return {
+                            success: false,
+                            mfaRequired: true,
+                            factorId: totpFactor.id,
+                            user
+                        };
                     }
                 }
-            } catch (err) {
-                console.warn('[AuthService] Could not fetch firestore profile:', err.message);
+            } catch (mfaCheckErr) {
+                console.warn('[AuthService] No se pudo evaluar nivel AAL:', mfaCheckErr.message);
             }
 
-            const tokenResult = await user.getIdTokenResult().catch(() => null);
-            const role = tokenResult?.claims?.role || profileData.platform_role || 'user';
-            
+            // Cargar o sincronizar perfil en la tabla 'profiles'
+            const profile = await this._loadOrCreateProfile(user);
+            const role = profile?.platform_role || 'user';
+
             sessionState.set({
                 isAuthenticated: true,
                 user: {
-                    uid: user.uid,
+                    uid: user.id,
                     email: user.email,
-                    displayName: profileData.firstName ? `${profileData.firstName} ${profileData.lastName || ''}`.trim() : (user.displayName || user.email.split('@')[0]),
-                    role: role
+                    displayName: profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : (user.user_metadata?.displayName || user.email.split('@')[0]),
+                    role
                 },
                 currentRole: role
             });
+
             eventBus.emit('auth:login-success', { user });
             return { success: true, user };
         } catch (error) {
             console.error('[AuthService] Fallo en autenticación:', error.message);
-            
-            if (error.code === 'auth/invalid-credential') {
-                console.warn('[AuthService] Credenciales inválidas. Verifique el email o contraseña.');
-            }
-
             eventBus.emit('auth:login-failed', { error });
-            return { success: false, error: error.code || error.message };
+            return { success: false, error: error.message };
         }
     },
 
     /**
-     * Registra un nuevo usuario en la plataforma.
+     * Resuelve el desafío de segundo factor TOTP para completar la autenticación.
+     * @param {string} factorId 
+     * @param {string} code 
+     */
+    async verifyMFAChallenge(factorId, code) {
+        try {
+            const challenge = await SupabaseProvider.mfaChallenge(factorId);
+            const result = await SupabaseProvider.mfaVerify(factorId, challenge.id, code);
+
+            const user = await SupabaseProvider.getUser();
+            const profile = await this._loadOrCreateProfile(user);
+            const role = profile?.platform_role || 'user';
+
+            sessionState.set({
+                isAuthenticated: true,
+                user: {
+                    uid: user.id,
+                    email: user.email,
+                    displayName: profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : (user.email.split('@')[0]),
+                    role
+                },
+                currentRole: role
+            });
+
+            eventBus.emit('auth:login-success', { user });
+            return { success: true, result };
+        } catch (error) {
+            console.error('[AuthService] Fallo verificando código MFA:', error.message);
+            return { success: false, error: error.message };
+        }
+    },
+
+    /**
+     * Inicia el enrolamiento de un factor TOTP para el usuario autenticado.
+     */
+    async enrollTOTP() {
+        try {
+            const enrollment = await SupabaseProvider.mfaEnroll('BUCA Authenticator');
+            return {
+                success: true,
+                factorId: enrollment.id,
+                secret: enrollment.totp.secret,
+                qrCode: enrollment.totp.qr_code,
+                uri: enrollment.totp.uri
+            };
+        } catch (error) {
+            console.error('[AuthService] Fallo enrolando TOTP:', error.message);
+            return { success: false, error: error.message };
+        }
+    },
+
+    /**
+     * Confirma la activación del factor TOTP con el primer código de prueba.
+     * @param {string} factorId 
+     * @param {string} code 
+     */
+    async confirmTOTPEnrollment(factorId, code) {
+        return await this.verifyMFAChallenge(factorId, code);
+    },
+
+    /**
+     * Registra un nuevo usuario en Supabase.
      */
     async register(email, password, name) {
         try {
-            const userCredential = await FirebaseProvider.register(email, password, name);
-            const user = userCredential.user;
-            
-            // Crear perfil inicial en Firestore
-            try {
-                const { db } = initFirebase();
-                if (db) {
-                    await setDoc(doc(db, 'users', user.uid), {
-                        uid: user.uid,
-                        profile: {
-                            firstName: name.split(' ')[0] || '',
-                            lastName: name.split(' ').slice(1).join(' ') || '',
-                            mail: email,
-                            platform_role: 'user',
-                            active_mode: 'light',
-                            created_at: serverTimestamp()
-                        }
-                    });
-                }
-            } catch (err) {
-                console.warn('[AuthService] Error creating user profile in Firestore:', err.message);
+            const data = await SupabaseProvider.register(email, password, name);
+            const user = data.user;
+
+            if (user) {
+                await this._loadOrCreateProfile(user, name);
+                sessionState.set({
+                    isAuthenticated: true,
+                    user: { uid: user.id, email: user.email, displayName: name, role: 'user' },
+                    currentRole: 'user'
+                });
+                eventBus.emit('auth:register-success', { user });
             }
 
-            sessionState.set({ isAuthenticated: true, user: { uid: user.uid, email: user.email, displayName: name, role: 'user' }, currentRole: 'user' });
-            eventBus.emit('auth:register-success', { user });
             return { success: true, user };
         } catch (error) {
             console.error('[AuthService] Fallo en registro:', error.message);
             eventBus.emit('auth:register-failed', { error });
-            return { success: false, error: error.code };
+            return { success: false, error: error.message };
         }
     },
 
     /**
-     * Envía enlace de recuperación.
+     * Envía correo de recuperación de contraseña.
      */
     async recoverPassword(email) {
         try {
-            await FirebaseProvider.recoverPassword(email);
+            await SupabaseProvider.recoverPassword(email);
             return { success: true };
         } catch (error) {
-            console.error('[AuthService] Fallo en recuperación:', error.message);
-            return { success: false, error: error.code };
+            return { success: false, error: error.message };
         }
     },
 
     /**
-     * Cierra la sesión y notifica al sistema.
+     * Cierra la sesión activa en Supabase y limpia el estado local.
      */
     async logout() {
         try {
-            await FirebaseProvider.logout().catch(() => {});
+            await SupabaseProvider.logout();
             sessionState.clear();
             try {
-                localStorage.clear();
-                sessionStorage.clear();
+                localStorage.removeItem('buca_supabase_auth');
             } catch {
-                // Silencioso: ignorar fallos de acceso al storage en iframes restringidos
+                // Silencioso
             }
             eventBus.emit('auth:logout-success');
         } catch (error) {
@@ -155,6 +190,47 @@ export const AuthService = {
         }
     },
 
+    /**
+     * Helper interno para sincronizar el perfil en la tabla 'profiles'.
+     * @private
+     */
+    async _loadOrCreateProfile(user, optionalName = '') {
+        if (!user || !user.id) return null;
+        const client = getSupabase();
+
+        try {
+            const { data, error } = await client
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .maybeSingle();
+
+            if (!error && data) return data;
+
+            // Crear perfil por defecto si no existe
+            const nameParts = (optionalName || user.user_metadata?.displayName || user.email.split('@')[0]).split(' ');
+            const defaultProfile = {
+                id: user.id,
+                email: user.email,
+                username: user.email.split('@')[0],
+                first_name: nameParts[0] || 'Operador',
+                last_name: nameParts.slice(1).join(' ') || 'BUCA',
+                platform_role: 'user',
+                active_mode: 'owner'
+            };
+
+            const { data: inserted } = await client
+                .from('profiles')
+                .insert(defaultProfile)
+                .select()
+                .maybeSingle();
+
+            return inserted || defaultProfile;
+        } catch (err) {
+            console.warn('[AuthService] Error sincronizando perfil:', err.message);
+            return null;
+        }
+    }
 };
 
 export default AuthService;

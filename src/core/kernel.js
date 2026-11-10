@@ -9,8 +9,7 @@ import { Header } from '@/shared/ui/layouts/components/TopBar.js';
 import { Dock } from '@/shared/ui/layouts/components/DockableNavbar.js';
 import { MainLayout } from '@/shared/ui/layouts/MainLayout.js';
 import GraphicsEngine from '@/core/engine/engine.js';
-import { initFirebase } from '@/core/config/firebase.js';
-import EmulatorModal from '@/shared/ui/overlays/EmulatorModal.js';
+import { initSupabase } from '@/core/config/supabase.js';
 import { Logger } from '@/shared/utils/logger.js';
 import { ThemeManager } from '@/core/services/ThemeManager.js';
 import { NotificationService } from '@/core/services/NotificationService.js';
@@ -65,8 +64,8 @@ class BucaKernel {
             updateStatus(45, 'Estableciendo Conexión con la Base de Datos (Segundo Plano)...');
 
             // 3. Cloud & Services (Non-blocking background sync)
-            try { initFirebase(); } catch (e) {
-                Logger.warn('[Kernel] Firebase initialization deferred:', e.message);
+            try { initSupabase(); } catch (e) {
+                Logger.warn('[Kernel] Supabase initialization deferred:', e.message);
             }
             updateStatus(60, 'Cargando Preferencias de Usuario & Tema...');
 
@@ -125,7 +124,6 @@ class BucaKernel {
             updateStatus(95, 'Sincronizando Rutas & Destino Final...');
             await router.init(routes);
             this.startTelemetry();
-            this.handleEmulatorWarning();
 
             this.isInitialized = true;
             PerformanceStorage.recordLoadTime(performance.now(), GraphicsEngine.profile);
@@ -210,13 +208,6 @@ class BucaKernel {
         const pct = document.getElementById('splash-percentage');
         if (pct) pct.textContent = `${percent}%`;
         eventBus.emit('kernel:boot:progress', percent);
-    }
-
-    handleEmulatorWarning() {
-        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') return;
-        storage.get('emulator_warning_accepted').then(accepted => {
-            if (!accepted) eventBus.on('kernel:ready', () => setTimeout(() => EmulatorModal.show(), 1500));
-        });
     }
 
     destroy() {

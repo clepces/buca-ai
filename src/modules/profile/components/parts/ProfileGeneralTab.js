@@ -67,9 +67,9 @@ export const ProfileGeneralTab = (data = {}) => {
                         <div class="col-12 col-md-6">
                             <label class="form-label small fw-bold text-muted text-uppercase mb-1">
                                 Correo Electrónico Principal <span class="text-danger">*</span>
-                                <i class="bi bi-info-circle text-success ms-1" title="Correo verificado en Google Firebase Auth"></i>
+                                <i class="bi bi-info-circle text-success ms-1" title="Correo verificado en Supabase Auth"></i>
                             </label>
-                            <input type="email" id="prof-email" class="form-control glass-input opacity-75" value="${escapeHTML(email)}" readonly title="Vinculado a Google Firebase Auth">
+                            <input type="email" id="prof-email" class="form-control glass-input opacity-75" value="${escapeHTML(email)}" readonly title="Vinculado a Supabase Auth">
                             <div class="form-text text-muted profile-subtext-micro">Vinculado a la cuenta de autenticación.</div>
                         </div>
                         

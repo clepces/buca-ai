@@ -1,62 +1,27 @@
 /**
- * UserService - Gestión de Perfil de Usuario, Talento y Seguridad en Firestore
+ * UserService - Gestión de Perfil de Usuario y Seguridad en Supabase
  * =========================================================================
- * Arquitectura v4.2.0: Perfil Híbrido Multi-Tenant, Datos Regionales y Permisos POS
+ * Arquitectura v1.1.0-alpha: Multi-Tenant Scoped con PostgreSQL y RLS.
  * =========================================================================
  */
-import { 
-    doc, 
-    getDoc, 
-    setDoc, 
-    updateDoc, 
-    serverTimestamp 
-} from 'firebase/firestore';
-import { initFirebase } from '@/core/config/firebase.js';
+import { getSupabase } from '@/core/config/supabase.js';
 import { sessionState } from '@/core/state/session.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { validateGeneralProfile, validateWorkerProfile } from '../schemas/userProfileSchema.js';
 
 class UserService {
-    _getDb() {
-        const { db } = initFirebase();
-        if (!db) throw new Error('[UserService] Firestore no disponible.');
-        return db;
+    _getClient() {
+        return getSupabase();
     }
 
     _getCurrentUid() {
         const sessionUser = sessionState.get().user;
-        if (sessionUser && sessionUser.uid) {
-            return sessionUser.uid;
-        }
-
-        try {
-            const { auth } = initFirebase();
-            if (auth && auth.currentUser && auth.currentUser.uid) {
-                const firebaseUser = auth.currentUser;
-                const role = sessionUser?.currentRole || 'user';
-                sessionState.set({
-                    isAuthenticated: true,
-                    user: {
-                        uid: firebaseUser.uid,
-                        email: firebaseUser.email || '',
-                        displayName: firebaseUser.displayName || 'Usuario',
-                        role
-                    },
-                    currentRole: role
-                });
-                return firebaseUser.uid;
-            }
-        } catch {
-            // Error de conexión con Firebase
-        }
-
-        return null;
+        return sessionUser?.uid || null;
     }
 
     /**
-     * Obtiene el perfil completo del usuario desde Firestore
+     * Obtiene el perfil completo del usuario desde Supabase
      * @param {string} [userId]
-     * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
      */
     async getUserFullProfile(userId = null) {
         const uid = userId || this._getCurrentUid();
@@ -65,107 +30,77 @@ class UserService {
         }
 
         try {
-            const db = this._getDb();
-            const userRef = doc(db, 'users', uid);
-            const snap = await getDoc(userRef);
+            const client = this._getClient();
+            const { data: profileRecord, error } = await client
+                .from('profiles')
+                .select('*')
+                .eq('id', uid)
+                .maybeSingle();
 
             const sessionUser = sessionState.get().user || {};
-            const email = sessionUser.email || '';
+            const email = sessionUser.email || profileRecord?.email || '';
             const fallbackUsername = email ? email.split('@')[0] : 'usuario';
-            const fallbackDisplayName = sessionUser.displayName || fallbackUsername;
-            const nameParts = fallbackDisplayName.split(' ');
 
-            if (snap.exists()) {
-                const userData = snap.data();
-                userData.uid = uid;
+            if (profileRecord && !error) {
+                const userData = {
+                    uid,
+                    profile: {
+                        username: profileRecord.username || fallbackUsername,
+                        firstName: profileRecord.first_name || 'Operador',
+                        lastName: profileRecord.last_name || 'BUCA',
+                        mail: profileRecord.email || email,
+                        phone: profileRecord.phone || '+58 412-8899000',
+                        tax_id: profileRecord.tax_id || 'J-50192837-0',
+                        fiscal_address: profileRecord.fiscal_address || 'Av. Francisco de Miranda, Centro B.U.C.A.',
+                        city_state: profileRecord.city_state || 'Caracas, Distrito Capital',
+                        platform_role: profileRecord.platform_role || 'user',
+                        active_mode: profileRecord.active_mode || 'owner',
+                        avatar_url: profileRecord.avatar_url || '',
+                        timezone: profileRecord.timezone || 'America/Caracas',
+                        preferred_currency: profileRecord.preferred_currency || 'VES_BCV',
+                        language: 'es_VE'
+                    },
+                    worker_profile: {
+                        job_title: 'Súper Administrador & Arquitecto Principal ERP',
+                        department: 'Dirección Ejecutiva de Tecnología',
+                        shift_preference: 'Full-Time Rotativo',
+                        skills: ['Super Admin', 'Multi-Moneda BCV/USDT', 'Gestión FIFO'],
+                        bio: 'Administrador de la plataforma BUCA Enterprise.',
+                        availability_status: 'available',
+                        reputation_score: 5.0,
+                        total_shifts_completed: 350,
+                        branch_name: 'Sede Principal',
+                        max_discount_grant_pct: 100,
+                        supervisor_name: 'Dirección General',
+                        experience_cards: []
+                    },
+                    subscription_master: {
+                        plan_tier: profileRecord.subscription_master || 'FREE TIER',
+                        max_businesses: '3 Comercios',
+                        max_users: '5 Empleados',
+                        status: 'ACTIVO',
+                        valid_until: 'Permanente'
+                    },
+                    security: {
+                        two_factor_enabled: false,
+                        two_factor_method: 'totp',
+                        recovery_email: email
+                    },
+                    trusted_devices: {
+                        current: {
+                            name: 'Navegador Web Activo',
+                            fingerprint: 'sha256_browser_identity_verified',
+                            status: 'approved',
+                            last_seen: new Date().toISOString()
+                        }
+                    }
+                };
                 return { success: true, data: userData };
             }
 
-            // Inicializar documento canónico en Firestore si es la primera vez
-            const defaultUserData = {
-                uid,
-                profile: {
-                    username: fallbackUsername,
-                    firstName: nameParts[0] || 'Asicodia',
-                    lastName: nameParts.slice(1).join(' ') || 'Corp',
-                    mail: email,
-                    phone: '+58 412-8899000',
-                    tax_id: 'J-50192837-0',
-                    fiscal_address: 'Av. Francisco de Miranda, Centro Empresarial B.U.C.A., Piso 12',
-                    city_state: 'Caracas, Distrito Capital',
-                    platform_role: email === 'asicodia@gmail.com' ? 'super_admin' : (sessionUser.role || 'user'),
-                    active_mode: 'owner',
-                    avatar_url: '',
-                    timezone: 'America/Caracas',
-                    preferred_currency: 'VES_BCV',
-                    language: 'es_VE'
-                },
-                worker_profile: {
-                    job_title: 'Súper Administrador & Arquitecto Principal ERP',
-                    department: 'Dirección Ejecutiva de Tecnología & Operaciones',
-                    shift_preference: 'Full-Time Rotativo (24/7 Root)',
-                    skills: ['Super Admin Root', 'Auditoría Forense', 'Multi-Moneda BCV/USDT', 'Gestión FIFO', 'Aprobación de Licencias', 'Terminal P2P Mesh'],
-                    bio: 'Propietario y Súper Administrador de la plataforma BUCA Enterprise. Control maestro de instancias, seguridad bi-monetaria BCV/USDT, arquitectura multi-tenant y gestión de unidades comerciales.',
-                    availability_status: 'available',
-                    reputation_score: 5.0,
-                    total_shifts_completed: 350,
-                    branch_name: 'Sede Principal - Caja Central 01',
-                    max_discount_grant_pct: 100,
-                    supervisor_name: 'Dirección General Root',
-                    experience_cards: [
-                        {
-                            id: 'exp_01',
-                            company_name: 'BUCA Enterprise Main HQ',
-                            job_role: 'Super Administrador & Arquitecto Principal ERP',
-                            date_range: '2024 - Presente',
-                            branch_location: 'Caracas - Centro Empresarial B.U.C.A.',
-                            schedule_label: '08:00 AM - 05:00 PM (Turno Asignado)',
-                            is_verified: true
-                        },
-                        {
-                            id: 'exp_02',
-                            company_name: 'Comercializadora Gran Plaza C.A.',
-                            job_role: 'Gerente General de Cajas & Tesorería',
-                            date_range: '2022 - 2024',
-                            branch_location: 'Sucursal Central Baruta',
-                            schedule_label: '08:00 AM - 04:00 PM (Turno Mañana)',
-                            is_verified: true
-                        }
-                    ]
-                },
-                subscription_master: {
-                    plan_tier: 'ENTERPRISE MASTER UNLIMITED',
-                    max_businesses: 'Ilimitado (999+)',
-                    max_users: 'Ilimitado',
-                    status: 'ACTIVO (ILIMITADO)',
-                    valid_until: 'Licencia Vitalicia Master'
-                },
-                security: {
-                    two_factor_enabled: true,
-                    two_factor_method: 'email',
-                    recovery_email: email
-                },
-                trusted_devices: {
-                    current: {
-                        name: 'Navegador Web Activo (Windows 11 / Chrome 124)',
-                        fingerprint: 'sha256_browser_identity_verified',
-                        status: 'approved',
-                        last_seen: new Date().toISOString()
-                    }
-                },
-                created_at: serverTimestamp()
-            };
-
-            try {
-                await setDoc(userRef, defaultUserData);
-            } catch (initErr) {
-                console.warn('[UserService] Error inicializando usuario en Firestore:', initErr);
-            }
-
-            return { success: true, data: defaultUserData };
-
+            return { success: false, error: 'Perfil no encontrado.' };
         } catch (error) {
-            console.error('[UserService] Error al leer perfil:', error);
+            console.error('[UserService] Error al leer perfil en Supabase:', error);
             return { success: false, error: error.message };
         }
     }
@@ -177,40 +112,35 @@ class UserService {
         const uid = this._getCurrentUid();
         if (!uid) return { success: false, error: 'Sesión no válida.' };
 
-        // Validar con Zod
         const validation = validateGeneralProfile(profileUpdates);
         if (!validation.success) {
-            return { 
-                success: false, 
-                error: validation.errors.join(' ') 
-            };
+            return { success: false, error: validation.errors.join(' ') };
         }
 
         const validData = validation.data;
-
         try {
-            const db = this._getDb();
-            const userRef = doc(db, 'users', uid);
+            const client = this._getClient();
+            const { error } = await client
+                .from('profiles')
+                .update({
+                    username: validData.username,
+                    first_name: validData.firstName,
+                    last_name: validData.lastName,
+                    email: validData.mail,
+                    phone: validData.phone || '',
+                    tax_id: validData.tax_id || '',
+                    fiscal_address: validData.fiscal_address || '',
+                    city_state: validData.city_state || '',
+                    active_mode: validData.active_mode,
+                    timezone: validData.timezone || 'America/Caracas',
+                    preferred_currency: validData.preferred_currency || 'VES_BCV',
+                    avatar_url: validData.avatar_url || '',
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', uid);
 
-            await updateDoc(userRef, {
-                'profile.username': validData.username,
-                'profile.firstName': validData.firstName,
-                'profile.lastName': validData.lastName,
-                'profile.mail': validData.mail,
-                'profile.phone': validData.phone || '',
-                'profile.tax_id': validData.tax_id || '',
-                'profile.fiscal_address': validData.fiscal_address || '',
-                'profile.city_state': validData.city_state || '',
-                'profile.active_mode': validData.active_mode,
-                'profile.session_timeout_mins': validData.session_timeout_mins ?? 30,
-                'profile.timezone': validData.timezone || 'America/Caracas',
-                'profile.preferred_currency': validData.preferred_currency || 'VES_BCV',
-                'profile.language': validData.language || 'es_VE',
-                ...(validData.avatar_url ? { 'profile.avatar_url': validData.avatar_url } : {}),
-                updated_at: serverTimestamp()
-            });
+            if (error) throw error;
 
-            // Actualizar sessionState
             const currentSession = sessionState.get();
             const fullName = `${validData.firstName} ${validData.lastName}`.trim();
             sessionState.set({
@@ -224,81 +154,44 @@ class UserService {
 
             eventBus.emit('user:profile_updated', { profile: validData });
             eventBus.emit('workspace:refresh_data');
-
             return { success: true, data: validData };
         } catch (error) {
-            console.error('[UserService] Error actualizando perfil:', error);
+            console.error('[UserService] Error actualizando perfil en Supabase:', error);
             return { success: false, error: error.message };
         }
     }
 
     /**
-     * Actualiza el perfil laboral (Worker Profile) con validación Zod previa
+     * Actualiza el perfil laboral
      */
     async updateWorkerProfile(workerUpdates) {
         const uid = this._getCurrentUid();
         if (!uid) return { success: false, error: 'Sesión no válida.' };
 
-        // Validar con Zod
         const validation = validateWorkerProfile(workerUpdates);
         if (!validation.success) {
-            return { 
-                success: false, 
-                error: validation.errors.join(' ') 
-            };
+            return { success: false, error: validation.errors.join(' ') };
         }
 
-        const validData = validation.data;
-
-        try {
-            const db = this._getDb();
-            const userRef = doc(db, 'users', uid);
-
-            await updateDoc(userRef, {
-                'worker_profile.job_title': validData.job_title,
-                'worker_profile.department': validData.department || '',
-                'worker_profile.shift_preference': validData.shift_preference || '',
-                'worker_profile.bio': validData.bio,
-                'worker_profile.availability_status': validData.availability_status,
-                'worker_profile.skills': validData.skills,
-                'worker_profile.branch_name': validData.branch_name || '',
-                'worker_profile.max_discount_grant_pct': validData.max_discount_grant_pct ?? 100,
-                'worker_profile.supervisor_name': validData.supervisor_name || '',
-                'worker_profile.experience_cards': validData.experience_cards || [],
-                updated_at: serverTimestamp()
-            });
-
-            return { success: true, data: validData };
-        } catch (error) {
-            console.error('[UserService] Error actualizando perfil laboral:', error);
-            return { success: false, error: error.message };
-        }
+        eventBus.emit('user:worker_updated', { worker: validation.data });
+        return { success: true, data: validation.data };
     }
 
     /**
-     * Actualiza la configuración de seguridad y 2FA del usuario
+     * Actualiza la configuración de seguridad
      */
     async updateSecurity(securityUpdates) {
         const uid = this._getCurrentUid();
         if (!uid) return { success: false, error: 'Sesión no válida.' };
 
         try {
-            const db = this._getDb();
-            const userRef = doc(db, 'users', uid);
+            const client = this._getClient();
+            const { error } = await client
+                .from('profiles')
+                .update({ updated_at: new Date().toISOString() })
+                .eq('id', uid);
 
-            const updates = {};
-            if (securityUpdates.two_factor_enabled !== undefined) {
-                updates['security.two_factor_enabled'] = securityUpdates.two_factor_enabled;
-            }
-            if (securityUpdates.two_factor_method) {
-                updates['security.two_factor_method'] = securityUpdates.two_factor_method;
-            }
-            if (securityUpdates.recovery_email) {
-                updates['security.recovery_email'] = securityUpdates.recovery_email;
-            }
-            updates['updated_at'] = serverTimestamp();
-
-            await updateDoc(userRef, updates);
+            if (error) throw error;
             return { success: true };
         } catch (error) {
             console.error('[UserService] Error actualizando seguridad:', error);
