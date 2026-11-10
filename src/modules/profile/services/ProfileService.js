@@ -1,24 +1,33 @@
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { initFirebase } from '@/core/config/firebase.js';
-
-const getDb = () => {
-  const { db } = initFirebase();
-  if (!db) throw new Error('[ProfileService] Firestore no disponible.');
-  return db;
-};
+/**
+ * ProfileService - Gestión de Perfiles de Usuario (Supabase Native)
+ * =========================================================================
+ * Persistencia en tabla 'profiles' con Row Level Security (RLS).
+ * =========================================================================
+ */
+import { getSupabase } from '@/core/config/supabase.js';
 
 export const ProfileService = {
+  _getClient() {
+    return getSupabase();
+  },
+
   async getProfile(uid) {
     if (!uid) return null;
     try {
-      const ref = doc(getDb(), 'users', uid);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        return snap.data();
+      const client = this._getClient();
+      const { data, error } = await client
+        .from('profiles')
+        .select('*')
+        .eq('id', uid)
+        .maybeSingle();
+
+      if (error) {
+        console.warn('[ProfileService] Error fetching profile:', error.message);
+        return null;
       }
-      return null;
+      return data;
     } catch (err) {
-      console.error('[ProfileService] Error fetching profile:', err);
+      console.error('[ProfileService] Unexpected profile fetch error:', err);
       return null;
     }
   },
@@ -26,14 +35,19 @@ export const ProfileService = {
   async updateProfile(uid, data) {
     if (!uid) throw new Error('UID is required');
     try {
-      const ref = doc(getDb(), 'users', uid);
-      await updateDoc(ref, {
-        ...data,
-        updatedAt: new Date().toISOString()
-      });
+      const client = this._getClient();
+      const { error } = await client
+        .from('profiles')
+        .update({
+          ...data,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', uid);
+
+      if (error) throw error;
       return true;
     } catch (err) {
-      console.error('[ProfileService] Error updating profile:', err);
+      console.error('[ProfileService] Error updating profile:', err.message || err);
       throw err;
     }
   },
@@ -41,21 +55,29 @@ export const ProfileService = {
   async createProfile(uid, data) {
     if (!uid) throw new Error('UID is required');
     try {
-      const ref = doc(getDb(), 'users', uid);
+      const client = this._getClient();
       const payload = {
-        uid,
+        id: uid,
         email: data.email || '',
-        displayName: data.displayName || 'Operador BUSA',
-        role: data.role || 'operator',
-        level: data.level || 1,
-        createdAt: new Date().toISOString(),
+        first_name: data.displayName || 'Operador BUCA',
+        platform_role: data.role || 'user',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
         ...data
       };
-      await setDoc(ref, payload, { merge: true });
-      return payload;
+      const { data: inserted, error } = await client
+        .from('profiles')
+        .upsert(payload, { onConflict: 'id' })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return inserted;
     } catch (err) {
-      console.error('[ProfileService] Error creating profile:', err);
+      console.error('[ProfileService] Error creating profile:', err.message || err);
       throw err;
     }
   }
 };
+
+export default ProfileService;

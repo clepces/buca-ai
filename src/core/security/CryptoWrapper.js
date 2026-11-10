@@ -7,7 +7,7 @@
  * Esto protege contra inspección casual o XSS de bajo nivel.
  */
 
-const SECRET_KEY = import.meta.env.VITE_CRYPTO_SECRET_KEY || 'buca_fallback_key_2026';
+const SECRET_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CRYPTO_SECRET_KEY) || 'buca_fallback_key_2026';
 
 export const CryptoWrapper = {
     /**

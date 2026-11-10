@@ -14,7 +14,7 @@ class UIState extends BaseState {
 
         super({
             activeModal: null,
-            isOnline: navigator.onLine,
+            isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
             isSyncing: false,
             isConnecting: true,
             isLoading: false,

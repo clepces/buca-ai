@@ -1,55 +1,62 @@
 /**
- * FinanceRepository - Repositorio de Persistencia Financiera BUSA-I
+ * FinanceRepository - Repositorio de Persistencia Financiera BUSA-I (Supabase Native)
  * =========================================================================
- * Maneja el almacenamiento de tasas cambiarias personalizadas y preferencias de divisas en Firestore.
+ * Maneja el almacenamiento de tasas cambiarias en la tabla 'finance_rates' de Supabase.
+ * =========================================================================
  */
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { initFirebase } from '@/core/config/firebase.js';
-
-const getDb = () => {
-    const { db } = initFirebase();
-    if (!db) throw new Error('[FinanceRepository] Firestore DB no inicializada.');
-    return db;
-};
+import { getSupabase } from '@/core/config/supabase.js';
 
 export const FinanceRepository = {
+    _getClient() {
+        return getSupabase();
+    },
+
     /**
-     * Guarda la tasa operativa personalizada en Firestore.
+     * Guarda la tasa operativa personalizada en Supabase.
      * @param {string} tenantId 
      * @param {number} rate 
      * @param {string} currency 
      */
     async saveCustomRate(tenantId = 'default', rate, currency = 'USD') {
         try {
-            const db = getDb();
-            const ref = doc(db, 'finance_rates', tenantId);
+            const client = this._getClient();
             const data = {
+                tenant_id: tenantId,
                 rate,
                 currency,
-                updatedAt: new Date().toISOString(),
-                tenantId
+                updated_at: new Date().toISOString()
             };
-            await setDoc(ref, data, { merge: true });
+
+            const { error } = await client
+                .from('finance_rates')
+                .upsert(data, { onConflict: 'tenant_id' });
+
+            if (error) throw error;
             return data;
         } catch (err) {
-            console.error('[FinanceRepository] Error saving custom rate:', err);
+            console.error('[FinanceRepository] Error saving custom rate in Supabase:', err.message || err);
             throw err;
         }
     },
 
     /**
-     * Obtiene las preferencias de tasa cambiaria del tenant.
+     * Obtiene las preferencias de tasa cambiaria del tenant desde Supabase.
      * @param {string} tenantId 
      */
     async getTenantRate(tenantId = 'default') {
         try {
-            const db = getDb();
-            const ref = doc(db, 'finance_rates', tenantId);
-            const snap = await getDoc(ref);
-            if (snap.exists()) {
-                return snap.data();
+            const client = this._getClient();
+            const { data, error } = await client
+                .from('finance_rates')
+                .select('*')
+                .eq('tenant_id', tenantId)
+                .maybeSingle();
+
+            if (error) {
+                console.warn('[FinanceRepository] Warning getting tenant rate from Supabase:', error.message);
+                return null;
             }
-            return null;
+            return data;
         } catch (err) {
             console.warn('[FinanceRepository] Warning getting tenant rate:', err.message);
             return null;

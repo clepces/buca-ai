@@ -7,7 +7,7 @@ export const CONFIG = {
     APP: {
         NAME: 'BUCA Website',
         DESCRIPTION: 'Buca Neural Engine Presentation',
-        VERSION: '5.2.0',
+        VERSION: '1.1.0-alpha',
         SUPPORT_EMAIL: 'support@buca.com.ve',
         WEBSITE: 'https://buca.com.ve'
     },
@@ -17,14 +17,12 @@ export const CONFIG = {
      * - IS_PRODUCTION: false (desarrollo activo) | true (producción - desactiva cuentas demo y accesos temporales)
      * - IS_DEVELOPMENT: true cuando se trabaja localmente o en entornos de prueba
      * - SHOW_DEMO_ACCOUNTS: true muestra el selector de cuentas demo en login; se desactiva automáticamente en producción
-     * - USE_EMULATOR: true para desviar tráfico a emuladores locales de Firebase
      */
     ENV: {
         MODE: 'development', // 'development' | 'production'
         IS_DEVELOPMENT: true,
         IS_PRODUCTION: false,
-        SHOW_DEMO_ACCOUNTS: false,
-        USE_EMULATOR: false
+        SHOW_DEMO_ACCOUNTS: false
     },
 
     DATABASE: {

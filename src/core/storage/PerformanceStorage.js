@@ -6,7 +6,7 @@
  * manuales residuales o degradaciones/elevaciones anómalas al recargar la página.
  */
 
-import { CONFIG } from '@/core/config/config.js';
+import { CONFIG } from '../config/config.js';
 
 const STORAGE_KEY = CONFIG.STORAGE.PERFORMANCE || 'buca_performance_config';
 const VALID_PROFILES = ['eco', 'balanced', 'pro', 'ultra'];
@@ -24,6 +24,9 @@ export class PerformanceStorage {
      */
     static get() {
         try {
+            if (typeof localStorage === 'undefined') {
+                return this.getDefaults();
+            }
             const raw = localStorage.getItem(STORAGE_KEY);
             if (!raw) {
                 return this.getDefaults();

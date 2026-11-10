@@ -93,88 +93,77 @@ export const ProfilePage = {
     },
 
     init() {
-        import('../services/AuthService.js').then(({ AuthService }) => {
-            import('firebase/auth').then(({ getAuth, updateProfile }) => {
-                const auth = getAuth();
-                const user = auth.currentUser;
+        Promise.all([
+            import('@/core/state/session.js'),
+            import('../services/UserService.js')
+        ]).then(([{ sessionState }, { userService }]) => {
+            const { user } = sessionState.get();
 
-                if (!user) {
-                    console.warn('[ProfilePage] No hay usuario en sesión. Redirigiendo a login...');
+            if (!user) {
+                console.warn('[ProfilePage] No hay usuario en sesión. Redirigiendo a login...');
+                window.location.href = '/auth/login';
+                return;
+            }
+
+            const displayName = user.displayName || 'Usuario Corporativo';
+            const email = user.email || '---';
+            const photoURL = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=2563eb&color=fff&size=96`;
+
+            document.getElementById('profile-display-name').textContent = displayName;
+            document.getElementById('profile-email').textContent = email;
+            document.getElementById('profile-avatar').src = photoURL;
+
+            const editForm = document.getElementById('profile-edit-form');
+            const nameInput = document.getElementById('edit-display-name');
+            const photoInput = document.getElementById('edit-photo-url');
+            const btnSave = document.getElementById('btn-save-profile');
+            const feedback = document.getElementById('profile-feedback');
+
+            nameInput.value = user.displayName || '';
+
+            if (editForm) {
+                editForm.onsubmit = async (e) => {
+                    e.preventDefault();
+                    btnSave.disabled = true;
+                    btnSave.innerHTML = '<div class="buca-spinner sm"></div>';
+                    feedback.classList.add('d-none');
+
+                    try {
+                        const nameParts = nameInput.value.trim().split(' ');
+                        await userService.updateProfile({
+                            firstName: nameParts[0] || 'Operador',
+                            lastName: nameParts.slice(1).join(' ') || 'BUCA',
+                            username: user.email.split('@')[0],
+                            mail: user.email
+                        });
+
+                        document.getElementById('profile-display-name').textContent = nameInput.value || 'Usuario Corporativo';
+                        feedback.textContent = 'Perfil actualizado exitosamente.';
+                        feedback.className = 'alert alert-success animate__animated animate__fadeIn py-2 small mb-4 text-center';
+                        feedback.classList.remove('d-none');
+
+                        setTimeout(() => feedback.classList.add('d-none'), 3000);
+                    } catch (error) {
+                        console.error('[ProfilePage] Error actualizando perfil:', error);
+                        feedback.textContent = 'Error al actualizar el perfil.';
+                        feedback.className = 'alert alert-danger animate__animated animate__headShake py-2 small mb-4 text-center';
+                        feedback.classList.remove('d-none');
+                    } finally {
+                        btnSave.disabled = false;
+                        btnSave.innerHTML = '<span>GUARDAR CAMBIOS</span><i class="bi bi-check2"></i>';
+                    }
+                };
+            }
+
+            // Manejar Cerrar Sesión
+            const btnLogout = document.getElementById('btn-logout');
+            if (btnLogout) {
+                btnLogout.onclick = async () => {
+                    const { AuthService } = await import('../services/AuthService.js');
+                    await AuthService.logout();
                     window.location.href = '/auth/login';
-                    return;
-                }
-
-                // Cargar datos actuales
-                const displayName = user.displayName || 'Usuario Corporativo';
-                const email = user.email || '---';
-                const photoURL = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=2563eb&color=fff&size=96`;
-                
-                document.getElementById('profile-display-name').textContent = displayName;
-                document.getElementById('profile-email').textContent = email;
-                document.getElementById('profile-avatar').src = photoURL;
-
-                // Cargar metadatos
-                const lastLogin = user.metadata?.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleDateString() : 'Desconocido';
-                const createdAt = user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'Desconocido';
-                document.getElementById('profile-last-login').textContent = lastLogin;
-                document.getElementById('profile-created-at').textContent = createdAt;
-
-                // Lógica del form de edición
-                const editForm = document.getElementById('profile-edit-form');
-                const nameInput = document.getElementById('edit-display-name');
-                const photoInput = document.getElementById('edit-photo-url');
-                const btnSave = document.getElementById('btn-save-profile');
-                const feedback = document.getElementById('profile-feedback');
-
-                nameInput.value = user.displayName || '';
-                photoInput.value = user.photoURL || '';
-
-                if (editForm) {
-                    editForm.onsubmit = async (e) => {
-                        e.preventDefault();
-                        btnSave.disabled = true;
-                        btnSave.innerHTML = '<div class="buca-spinner sm"></div>';
-                        feedback.classList.add('d-none');
-
-                        try {
-                            await updateProfile(user, {
-                                displayName: nameInput.value,
-                                photoURL: photoInput.value
-                            });
-
-                            // Actualizar UI visual
-                            document.getElementById('profile-display-name').textContent = nameInput.value || 'Usuario Corporativo';
-                            if (photoInput.value) {
-                                document.getElementById('profile-avatar').src = photoInput.value;
-                            }
-
-                            feedback.textContent = 'Perfil actualizado exitosamente.';
-                            feedback.className = 'alert alert-success animate__animated animate__fadeIn py-2 small mb-4 text-center';
-                            feedback.classList.remove('d-none');
-
-                            setTimeout(() => feedback.classList.add('d-none'), 3000);
-
-                        } catch (error) {
-                            console.error('[ProfilePage] Error actualizando perfil:', error);
-                            feedback.textContent = 'Error al actualizar el perfil.';
-                            feedback.className = 'alert alert-danger animate__animated animate__headShake py-2 small mb-4 text-center';
-                            feedback.classList.remove('d-none');
-                        } finally {
-                            btnSave.disabled = false;
-                            btnSave.innerHTML = '<span>GUARDAR CAMBIOS</span><i class="bi bi-check2"></i>';
-                        }
-                    };
-                }
-
-                // Manejar Cerrar Sesión
-                const btnLogout = document.getElementById('btn-logout');
-                if (btnLogout) {
-                    btnLogout.onclick = async () => {
-                        await AuthService.logout();
-                        window.location.href = '/auth/login';
-                    };
-                }
-            });
+                };
+            }
         });
     }
 };

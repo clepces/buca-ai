@@ -91,33 +91,26 @@ export const SettingsPage = {
     },
 
     init() {
-        import('firebase/auth').then(({ getAuth }) => {
-            const auth = getAuth();
-            const user = auth.currentUser;
+        import('@/core/state/session.js').then(({ sessionState }) => {
+            const { user, currentRole } = sessionState.get();
 
             if (!user) {
                 window.location.href = '/auth/login';
                 return;
             }
 
-            // Simulamos la verificación de rol basada en claims (hasta que conectemos Firestore profundo)
-            user.getIdTokenResult().then(idTokenResult => {
-                const claims = idTokenResult.claims;
-                
-                // Demo: Para pruebas locales si el user es elexdy.publice@gmail.com, simulamos super_admin
-                const isSuperAdmin = user.email === 'elexdy.publice@gmail.com' || claims.super_admin;
-                const isAdminOrOwner = isSuperAdmin || claims.admin || claims.owner;
+            const isSuperAdmin = currentRole === 'super_admin';
+            const isAdminOrOwner = isSuperAdmin || currentRole === 'admin' || currentRole === 'owner';
 
-                if (isSuperAdmin) {
-                    const tabSuper = document.getElementById('tab-super');
-                    if (tabSuper) tabSuper.classList.remove('d-none');
-                }
+            if (isSuperAdmin) {
+                const tabSuper = document.getElementById('tab-super');
+                if (tabSuper) tabSuper.classList.remove('d-none');
+            }
 
-                if (!isAdminOrOwner) {
-                    const tabBusiness = document.getElementById('tab-business');
-                    if (tabBusiness) tabBusiness.classList.add('d-none');
-                }
-            });
+            if (!isAdminOrOwner) {
+                const tabBusiness = document.getElementById('tab-business');
+                if (tabBusiness) tabBusiness.classList.add('d-none');
+            }
         });
     }
 };

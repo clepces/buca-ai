@@ -1,16 +1,19 @@
 /**
  * StorageAdapter - Orquestador Inteligente de Persistencia
  * =========================================================================
- * Selecciona dinámicamente el motor de guardado según el hardware (Tier).
+ * Selecciona dinámicamente el motor de guardado local según el hardware (Tier)
+ * e integra SupabaseDriver como el motor de persistencia en la nube oficial.
  * Implementa Namespacing para evitar colisiones entre módulos.
  * =========================================================================
  */
 import LocalDriver from './drivers/LocalDriver.js';
 import IndexedDBDriver from './drivers/IndexedDBDriver.js';
+import SupabaseDriver from './drivers/SupabaseDriver.js';
 
 class StorageAdapter {
     constructor() {
         this.driver = null;
+        this.remoteDriver = new SupabaseDriver();
         this._initialized = false;
         this._currentTier = 'L0';
     }
@@ -42,17 +45,23 @@ class StorageAdapter {
     }
 
     /**
-     * Crea un "Cajón" (Namespace) específico para un módulo.
+     * Crea un "Cajón" (Namespace) específico para un módulo con acceso local y remoto.
      * @param {string} namespace 
      */
     forModule(namespace) {
         return {
             set: (key, value) => this.set(`${namespace}:${key}`, value),
             get: (key) => this.get(`${namespace}:${key}`),
-            remove: (key) => this.remove(`${namespace}:${key}`)
+            remove: (key) => this.remove(`${namespace}:${key}`),
+            // Persistencia remota en la nube
+            setRemote: (key, value) => this.setRemote(`${namespace}:${key}`, value),
+            getRemote: (key) => this.getRemote(`${namespace}:${key}`),
+            removeRemote: (key) => this.removeRemote(`${namespace}:${key}`),
+            listRemote: (prefix = '') => this.listRemote(`${namespace}:${prefix}`)
         };
     }
 
+    // Persistencia Local (Optimizada por Tiers)
     async set(key, value) {
         if (!this._initialized) this.init();
         return await this.driver.set(key, value);
@@ -72,6 +81,30 @@ class StorageAdapter {
     async remove(key) {
         if (!this._initialized) this.init();
         return await this.driver.remove(key);
+    }
+
+    // Persistencia Remota Oficial (Supabase Cloud)
+    async setRemote(key, value) {
+        return await this.remoteDriver.set(key, value);
+    }
+
+    async getRemote(key) {
+        return await this.remoteDriver.get(key);
+    }
+
+    async removeRemote(key) {
+        return await this.remoteDriver.remove(key);
+    }
+
+    async listRemote(prefix = '') {
+        return await this.remoteDriver.list(prefix);
+    }
+
+    /**
+     * Retorna el driver remoto oficial de Supabase.
+     */
+    remote() {
+        return this.remoteDriver;
     }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "buca-ai",
-  "version": "1.0.0-alpha",
+  "version": "1.1.0-alpha",
   "description": "B.U.C.A. AI (Business Under Control Access) - Modular Vanilla JS ERP Platform",
   "type": "module",
   "scripts": {
@@ -12,13 +12,10 @@
     "lint": "npm run lint:js && npm run lint:css",
     "format": "prettier --write \"src/**/*.{js,scss,html,json}\"",
     "type-check": "tsc --project jsconfig.json --noEmit",
-    "test:rules": "npx firebase-tools emulators:exec --only firestore \"node --test tests/firestore-rules.test.js\"",
-    "test": "npm run test:rules"
+    "test": "node --experimental-websocket --test tests/supabase-storage.test.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@firebase/eslint-plugin-security-rules": "^0.0.2",
-    "@firebase/rules-unit-testing": "^5.0.2",
     "@markuplint/html-parser": "^4.0.0",
     "@markuplint/html-spec": "^4.0.0",
     "eslint": "^10.14.0",
@@ -32,11 +29,11 @@
     "vite": "^8.0.14"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.109.0",
     "autoprefixer": "^10.6.2",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.2",
     "d3": "^7.9.0",
-    "firebase": "^11.0.2",
     "lucide": "^1.63.0",
     "zod": "^4.6.7"
   }

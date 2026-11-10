@@ -5,7 +5,7 @@
  * persistencia estructurada.
  * =========================================================================
  */
-import { CryptoWrapper } from '@/core/security/CryptoWrapper.js';
+import { CryptoWrapper } from '../../security/CryptoWrapper.js';
 
 export class LocalDriver {
     constructor(prefix = 'buca') {
