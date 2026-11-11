@@ -29,13 +29,19 @@ export class SupabaseDriver {
     async set(key, value) {
         try {
             const client = this._getClient();
+            const payload = {
+                key,
+                value,
+                updated_at: new Date().toISOString()
+            };
+            const session = (await client.auth.getSession())?.data?.session;
+            if (session?.user?.id && this.tableName === 'app_storage') {
+                payload.owner_id = session.user.id;
+            }
+
             const { error } = await client
                 .from(this.tableName)
-                .upsert({
-                    key,
-                    value,
-                    updated_at: new Date().toISOString()
-                }, { onConflict: 'key' });
+                .upsert(payload, { onConflict: 'key' });
 
             if (error) {
                 console.warn(`[SupabaseDriver] Error writing key "${key}":`, error.message);

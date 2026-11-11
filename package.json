@@ -1,6 +1,6 @@
 {
   "name": "buca-ai",
-  "version": "1.1.1-alpha",
+  "version": "1.1.2-alpha",
   "description": "B.U.C.A. AI (Business Under Control Access) - Modular Vanilla JS ERP Platform",
   "type": "module",
   "scripts": {
@@ -12,7 +12,7 @@
     "lint": "npm run lint:js && npm run lint:css",
     "format": "prettier --write \"src/**/*.{js,scss,html,json}\"",
     "type-check": "tsc --project jsconfig.json --noEmit",
-    "test": "node --experimental-websocket --test tests/supabase-storage.test.js tests/mfa-enrollment.test.js"
+    "test": "node --experimental-websocket --test tests/supabase-storage.test.js tests/mfa-enrollment.test.js tests/database-security.test.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
