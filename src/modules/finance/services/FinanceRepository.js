@@ -1,14 +1,29 @@
 /**
- * FinanceRepository - Repositorio de Persistencia Financiera BUSA-I (Supabase Native)
+ * FinanceRepository - Repositorio de Persistencia Financiera B.U.C.A. AI (Supabase Native)
  * =========================================================================
- * Maneja el almacenamiento de tasas cambiarias en la tabla 'finance_rates' de Supabase.
+ * Almacena y sincroniza tasas cambiarias (BCV, paralelo) y brecha cambiaria
+ * en la tabla 'finance_rates' de Supabase con RLS optimizado.
  * =========================================================================
  */
-import { getSupabase } from '@/core/config/supabase.js';
+import { getSupabase } from '../../../core/config/supabase.js';
 
 export const FinanceRepository = {
     _getClient() {
         return getSupabase();
+    },
+
+    /**
+     * Calcula la brecha porcentual entre tasa oficial y paralela.
+     * @param {number} official 
+     * @param {number} parallel 
+     * @returns {number}
+     */
+    calculateGap(official, parallel) {
+        const off = Number(official) || 0;
+        const par = Number(parallel) || 0;
+        if (off <= 0) return 0;
+        const gap = ((par - off) / off) * 100;
+        return Number(gap.toFixed(2));
     },
 
     /**
@@ -18,23 +33,46 @@ export const FinanceRepository = {
      * @param {string} currency 
      */
     async saveCustomRate(tenantId = 'default', rate, currency = 'USD') {
+        return this.saveRateSnapshot(tenantId, { rate, currency });
+    },
+
+    /**
+     * Registra un snapshot completo de cotización multimoneda.
+     * @param {string} tenantId 
+     * @param {Object} options 
+     */
+    async saveRateSnapshot(tenantId = 'default', options = {}) {
+        const {
+            rate,
+            rateParallel = null,
+            currency = 'USD',
+            source = 'BCV/DolarVzla'
+        } = options;
+
         try {
             const client = this._getClient();
-            const data = {
+            const gapPercentage = (rate && rateParallel)
+                ? this.calculateGap(rate, rateParallel)
+                : null;
+
+            const payload = {
                 tenant_id: tenantId,
-                rate,
+                rate: Number(rate),
+                rate_parallel: rateParallel ? Number(rateParallel) : null,
+                gap_percentage: gapPercentage,
                 currency,
+                source,
                 updated_at: new Date().toISOString()
             };
 
             const { error } = await client
                 .from('finance_rates')
-                .upsert(data, { onConflict: 'tenant_id' });
+                .upsert(payload, { onConflict: 'tenant_id' });
 
             if (error) throw error;
-            return data;
+            return payload;
         } catch (err) {
-            console.error('[FinanceRepository] Error saving custom rate in Supabase:', err.message || err);
+            console.error('[FinanceRepository] Error saving rate snapshot:', err.message || err);
             throw err;
         }
     },

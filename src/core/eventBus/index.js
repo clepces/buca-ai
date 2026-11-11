@@ -3,10 +3,13 @@
  * =========================================================================
  * Estructura modular ES6+ con soporte O(1), comodines (*), middlewares y aislamiento de errores.
  */
+import { offlineReplayQueue } from './OfflineReplayQueue.js';
+
 class EventBus {
     constructor() {
         this.events = new Map();
         this.middlewares = new Set();
+        offlineReplayQueue.registerEmitter((ev, ...args) => this.emit(ev, ...args));
     }
 
     /**
@@ -132,6 +135,10 @@ class EventBus {
      * @param {...any} args Datos ilimitados asociados al evento
      */
     emit(event, ...args) {
+        if (!offlineReplayQueue.isOnline()) {
+            offlineReplayQueue.enqueue(event, ...args);
+        }
+
         if (!this._runMiddlewares(event, args)) return;
 
         const targets = this._getListeners(event);
@@ -181,6 +188,7 @@ class EventBus {
     }
 }
 
+export { offlineReplayQueue };
 export const eventBus = new EventBus();
 export default eventBus;
 

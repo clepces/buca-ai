@@ -5,7 +5,7 @@
  * y Resiliencia Nativa.
  * =========================================================================
  */
-import { storage } from '@/core/storage/StorageAdapter.js';
+import { storage } from '../storage/StorageAdapter.js';
 
 export class BaseClient {
     constructor(baseURL = '', timeout = 10000) {

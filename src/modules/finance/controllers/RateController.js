@@ -1,7 +1,9 @@
 /**
  * RateController - Controlador de Cotizaciones & Tasas Cambiarias (Módulo Finanzas)
  * =========================================================================
- * Gestiona el despliegue del modal de tasa, conversión de divisas en vivo y sincronización global.
+ * Sincronización en vivo con Supabase (finance_rates), BCV y brecha cambiaria.
+ * Modularizado para cumplir el estándar de ≤ 300 líneas.
+ * =========================================================================
  */
 import { eventBus } from '@/core/eventBus/index.js';
 import { Validators as Validator } from '@/shared/utils/validators.js';
@@ -11,6 +13,8 @@ import { rateManagementTemplate } from '../components/RateManagementModal.js';
 import { DolarVzlaService, DOLAR_VZLA_KEY, CDN_BASE, API_BASE, safeRound2 } from '@/core/services/DolarVzlaService.js';
 import { FinanceRepository } from '../services/FinanceRepository.js';
 import { sessionState } from '@/core/state/session.js';
+import { RateCalculatorHelper } from './RateCalculatorHelper.js';
+import { RateTabsBinder } from './RateTabsBinder.js';
 
 export function formatVariation(raw) {
     if (raw === null || raw === undefined || isNaN(Number(raw))) return '+0.00%';
@@ -55,7 +59,7 @@ export const RateController = {
                 icon: 'bi-currency-exchange',
                 title: 'Gestión de Tasas',
                 subtitle: 'Mercado de Cambio',
-                tag: 'v1.5.4 FINANZAS',
+                tag: 'v1.1.3 FINANZAS',
                 actions: `
                     <div class="header-actions">
                         <button type="button" class="action-mini-btn" id="btn-refresh-rate-header" title="Sincronizar en Vivo">
@@ -84,7 +88,7 @@ export const RateController = {
                 left: `
                     <div class="d-flex align-items-center gap-2 text-muted small">
                         <i class="bi bi-shield-check text-success fs-6"></i>
-                        <span>API Oficial con Autenticación & Encriptación AES-256</span>
+                        <span>Sincronización Supabase Cloud con RLS & Brecha Cambiaria</span>
                     </div>
                 `,
                 right: `
@@ -155,145 +159,17 @@ export const RateController = {
     },
 
     _bindEvents() {
+        RateTabsBinder.bindTabs(this);
+        RateTabsBinder.bindPagination(this);
+        RateTabsBinder.bindApiControls(this);
+        RateCalculatorHelper.bind(this.financialData, this.currentRate);
+
         const btnRefreshHeader = document.getElementById('btn-refresh-rate-header');
         const applyBtn = document.getElementById('btn-apply-rate');
         const input = document.getElementById('manual-rate-input');
         const syncBtn = document.getElementById('btn-sync-api');
-
         const btnAnchorUsd = document.getElementById('btn-anchor-usd');
         const btnAnchorEur = document.getElementById('btn-anchor-eur');
-
-        const modalContainer = document.getElementById('modal-container') || document.body;
-        if (modalContainer && !modalContainer._rateTabsBound) {
-            modalContainer._rateTabsBound = true;
-            modalContainer.addEventListener('click', (e) => {
-                const btn = e.target.closest('[data-rate-tab]');
-                if (!btn) return;
-
-                e.preventDefault();
-                const targetTab = btn.getAttribute('data-rate-tab');
-                this.activeTab = targetTab;
-                const tabsNav = btn.closest('#rate-tabs-nav') || document.getElementById('rate-tabs-nav');
-                if (tabsNav) {
-                    tabsNav.querySelectorAll('[data-rate-tab]').forEach(b => b.classList.remove('active'));
-                }
-                btn.classList.add('active');
-
-                document.querySelectorAll('.rate-tab-content').forEach(pane => {
-                    pane.classList.remove('active');
-                });
-                const activePane = document.getElementById(`tab-rate-${targetTab}`);
-                if (activePane) activePane.classList.add('active');
-            });
-        }
-
-        const btnHistPrev = document.querySelector('.btn-history-prev');
-        const btnHistNext = document.querySelector('.btn-history-next');
-
-        if (btnHistPrev) {
-            btnHistPrev.onclick = () => {
-                if (this.historyPage > 1) {
-                    this.historyPage--;
-                    this._renderBodyContent('history');
-                }
-            };
-        }
-        if (btnHistNext) {
-            btnHistNext.onclick = () => {
-                this.historyPage++;
-                this._renderBodyContent('history');
-            };
-        }
-
-        const btnIntervPrev = document.querySelector('.btn-interventions-prev');
-        const btnIntervNext = document.querySelector('.btn-interventions-next');
-
-        if (btnIntervPrev) {
-            btnIntervPrev.onclick = () => {
-                if (this.interventionsPage > 1) {
-                    this.interventionsPage--;
-                    this._renderBodyContent('interventions');
-                }
-            };
-        }
-        if (btnIntervNext) {
-            btnIntervNext.onclick = () => {
-                this.interventionsPage++;
-                this._renderBodyContent('interventions');
-            };
-        }
-
-        const btnToggleVis = document.getElementById('btn-toggle-api-key-vis');
-        const btnSaveApi = document.getElementById('btn-save-api-cfg');
-        const btnTestApi = document.getElementById('btn-test-api-conn');
-        const btnResetApi = document.getElementById('btn-reset-api-cfg');
-
-        if (btnToggleVis) {
-            btnToggleVis.onclick = () => {
-                this.apiConfig.showKey = !this.apiConfig.showKey;
-                this._renderBodyContent('api-config');
-            };
-        }
-
-        if (btnSaveApi) {
-            btnSaveApi.onclick = () => {
-                const keyEl = document.getElementById('cfg-api-key');
-                if (keyEl) this.apiConfig.apiKey = keyEl.value.trim();
-
-                DolarVzlaService.updateConfig({
-                    apiKey: this.apiConfig.apiKey,
-                    cdnBase: this.apiConfig.cdnBase,
-                    apiBase: this.apiConfig.apiBase,
-                    provider: this.apiConfig.provider,
-                    autoSyncMinutes: this.apiConfig.autoSyncMinutes
-                });
-
-                eventBus.emit('notifications:push', {
-                    title: 'Finanzas',
-                    message: 'Parámetros de API de Tasas actualizados.',
-                    type: 'success'
-                });
-                this._loadAndPopulateData();
-            };
-        }
-
-        if (btnTestApi) {
-            btnTestApi.onclick = async () => {
-                try {
-                    const testData = await DolarVzlaService.getBCVCurrent();
-                    if (testData?.current?.usd) {
-                        eventBus.emit('notifications:push', {
-                            title: 'Conexión Exitosa',
-                            message: `Tasa BCV USD: Bs. ${testData.current.usd}`,
-                            type: 'info'
-                        });
-                    }
-                } catch (e) {
-                    eventBus.emit('notifications:push', {
-                        title: 'Error de Conexión',
-                        message: e.message,
-                        type: 'error'
-                    });
-                }
-            };
-        }
-
-        if (btnResetApi) {
-            btnResetApi.onclick = () => {
-                this.apiConfig = {
-                    apiKey: DOLAR_VZLA_KEY,
-                    cdnBase: CDN_BASE,
-                    apiBase: API_BASE,
-                    provider: 'dolarvzla',
-                    autoSyncMinutes: 30,
-                    showKey: false
-                };
-                DolarVzlaService.updateConfig(this.apiConfig);
-                this._loadAndPopulateData();
-            };
-        }
-
-        this._bindCalculatorEvents();
 
         if (btnRefreshHeader) {
             btnRefreshHeader.onclick = (e) => {
@@ -326,17 +202,24 @@ export const RateController = {
 
                     try {
                         const tenantId = sessionState.get().tenantId || 'default';
-                        await FinanceRepository.saveCustomRate(tenantId, newRate, 'USD');
-                        
+                        const parallelRate = this.financialData?.usdt?.current?.average || null;
+
+                        await FinanceRepository.saveRateSnapshot(tenantId, {
+                            rate: newRate,
+                            rateParallel: parallelRate,
+                            currency: 'USD',
+                            source: 'BCV/DolarVzla'
+                        });
+
                         this.currentRate = newRate;
                         this._updatePageRates(newRate);
-                        
+
                         eventBus.emit('notifications:push', {
                             title: 'Tasa ERP Actualizada',
-                            message: `Se ha anclado la tasa a Bs. ${newRate.toFixed(2)} exitosamente.`,
+                            message: `Se ha anclado la tasa a Bs. ${newRate.toFixed(2)} exitosamente en Supabase.`,
                             type: 'success'
                         });
-                        
+
                         this.hide();
                     } catch (err) {
                         eventBus.emit('notifications:push', {
@@ -355,57 +238,6 @@ export const RateController = {
         if (syncBtn) {
             syncBtn.onclick = () => this._loadAndPopulateData();
         }
-    },
-
-    _bindCalculatorEvents() {
-        const amountInput = document.getElementById('calc-amount-input');
-        const currencySelect = document.getElementById('calc-currency-select');
-        const presets = document.querySelectorAll('.btn-calc-preset');
-
-        const calculate = () => {
-            if (!amountInput || !currencySelect) return;
-            const amount = parseFloat(amountInput.value) || 0;
-            const currency = currencySelect.value;
-
-            const bcvUsd = this.financialData?.bcv?.current?.usd || this.currentRate || 889.58;
-            const bcvEur = this.financialData?.bcv?.current?.eur || (bcvUsd * 1.158);
-            const usdtAvg = this.financialData?.usdt?.current?.average || (bcvUsd * 1.04);
-
-            let inVes = 0;
-            if (currency === 'VES') inVes = amount;
-            else if (currency === 'USD') inVes = amount * bcvUsd;
-            else if (currency === 'EUR') inVes = amount * bcvEur;
-            else if (currency === 'USDT') inVes = amount * usdtAvg;
-
-            const equivUsd = inVes / bcvUsd;
-            const equivEur = inVes / bcvEur;
-            const equivUsdt = inVes / usdtAvg;
-
-            const format = (v) => Number(v || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-            const resVes = document.getElementById('res-ves');
-            const resUsd = document.getElementById('res-usd');
-            const resEur = document.getElementById('res-eur');
-            const resUsdt = document.getElementById('res-usdt');
-
-            if (resVes) resVes.textContent = `Bs. ${format(inVes)}`;
-            if (resUsd) resUsd.textContent = `$ ${format(equivUsd)}`;
-            if (resEur) resEur.textContent = `€ ${format(equivEur)}`;
-            if (resUsdt) resUsdt.textContent = `₮ ${format(equivUsdt)}`;
-        };
-
-        if (amountInput) amountInput.oninput = calculate;
-        if (currencySelect) currencySelect.onchange = calculate;
-
-        presets.forEach(btn => {
-            btn.onclick = () => {
-                const val = btn.getAttribute('data-val');
-                if (amountInput) {
-                    amountInput.value = val;
-                    calculate();
-                }
-            };
-        });
     },
 
     async _updatePageRates(newRate) {

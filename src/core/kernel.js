@@ -13,6 +13,7 @@ import { initSupabase } from '@/core/config/supabase.js';
 import { Logger } from '@/shared/utils/logger.js';
 import { ThemeManager } from '@/core/services/ThemeManager.js';
 import { NotificationService } from '@/core/services/NotificationService.js';
+import { ActivityLogService } from '@/core/services/ActivityLogService.js';
 import { ActionDispatcher } from '@/core/services/ActionDispatcher.js';
 import ModuleLoader from '@/core/ModuleLoader.js';
 import { router } from '@/core/router/router.js';
@@ -72,6 +73,7 @@ class BucaKernel {
             // 4. Preferences & UI Init
             await ThemeManager.init();
             NotificationService.init();
+            ActivityLogService.init();
             const isAuthRoute = window.location.pathname.startsWith('/auth');
             
             if (!isAuthRoute) {

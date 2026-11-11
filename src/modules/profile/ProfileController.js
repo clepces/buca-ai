@@ -67,7 +67,7 @@ export const ProfileController = {
                 const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
                 if (submitBtn) {
                     submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Guardando en Firestore...';
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Guardando en Supabase...';
                 }
 
                 const username = document.getElementById('prof-username')?.value?.trim() || '';
@@ -126,7 +126,7 @@ export const ProfileController = {
                     if (!res.success) {
                         showProfileFeedback(res.error || 'Error al validar datos del perfil.', true);
                     } else {
-                        showProfileFeedback('¡Perfil corporativo actualizado con éxito en Firestore!', false);
+                        showProfileFeedback('¡Perfil corporativo actualizado con éxito en Supabase!', false);
                     }
                 } catch (err) {
                     showProfileFeedback(err.message || 'Error al actualizar perfil.', true);

@@ -1,24 +1,34 @@
 /**
- * RecentActivity - Sección de Actividad Reciente y Bitácora de Auditoría
+ * RecentActivity - Sección de Actividad Reciente y Bitácora de Auditoría (Supabase Native)
  * =========================================================================
- * Unified Scroll (.buca-scroll-area), Zero Inline Styles, Strict Clean Architecture
+ * Consume en tiempo real la tabla 'public.activity_log'.
+ * Cero datos quemados (hardcoded). Manejo reactivo de eventos.
  * =========================================================================
  */
 import { escapeHTML } from '@/shared/utils/security.js';
+import { ActivityLogService } from '@/core/services/ActivityLogService.js';
+import { eventBus } from '@/core/eventBus/index.js';
+import { sessionState } from '@/core/state/session.js';
 
 export const RecentActivity = {
-    render() {
-        const activities = [
-            { id: 1, category: 'operaciones', icon: 'bi-building-add', color: '#2563eb', bg: 'rgba(37, 99, 235, 0.12)', title: 'Nueva unidad de negocio registrada', desc: 'Se dio de alta la filial "Distribuidora BUCA Sede Este".', time: 'Hace 10 minutos', user: 'Daisy Tovar', tag: 'OPERATIVO' },
-            { id: 2, category: 'seguridad', icon: 'bi-shield-check', color: '#059669', bg: 'rgba(5, 150, 105, 0.12)', title: 'Auditoría de seguridad superada', desc: 'Verificación automática de integridad AES-256 completada sin hallazgos.', time: 'Hace 45 minutos', user: 'Sistema BNE', tag: 'SEGURIDAD' },
-            { id: 3, category: 'sistemas', icon: 'bi-arrow-repeat', color: '#0284c7', bg: 'rgba(2, 132, 199, 0.12)', title: 'Sincronización Cloud exitosa', desc: 'Actualización de registros fiscales y tasa oficial BCV (36.25 VES/USD).', time: 'Hace 2 horas', user: 'Cloud Daemon', tag: 'SISTEMA' },
-            { id: 4, category: 'seguridad', icon: 'bi-person-badge', color: '#d97706', bg: 'rgba(217, 119, 6, 0.12)', title: 'Acceso de usuario operador', desc: 'Inicio de sesión verificado con autenticación multifactor biométrica.', time: 'Hace 3 horas', user: 'Carlos Mendoza', tag: 'AUDITORÍA' },
-            { id: 5, category: 'operaciones', icon: 'bi-receipt', color: '#7c3aed', bg: 'rgba(124, 58, 237, 0.12)', title: 'Emisión masiva de comprobantes POS', desc: 'Sincronizados 42 comprobantes electrónicos fiscales en la filial Central.', time: 'Hace 4 horas', user: 'Caja Principal', tag: 'FACTURACIÓN' },
-            { id: 6, category: 'operaciones', icon: 'bi-box-seam', color: '#475569', bg: 'rgba(71, 85, 105, 0.12)', title: 'Recepción de stock en almacén', desc: 'Ingreso de 150 unidades de suministro con orden de compra #8421.', time: 'Hace 5 horas', user: 'Logística', tag: 'INVENTARIO' }
-        ];
+    _items: [],
+    _isLoading: true,
 
+    _getIconMeta(category) {
+        switch (String(category).toLowerCase()) {
+            case 'seguridad':
+                return { icon: 'bi-shield-check', color: '#059669', bg: 'rgba(5, 150, 105, 0.12)', tag: 'SEGURIDAD' };
+            case 'sistemas':
+                return { icon: 'bi-arrow-repeat', color: '#0284c7', bg: 'rgba(2, 132, 199, 0.12)', tag: 'SISTEMA' };
+            case 'operaciones':
+            default:
+                return { icon: 'bi-building-gear', color: '#2563eb', bg: 'rgba(37, 99, 235, 0.12)', tag: 'OPERATIVO' };
+        }
+    },
+
+    render() {
         return `
-            <section class="ws-section h-100 d-flex flex-column mb-0">
+            <section class="ws-section h-100 d-flex flex-column mb-0" id="recent-activity-section">
                 <div class="section-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                     <div class="d-flex align-items-center gap-2">
                         <div class="rounded-4 p-2 shadow-2xs d-flex align-items-center justify-content-center bg-primary-subtle text-primary profile-icon-box-sm">
@@ -28,7 +38,7 @@ export const RecentActivity = {
                             <h2 class="section-title h5 fw-bold mb-0 text-main">
                                 Actividad & Auditoría
                             </h2>
-                            <span class="text-muted small">Registro en tiempo real</span>
+                            <span class="text-muted small">Bitácora inmutable en Supabase</span>
                         </div>
                     </div>
 
@@ -45,30 +55,7 @@ export const RecentActivity = {
                     <!-- CONTENEDOR SCROLL GLOBAL UNIFICADO -->
                     <div class="buca-scroll-area buca-scroll-area--md flex-grow-1" id="activity-list-container">
                         <ul class="list-unstyled mb-0 divide-y" id="activity-list-items">
-                            ${activities.map((act, index) => `
-                                <li class="activity-item d-flex align-items-start gap-3 py-3 ${index !== 0 ? 'border-top border-light' : ''}" data-category="${act.category}">
-                                    <div class="widget-icon-box p-2.5 rounded-4 flex-shrink-0 d-flex align-items-center justify-content-center shadow-2xs activity-icon-box" style="--icon-bg: ${act.bg}; --icon-color: ${act.color}; background-color: var(--icon-bg); color: var(--icon-color);">
-                                        <i class="bi ${act.icon} fs-5"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-1">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <h3 class="h6 fw-bold mb-0 activity-title">${escapeHTML(act.title)}</h3>
-                                                <span class="activity-tag px-2 py-0.5 rounded-pill badge bg-secondary-subtle text-secondary">${act.tag}</span>
-                                            </div>
-                                            <span class="activity-time">
-                                                <i class="bi bi-clock me-1 text-muted"></i>${escapeHTML(act.time)}
-                                            </span>
-                                        </div>
-                                        <p class="activity-desc small mb-1.5">${escapeHTML(act.desc)}</p>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="activity-user d-flex align-items-center gap-1.5">
-                                                <i class="bi bi-person-circle text-muted"></i> ${escapeHTML(act.user)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </li>
-                            `).join('')}
+                            ${this.renderActivityList()}
                         </ul>
                     </div>
                 </div>
@@ -76,7 +63,92 @@ export const RecentActivity = {
         `;
     },
 
-    init() {
+    renderActivityList() {
+        if (this._isLoading) {
+            return `
+                <li class="py-4 text-center text-muted small">
+                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                    <span>Cargando bitácora de auditoría...</span>
+                </li>
+            `;
+        }
+
+        if (!this._items || this._items.length === 0) {
+            return `
+                <li class="py-4 text-center text-muted small">
+                    <i class="bi bi-journal-check fs-3 d-block mb-2 text-primary opacity-50"></i>
+                    <p class="mb-0 fw-semibold text-main">Sin actividad registrada recientemente</p>
+                    <span class="x-small">Las operaciones y cambios en el sistema se reflejarán aquí en tiempo real.</span>
+                </li>
+            `;
+        }
+
+        const sessionUser = sessionState.get().user;
+        const currentEmail = sessionUser?.email || 'Usuario Activo';
+
+        return this._items.map((act, index) => {
+            const meta = this._getIconMeta(act.category);
+            const timeStr = act.created_at
+                ? new Date(act.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                : 'Reciente';
+
+            return `
+                <li class="activity-item d-flex align-items-start gap-3 py-3 ${index !== 0 ? 'border-top border-light' : ''}" data-category="${escapeHTML(act.category || 'operaciones')}">
+                    <div class="widget-icon-box p-2.5 rounded-4 flex-shrink-0 d-flex align-items-center justify-content-center shadow-2xs activity-icon-box" style="--icon-bg: ${meta.bg}; --icon-color: ${meta.color}; background-color: var(--icon-bg); color: var(--icon-color);">
+                        <i class="bi ${meta.icon} fs-5"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-1">
+                            <div class="d-flex align-items-center gap-2">
+                                <h3 class="h6 fw-bold mb-0 activity-title">${escapeHTML(act.title || act.action)}</h3>
+                                <span class="activity-tag px-2 py-0.5 rounded-pill badge bg-secondary-subtle text-secondary">${meta.tag}</span>
+                            </div>
+                            <span class="activity-time">
+                                <i class="bi bi-clock me-1 text-muted"></i>${escapeHTML(timeStr)}
+                            </span>
+                        </div>
+                        <p class="activity-desc small mb-1.5">${escapeHTML(act.description || '')}</p>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="activity-user d-flex align-items-center gap-1.5">
+                                <i class="bi bi-person-circle text-muted"></i> ${escapeHTML(act.user_email || currentEmail)}
+                            </span>
+                        </div>
+                    </div>
+                </li>
+            `;
+        }).join('');
+    },
+
+    async init() {
+        this._bindFilterEvents();
+
+        try {
+            const acts = await ActivityLogService.getRecentActivities(15);
+            this._items = acts;
+            this._isLoading = false;
+            this._refreshDOM();
+        } catch {
+            this._isLoading = false;
+            this._refreshDOM();
+        }
+
+        // Suscribirse a nuevos eventos en tiempo real
+        eventBus.on('activity:logged', (newAct) => {
+            if (newAct) {
+                this._items.unshift(newAct);
+                this._refreshDOM();
+            }
+        });
+    },
+
+    _refreshDOM() {
+        const container = document.getElementById('activity-list-items');
+        if (container) {
+            container.innerHTML = this.renderActivityList();
+        }
+    },
+
+    _bindFilterEvents() {
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.activity-filter-pill');
             if (!btn) return;
@@ -84,21 +156,19 @@ export const RecentActivity = {
             const group = btn.closest('#activity-filter-group');
             if (!group) return;
 
-            const filters = group.querySelectorAll('.activity-filter-pill');
-            filters.forEach(f => f.classList.remove('active'));
+            group.querySelectorAll('.activity-filter-pill').forEach(f => f.classList.remove('active'));
             btn.classList.add('active');
 
             const cat = btn.getAttribute('data-filter');
-            const container = document.getElementById('activity-list-container');
-            if (!container) return;
-
-            const items = container.querySelectorAll('.activity-item');
+            const items = document.querySelectorAll('#activity-list-items .activity-item');
             items.forEach(item => {
                 const itemCat = item.getAttribute('data-category');
                 if (cat === 'all' || itemCat === cat) {
                     item.classList.remove('is-hidden');
+                    item.style.display = '';
                 } else {
                     item.classList.add('is-hidden');
+                    item.style.display = 'none';
                 }
             });
         });
