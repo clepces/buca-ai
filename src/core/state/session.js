@@ -8,7 +8,7 @@ import { CONFIG } from '../config/config.js';
  */
 class SessionState extends BaseState {
     constructor() {
-        const persisted = localStorage.getItem(CONFIG.STORAGE.SESSION);
+        const persisted = typeof localStorage !== 'undefined' ? localStorage.getItem(CONFIG.STORAGE.SESSION) : null;
         super(persisted ? JSON.parse(persisted) : {
             user: null,
             device: null,
@@ -25,7 +25,9 @@ class SessionState extends BaseState {
      */
     set(partialState) {
         super.set(partialState);
-        localStorage.setItem(CONFIG.STORAGE.SESSION, JSON.stringify(this.get()));
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem(CONFIG.STORAGE.SESSION, JSON.stringify(this.get()));
+        }
     }
 
     /**
@@ -40,7 +42,9 @@ class SessionState extends BaseState {
             tenantId: null,
             currentRole: 'guest'
         });
-        localStorage.removeItem(CONFIG.STORAGE.SESSION);
+        if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem(CONFIG.STORAGE.SESSION);
+        }
     }
 }
 

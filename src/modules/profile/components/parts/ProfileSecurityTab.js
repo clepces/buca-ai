@@ -95,26 +95,8 @@ export const ProfileSecurityTab = (data = {}) => {
                             <!-- Botón para Vincular Google Authenticator -->
                             <button type="button" class="btn btn-sm btn-outline-primary w-100 rounded-pill d-flex align-items-center justify-content-center gap-1.5 mt-2" id="btn-setup-totp">
                                 <i class="bi bi-qr-code-scan"></i>
-                                <span>Vincular con Google Authenticator (Gratis)</span>
+                                <span>Configurar Google Authenticator (MFA)</span>
                             </button>
-
-                            <!-- Contenedor desplegable para configuración de Google Authenticator -->
-                            <div id="totp-setup-box" class="d-none mt-3 p-3 rounded-3 border-glass bg-surface shadow-2xs">
-                                <div class="text-center mb-2">
-                                    <h6 class="fw-bold mb-1 small text-main">Escanear Código QR</h6>
-                                    <p class="x-small text-muted mb-2">Abre Google Authenticator o Authy en tu teléfono y escanea:</p>
-                                    <div class="d-flex justify-content-center mb-2" id="totp-qr-slot"></div>
-                                    <div class="small text-muted mb-1 x-small">O ingresa esta clave manualmente en la app:</div>
-                                    <div class="p-1.5 rounded-2 bg-white-5 border font-monospace small fw-bold text-break text-primary mb-2 user-select-all" id="totp-secret-key-display">
-                                        Cargando...
-                                    </div>
-                                </div>
-                                <div class="input-group input-group-sm mb-2">
-                                    <input type="text" class="form-control text-center font-monospace fw-bold" id="totp-test-code" maxlength="6" inputmode="numeric" placeholder="Código de 6 dígitos">
-                                    <button class="btn btn-primary fw-bold" type="button" id="btn-confirm-totp">Verificar</button>
-                                </div>
-                                <div id="totp-setup-feedback" class="x-small text-center py-1 rounded d-none"></div>
-                            </div>
                         </div>
 
                         <!-- CORREO DE RECUPERACIÓN -->

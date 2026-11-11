@@ -8,6 +8,8 @@
 import userService from '@/modules/auth/services/UserService.js';
 import { TOTPService } from '@/core/security/TOTPService.js';
 import { sessionState } from '@/core/state/session.js';
+import { MFAEnrollmentModal } from './components/MFAEnrollmentModal.js';
+import { eventBus } from '@/core/eventBus/index.js';
 
 export const ProfileController = {
     _generatedSecret: null,
@@ -151,78 +153,22 @@ export const ProfileController = {
         const sessionUser = sessionState.get().user || {};
         const userEmail = sessionUser.email || 'usuario@buca.com';
 
-        // 1. Desplegar Asistente de Configuración Google Authenticator
-        if (btnSetupTotp && setupBox) {
+        // 1. Desplegar Modal de Enrolamiento MFA Nativo con Canvas QR
+        if (btnSetupTotp) {
             btnSetupTotp.onclick = () => {
-                setupBox.classList.remove('d-none');
-                
-                // Generar nueva clave Base32 segura
-                this._generatedSecret = TOTPService.generateSecret();
-                const otpAuthUrl = TOTPService.getOTPAuthURL(userEmail, this._generatedSecret);
-                const qrUrl = TOTPService.getQRCodeURL(otpAuthUrl);
-
-                if (secretDisplay) secretDisplay.textContent = this._generatedSecret;
-                if (qrSlot) {
-                    qrSlot.innerHTML = `
-                        <div class="p-3 bg-body-tertiary rounded-3 border text-center">
-                            <i class="bi bi-shield-lock text-primary fs-3 d-block mb-1"></i>
-                            <span class="x-small text-muted">Ingrese la clave manual en Google Authenticator</span>
-                        </div>
-                    `;
-                }
-
-                if (testCodeInput) {
-                    testCodeInput.value = '';
-                    testCodeInput.focus();
-                }
+                MFAEnrollmentModal.show();
             };
         }
 
-        // 2. Verificar y Confirmar Código de Google Authenticator
-        if (btnConfirm && testCodeInput) {
-            btnConfirm.onclick = async () => {
-                const code = testCodeInput.value.trim();
-                if (code.length !== 6) {
-                    this._showTotpFeedback('Ingrese el código de 6 dígitos de la app.', true);
-                    return;
-                }
-
-                btnConfirm.disabled = true;
-                btnConfirm.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Verificando...';
-
-                try {
-                    const isValid = await TOTPService.verifyCode(this._generatedSecret, code);
-
-                    if (isValid) {
-                        // Persistir únicamente configuración de método, NUNCA el secreto en texto plano
-                        await userService.updateSecurity({
-                            two_factor_enabled: true,
-                            two_factor_method: 'totp'
-                        });
-
-                        this._showTotpFeedback('¡Google Authenticator vinculado exitosamente!', false);
-                        if (toggle2FA) toggle2FA.checked = true;
-
-                        if (btnSetupTotp) {
-                            btnSetupTotp.classList.remove('btn-outline-primary');
-                            btnSetupTotp.classList.add('btn-outline-success');
-                            btnSetupTotp.innerHTML = '<i class="bi bi-shield-check"></i> <span>Google Authenticator Activo (Reconfigurar)</span>';
-                        }
-
-                        setTimeout(() => {
-                            if (setupBox) setupBox.classList.add('d-none');
-                        }, 2500);
-                    } else {
-                        this._showTotpFeedback('Código incorrecto. Compruebe la hora del móvil.', true);
-                    }
-                } catch (err) {
-                    this._showTotpFeedback('Error al validar: ' + err.message, true);
-                } finally {
-                    btnConfirm.disabled = false;
-                    btnConfirm.innerHTML = 'Verificar';
-                }
-            };
-        }
+        // 2. Escuchar evento de enrolamiento completado
+        eventBus.on('profile:mfa-enrolled', () => {
+            if (toggle2FA) toggle2FA.checked = true;
+            if (btnSetupTotp) {
+                btnSetupTotp.classList.remove('btn-outline-primary');
+                btnSetupTotp.classList.add('btn-outline-success');
+                btnSetupTotp.innerHTML = '<i class="bi bi-shield-check"></i> <span>Google Authenticator Activo (AAL2)</span>';
+            }
+        });
 
         // 3. Switch general de 2FA
         if (toggle2FA) {
