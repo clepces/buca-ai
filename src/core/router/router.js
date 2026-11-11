@@ -99,6 +99,11 @@ class Router {
             if (route && route.requiresAuth) {
                 const { RouterGuards } = await import('./guards.js');
                 if (!RouterGuards.requiresAuth()) return this.navigate('/auth/login');
+                const hasAAL2 = await RouterGuards.requiresAAL2();
+                if (!hasAAL2) {
+                    eventBus.emit('auth:mfa-required', { returnUrl: path });
+                    return this.navigate('/auth/login');
+                }
             }
 
             if (!route) return this.#renderError('404');

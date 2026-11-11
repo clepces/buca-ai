@@ -7,7 +7,7 @@ export const CONFIG = {
     APP: {
         NAME: 'BUCA Website',
         DESCRIPTION: 'Buca Neural Engine Presentation',
-        VERSION: '1.1.0-alpha',
+        VERSION: '1.1.1-alpha',
         SUPPORT_EMAIL: 'support@buca.com.ve',
         WEBSITE: 'https://buca.com.ve'
     },

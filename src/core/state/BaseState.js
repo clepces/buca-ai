@@ -64,11 +64,14 @@ export class BaseState {
      * Notifica a todos los observadores (Agrupado vía requestAnimationFrame)
      */
     notify() {
+        const scheduleFrame = typeof requestAnimationFrame !== 'undefined' ? requestAnimationFrame : (fn) => setTimeout(fn, 0);
+        const cancelFrame = typeof cancelAnimationFrame !== 'undefined' ? cancelAnimationFrame : clearTimeout;
+
         if (this._notifyTimeout) {
-            cancelAnimationFrame(this._notifyTimeout);
+            cancelFrame(this._notifyTimeout);
         }
 
-        this._notifyTimeout = requestAnimationFrame(() => {
+        this._notifyTimeout = scheduleFrame(() => {
             const state = this.get();
             this._listeners.forEach(handler => {
                 try {
