@@ -47,7 +47,7 @@ export const BusinessHub = {
             return `
                 <div class="hub-card-compact d-flex align-items-center justify-content-center p-3 opacity-75">
                     <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
-                    <span class="small text-muted">Sincronizando con Firestore...</span>
+                    <span class="small text-muted">Sincronizando con Supabase...</span>
                 </div>
                 <div class="hub-card-compact add-new clickable" data-action="ui:open_create_business">
                     <div class="add-icon"><i class="bi bi-plus-lg"></i></div>

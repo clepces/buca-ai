@@ -182,15 +182,33 @@ export class ModalService {
 
     static async showProfileModal(initialTab = 'general') {
         const { default: ProfileController } = await import('@/modules/profile/ProfileController.js');
-        
+        const { sessionState } = await import('@/core/state/session.js');
+        const { ProfileService } = await import('@/modules/profile/services/ProfileService.js');
+
+        const sessionUser = sessionState.get().user || {};
+        let profileData = null;
+        if (sessionUser.uid) {
+            profileData = await ProfileService.getProfile(sessionUser.uid);
+        }
+
+        const userData = {
+            uid: sessionUser.uid || '',
+            email: sessionUser.email || '',
+            displayName: sessionUser.displayName || '',
+            profile: profileData || {},
+            security: {
+                two_factor_enabled: sessionUser.two_factor_enabled || false
+            }
+        };
+
         this.showModal({
             size: 'lg',
             header: ModalTemplates.buildHeader({
                 icon: 'bi-person-badge',
                 title: 'Perfil de Operador & Identidad',
-                subtitle: 'CONFIGURACIÓN DE CUENTA Y SEGURIDAD BUSA-I'
+                subtitle: 'CONFIGURACIÓN DE CUENTA Y SEGURIDAD B.U.C.A. AI'
             }),
-            body: ModalTemplates.userProfileFull(),
+            body: ModalTemplates.userProfileFull(userData),
             footer: {
                 right: '<button type="button" class="btn btn-primary" data-action="ui:close_modal">Cerrar</button>'
             }

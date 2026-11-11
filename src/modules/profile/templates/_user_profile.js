@@ -2,6 +2,7 @@
  * User Profile Template - Modular Version (5 Tabs Architecture)
  * =======================================================================================
  * Identidad General | Talento & Ficha | Suscripción ERP | Seguridad & PIN | Dispositivos & Sesiones
+ * Totalmente reactivo con datos reales de la sesión y Supabase.
  * =======================================================================================
  */
 import { ProfileHero } from '../components/parts/ProfileHero.js';
@@ -19,23 +20,26 @@ export const userProfileFullTemplate = (userData = {}) => {
     const sub = userData.subscription_master || {};
     const sec = userData.security || {};
 
-    const firstName = profile.firstName || 'Asicodia';
-    const lastName = profile.lastName || 'Corp';
-    const email = profile.mail || userData.email || 'asicodia@gmail.com';
-    const username = profile.username || (email ? email.split('@')[0] : 'asicodia');
+    const nameParts = (userData.displayName || '').split(' ').filter(Boolean);
+    const firstName = profile.first_name || profile.firstName || nameParts[0] || 'Operador';
+    const lastName = profile.last_name || profile.lastName || nameParts.slice(1).join(' ') || 'BUCA';
+    const email = profile.email || profile.mail || userData.email || 'usuario@buca.com.ve';
+    const username = profile.username || (email ? email.split('@')[0] : 'operador');
     const platformRole = (profile.platform_role || 'user').toUpperCase();
-    const activeMode = profile.active_mode || 'user';
+    const activeMode = profile.active_mode || 'owner';
+    const uid = userData.uid || userData.id || profile.id || '';
 
     const initials = (firstName && lastName) 
         ? `${firstName[0]}${lastName[0]}`.toUpperCase() 
-        : 'AC';
+        : 'OP';
 
     let createdAt = 'Miembro Oficial';
-    if (userData.created_at) {
-        if (typeof userData.created_at.toDate === 'function') {
-            createdAt = userData.created_at.toDate().toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
-        } else if (typeof userData.created_at === 'string') {
-            createdAt = userData.created_at;
+    if (userData.created_at || profile.created_at) {
+        const rawDate = userData.created_at || profile.created_at;
+        if (typeof rawDate.toDate === 'function') {
+            createdAt = rawDate.toDate().toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
+        } else if (typeof rawDate === 'string') {
+            createdAt = new Date(rawDate).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
         }
     }
 
@@ -46,7 +50,7 @@ export const userProfileFullTemplate = (userData = {}) => {
         email,
         initials,
         activeMode,
-        uid: userData.uid || 'QmojtAorrSORnIR652B2OQrLFnV2',
+        uid,
         avatarUrl: profile.avatar_url || '',
         createdAt
     };
@@ -70,61 +74,31 @@ export const userProfileFullTemplate = (userData = {}) => {
 
     const workerData = {
         repScore: worker.reputation_score || 5.0,
-        shiftsCount: worker.total_shifts_completed || 350,
-        jobTitle: worker.job_title || 'Cajero Comercial & Operador ERP',
+        shiftsCount: worker.total_shifts_completed || 0,
+        jobTitle: worker.job_title || 'Operador de Plataforma ERP',
         availStatus: worker.availability_status || 'available',
-        bio: worker.bio || 'Operador con experiencia en gestión de caja, inventario y facturación bi-monetaria BCV/USDT.',
-        skillsList: Array.isArray(worker.skills) && worker.skills.length > 0 
-            ? worker.skills 
-            : [
-                { name: 'Manejo de Caja & Cuadres', icon: 'bi-cash-coin', pts: '1,500 Pts' },
-                { name: 'Gestión de Inventario FIFO', icon: 'bi-boxes', pts: '1,280 Pts' },
-                { name: 'Operación Multimoneda BCV/USDT', icon: 'bi-currency-exchange', pts: '1,450 Pts' },
-                { name: 'Facturación & Ticketera SENIAT', icon: 'bi-receipt', pts: '1,100 Pts' },
-                { name: 'Atención al Cliente & POS', icon: 'bi-person-check-fill', pts: '980 Pts' },
-                { name: 'Auditoría de Cierres de Turno', icon: 'bi-shield-check', pts: '1,320 Pts' }
-            ],
-        experienceCards: Array.isArray(worker.experience_cards) && worker.experience_cards.length > 0
-            ? worker.experience_cards
-            : [
-                {
-                    id: 'exp_01',
-                    company_name: 'BUCA Enterprise Main HQ',
-                    job_role: 'Super Administrador & Arquitecto Principal ERP',
-                    date_range: '2024 - Presente',
-                    branch_location: 'Caracas - Centro Empresarial B.U.C.A.',
-                    schedule_label: '08:00 AM - 05:00 PM (Turno Asignado)',
-                    is_verified: true
-                },
-                {
-                    id: 'exp_02',
-                    company_name: 'Comercializadora Gran Plaza C.A.',
-                    job_role: 'Gerente de Caja & Tesorería Multimoneda',
-                    date_range: '2022 - 2024',
-                    branch_location: 'Sucursal Central Baruta',
-                    schedule_label: '08:00 AM - 04:00 PM (Turno Mañana)',
-                    is_verified: true
-                }
-            ]
+        bio: worker.bio || profile.bio || 'Operador activo del ecosistema B.U.C.A. AI.',
+        skillsList: Array.isArray(worker.skills) ? worker.skills : [],
+        experienceCards: Array.isArray(worker.experience_cards) ? worker.experience_cards : []
     };
 
     const subscriptionData = {
-        planTier: sub.plan_tier || 'ENTERPRISE MASTER UNLIMITED',
-        planStatus: sub.status || 'ACTIVO (ILIMITADO)',
-        validUntil: sub.valid_until || 'Licencia Vitalicia Master',
-        maxBiz: sub.max_businesses || 'Ilimitado (999+)',
-        maxUsers: sub.max_users || 'Ilimitado'
+        planTier: sub.plan_tier || profile.subscription_master || 'PLAN ESTÁNDAR (CAPA GRATUITA)',
+        planStatus: sub.status || 'ACTIVO',
+        validUntil: sub.valid_until || 'Acceso Continuo',
+        maxBiz: sub.max_businesses || '3 Unidades',
+        maxUsers: sub.max_users || '5 Operadores'
     };
 
     const securityData = {
         pinCode: '',
-        twoFactor: sec.two_factor_enabled !== false,
+        twoFactor: sec.two_factor_enabled === true,
         recoveryMail: sec.recovery_email || email,
-        twoFactorMethod: sec.two_factor_method || 'email',
-        trustedDevices: userData.trusted_devices || {
+        twoFactorMethod: sec.two_factor_method || 'totp',
+        trustedDevices: userData.trusted_devices || profile.trusted_devices || {
             current: {
-                name: 'Navegador Web Activo (Windows 11 / Chrome 124)',
-                fingerprint: 'sha256_browser_identity_verified',
+                name: 'Sesión Activa Supabase Auth',
+                fingerprint: 'sha256_verified',
                 status: 'approved',
                 last_seen: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }
