@@ -72,7 +72,7 @@ export const ProfileController = {
 
                 const username = document.getElementById('prof-username')?.value?.trim() || '';
                 const emailInput = document.getElementById('prof-email')?.value?.trim();
-                const sessionEmail = sessionState.get().user?.email || 'usuario@buca.com';
+                const sessionEmail = sessionState.get().user?.email || '';
                 const mail = emailInput || sessionEmail;
                 const firstName = document.getElementById('prof-firstname')?.value?.trim() || '';
                 const lastName = document.getElementById('prof-lastname')?.value?.trim() || '';
@@ -151,7 +151,7 @@ export const ProfileController = {
         const toggle2FA = document.getElementById('profile-2fa-toggle');
 
         const sessionUser = sessionState.get().user || {};
-        const userEmail = sessionUser.email || 'usuario@buca.com';
+        const userEmail = sessionUser.email || '';
 
         // 1. Desplegar Modal de Enrolamiento MFA Nativo con Canvas QR
         if (btnSetupTotp) {

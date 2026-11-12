@@ -16,9 +16,9 @@ export const RateCalculatorHelper = {
             const amount = parseFloat(amountInput.value) || 0;
             const currency = currencySelect.value;
 
-            const bcvUsd = financialData?.bcv?.current?.usd || currentRate || 889.58;
-            const bcvEur = financialData?.bcv?.current?.eur || (bcvUsd * 1.158);
-            const usdtAvg = financialData?.usdt?.current?.average || (bcvUsd * 1.04);
+            const bcvUsd = financialData?.bcv?.current?.usd || currentRate || 0;
+            const bcvEur = financialData?.bcv?.current?.eur || 0;
+            const usdtAvg = financialData?.usdt?.current?.average || 0;
 
             let inVes = 0;
             if (currency === 'VES') inVes = amount;

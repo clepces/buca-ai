@@ -87,13 +87,13 @@ class BusinessService {
             }
 
             let businesses = (data || []).map(b => {
-                const loc = `${b.city || 'Sede'}, ${b.state || ''}`.trim();
+                const loc = `${b.city || ''}, ${b.state || ''}`.trim().replace(/^,\s*|,\s*$/g, '');
                 const raw = {
                     id: b.id,
-                    name: b.name || 'Unidad de Negocio',
+                    name: b.name || b.commercial_name || '',
                     commercial_name: b.commercial_name || b.name || '',
-                    type: b.category || b.type || 'Comercio General',
-                    location: loc || 'Principal',
+                    type: b.category || b.type || '',
+                    location: loc,
                     status: b.status || 'Active',
                     membership_type: 'owner',
                     role: 'owner',
@@ -137,9 +137,9 @@ class BusinessService {
         const data = validation.data;
         const name = data.name.trim();
         const commercialName = (data.commercial_name || name).trim();
-        const rif = (data.rif || 'J-00000000-0').trim().toUpperCase();
-        const category = data.category || 'Retail / Alimentos';
-        const locationStr = `${data.city}, ${data.state}`.trim();
+        const rif = (data.rif || '').trim().toUpperCase();
+        const category = data.category || '';
+        const locationStr = `${data.city || ''}, ${data.state || ''}`.trim().replace(/^,\s*|,\s*$/g, '');
         const businessId = 'biz_' + Date.now();
 
         try {

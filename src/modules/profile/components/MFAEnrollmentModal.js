@@ -180,12 +180,10 @@ export class MFAEnrollmentModal {
         const container = document.getElementById('mfa-step-container');
         if (!container) return;
 
-        // Generar 8 claves de respaldo de emergencia
+        // Generar 8 claves de respaldo de emergencia en memoria segura (Zero-Knowledge)
         const keys = BackupKeyService.generateKeys(8);
         this._backupKeys = keys;
-
-        // Guardar cifrado en Supabase
-        await BackupKeyService.saveEncryptedKeys(user.uid, keys);
+        await BackupKeyService.acknowledgeEmission(user.uid, keys);
 
         container.innerHTML = `
             <div class="text-center mb-3">

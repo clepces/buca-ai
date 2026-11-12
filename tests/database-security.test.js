@@ -1,7 +1,11 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { setMockSupabase, getSupabase } from '../src/core/config/supabase.js';
+import { createMockSupabaseClient } from './mocks/supabase.mock.js';
 import { SupabaseDriver } from '../src/core/storage/drivers/SupabaseDriver.js';
-import { getSupabase } from '../src/core/config/supabase.js';
+
+// Aislamiento total: Mock en memoria
+setMockSupabase(createMockSupabaseClient());
 
 describe('Database Security & RLS Hardening Suite (Etapa 5)', () => {
     const driver = new SupabaseDriver('app_storage');

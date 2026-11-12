@@ -2,7 +2,7 @@
  * User Profile Template - Modular Version (5 Tabs Architecture)
  * =======================================================================================
  * Identidad General | Talento & Ficha | Suscripción ERP | Seguridad & PIN | Dispositivos & Sesiones
- * Totalmente reactivo con datos reales de la sesión y Supabase.
+ * Totalmente reactivo con datos reales de la sesión y Supabase. Cero datos quemados.
  * =======================================================================================
  */
 import { ProfileHero } from '../components/parts/ProfileHero.js';
@@ -20,20 +20,19 @@ export const userProfileFullTemplate = (userData = {}) => {
     const sub = userData.subscription_master || {};
     const sec = userData.security || {};
 
-    const nameParts = (userData.displayName || '').split(' ').filter(Boolean);
-    const firstName = profile.first_name || profile.firstName || nameParts[0] || 'Operador';
-    const lastName = profile.last_name || profile.lastName || nameParts.slice(1).join(' ') || 'BUCA';
-    const email = profile.email || profile.mail || userData.email || 'usuario@buca.com.ve';
-    const username = profile.username || (email ? email.split('@')[0] : 'operador');
-    const platformRole = (profile.platform_role || 'user').toUpperCase();
+    const firstName = profile.first_name || profile.firstName || '';
+    const lastName = profile.last_name || profile.lastName || '';
+    const email = profile.email || profile.mail || userData.email || '';
+    const username = profile.username || (email ? email.split('@')[0] : '');
+    const platformRole = (profile.platform_role || userData.role || 'user').toUpperCase();
     const activeMode = profile.active_mode || 'owner';
     const uid = userData.uid || userData.id || profile.id || '';
 
     const initials = (firstName && lastName) 
         ? `${firstName[0]}${lastName[0]}`.toUpperCase() 
-        : 'OP';
+        : (username ? username.substring(0, 2).toUpperCase() : 'ID');
 
-    let createdAt = 'Miembro Oficial';
+    let createdAt = '-';
     if (userData.created_at || profile.created_at) {
         const rawDate = userData.created_at || profile.created_at;
         if (typeof rawDate.toDate === 'function') {
@@ -43,8 +42,10 @@ export const userProfileFullTemplate = (userData = {}) => {
         }
     }
 
+    const fullName = [firstName, lastName].filter(Boolean).join(' ') || (email ? email.split('@')[0] : 'Usuario');
+
     const heroData = {
-        fullName: `${firstName} ${lastName}`.trim(),
+        fullName,
         platformRole,
         username,
         email,
@@ -73,21 +74,21 @@ export const userProfileFullTemplate = (userData = {}) => {
     };
 
     const workerData = {
-        repScore: worker.reputation_score || 5.0,
+        repScore: worker.reputation_score || 0,
         shiftsCount: worker.total_shifts_completed || 0,
-        jobTitle: worker.job_title || 'Operador de Plataforma ERP',
+        jobTitle: worker.job_title || profile.job_title || '',
         availStatus: worker.availability_status || 'available',
-        bio: worker.bio || profile.bio || 'Operador activo del ecosistema B.U.C.A. AI.',
+        bio: worker.bio || profile.bio || '',
         skillsList: Array.isArray(worker.skills) ? worker.skills : [],
         experienceCards: Array.isArray(worker.experience_cards) ? worker.experience_cards : []
     };
 
     const subscriptionData = {
-        planTier: sub.plan_tier || profile.subscription_master || 'PLAN ESTÁNDAR (CAPA GRATUITA)',
+        planTier: sub.plan_tier || profile.subscription_master || 'PLAN ESTÁNDAR',
         planStatus: sub.status || 'ACTIVO',
-        validUntil: sub.valid_until || 'Acceso Continuo',
-        maxBiz: sub.max_businesses || '3 Unidades',
-        maxUsers: sub.max_users || '5 Operadores'
+        validUntil: sub.valid_until || 'Vigente',
+        maxBiz: sub.max_businesses || '3',
+        maxUsers: sub.max_users || '5'
     };
 
     const securityData = {
@@ -95,14 +96,7 @@ export const userProfileFullTemplate = (userData = {}) => {
         twoFactor: sec.two_factor_enabled === true,
         recoveryMail: sec.recovery_email || email,
         twoFactorMethod: sec.two_factor_method || 'totp',
-        trustedDevices: userData.trusted_devices || profile.trusted_devices || {
-            current: {
-                name: 'Sesión Activa Supabase Auth',
-                fingerprint: 'sha256_verified',
-                status: 'approved',
-                last_seen: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }
-        }
+        trustedDevices: userData.trusted_devices || profile.trusted_devices || {}
     };
 
     return `

@@ -32,6 +32,12 @@ export const AuthService = {
                     const totpFactor = factors?.totp?.[0];
 
                     if (totpFactor) {
+                        sessionState.set({
+                            isAuthenticated: false,
+                            mfaPending: true,
+                            user: null,
+                            currentRole: 'guest'
+                        });
                         eventBus.emit('auth:mfa-required', { factorId: totpFactor.id, user });
                         return {
                             success: false,
@@ -85,6 +91,7 @@ export const AuthService = {
 
             sessionState.set({
                 isAuthenticated: true,
+                mfaPending: false,
                 user: {
                     uid: user.id,
                     email: user.email,
