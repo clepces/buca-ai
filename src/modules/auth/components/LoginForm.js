@@ -126,7 +126,7 @@ export const LoginForm = {
     showFeedback(message, type = 'error') {
         const area = document.getElementById('login-feedback');
         if (!area) return;
-        area.innerHTML = `<span>${message}</span>`;
+        area.textContent = message;
         area.className = `alert alert-${type === 'error' ? 'danger' : 'success'} animate__animated animate__headShake py-2 small mb-4`;
         area.classList.remove('d-none');
     },

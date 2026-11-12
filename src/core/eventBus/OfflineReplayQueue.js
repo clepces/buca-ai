@@ -87,6 +87,7 @@ class OfflineReplayQueue {
 
     /**
      * Reejecuta los eventos pendientes a través del emisor suministrado.
+     * Espera la confirmación asíncrona de éxito antes de descartar cada evento.
      */
     async drain(emitterFn) {
         if (this._isReplaying) return 0;
@@ -94,16 +95,24 @@ class OfflineReplayQueue {
         let count = 0;
 
         try {
-            // 1. Drenar cola en memoria
+            // 1. Drenar cola en memoria de manera resiliente
             while (this._inMemoryQueue.length > 0) {
-                const item = this._inMemoryQueue.shift();
+                const item = this._inMemoryQueue[0];
                 if (typeof emitterFn === 'function') {
-                    emitterFn(item.event, ...item.args);
-                    count++;
+                    try {
+                        await emitterFn(item.event, ...item.args);
+                        this._inMemoryQueue.shift();
+                        count++;
+                    } catch (emitErr) {
+                        console.warn('[OfflineReplayQueue] Fallo en retransmisión de evento en memoria. Deteniendo drenaje:', emitErr);
+                        break;
+                    }
+                } else {
+                    this._inMemoryQueue.shift();
                 }
             }
 
-            // 2. Drenar IndexedDB
+            // 2. Drenar IndexedDB confirmando transacción por transacción
             const db = await this._openDB();
             if (!db) return count;
 
@@ -122,23 +131,28 @@ class OfflineReplayQueue {
             if (records.length > 0) {
                 for (const item of records) {
                     if (typeof emitterFn === 'function') {
-                        emitterFn(item.event, ...item.args);
-                        count++;
+                        try {
+                            await emitterFn(item.event, ...item.args);
+
+                            // Descartar el evento de IndexedDB solo tras confirmación asíncrona exitosa
+                            await new Promise((resolve) => {
+                                try {
+                                    const tx = db.transaction(STORE_NAME, 'readwrite');
+                                    const store = tx.objectStore(STORE_NAME);
+                                    const delReq = store.delete(item.id);
+                                    delReq.onsuccess = () => resolve();
+                                    delReq.onerror = () => resolve();
+                                } catch {
+                                    resolve();
+                                }
+                            });
+                            count++;
+                        } catch (err) {
+                            console.warn('[OfflineReplayQueue] Fallo en confirmación de evento persistido. Deteniendo drenaje para reintento:', err);
+                            break;
+                        }
                     }
                 }
-
-                // Limpiar almacén
-                await new Promise((resolve) => {
-                    try {
-                        const tx = db.transaction(STORE_NAME, 'readwrite');
-                        const store = tx.objectStore(STORE_NAME);
-                        store.clear();
-                        tx.oncomplete = () => resolve();
-                        tx.onerror = () => resolve();
-                    } catch {
-                        resolve();
-                    }
-                });
             }
 
             return count;

@@ -2,21 +2,22 @@
  * SupabaseMock - Cliente en Memoria para Aislamiento Absoluto de Pruebas
  * =========================================================================
  * Evita cualquier llamada a la API remota de Supabase durante npm test.
- * Implementa almacenamiento en memoria, query builders y autenticación mock.
+ * Implementa almacenamiento en memoria, query builders y validación RLS mock.
  * =========================================================================
  */
 
 export class MockTableQueryBuilder {
-    constructor(tableName, store) {
+    constructor(tableName, store, auth) {
         this.tableName = tableName;
         this.store = store;
+        this.auth = auth;
         if (!this.store.has(tableName)) {
             this.store.set(tableName, []);
         }
         this._filters = [];
         this._selectCols = '*';
         this._limitCount = null;
-        this._pendingAction = 'select'; // 'select', 'insert', 'upsert', 'update', 'delete'
+        this._pendingAction = 'select';
         this._actionPayload = null;
         this._onConflict = null;
     }
@@ -39,7 +40,6 @@ export class MockTableQueryBuilder {
     }
 
     or(filterExp) {
-        // Soporta formatos simples como "owner_id.eq.USER,owner_id.is.null"
         const parts = filterExp.split(',');
         this._filters.push(row => {
             return parts.some(p => {
@@ -57,14 +57,8 @@ export class MockTableQueryBuilder {
         return this;
     }
 
-    order() {
-        return this;
-    }
-
-    limit(n) {
-        this._limitCount = n;
-        return this;
-    }
+    order() { return this; }
+    limit(n) { this._limitCount = n; return this; }
 
     insert(data) {
         this._pendingAction = 'insert';
@@ -100,6 +94,22 @@ export class MockTableQueryBuilder {
 
     async then(resolve) {
         const tableRows = this.store.get(this.tableName) || [];
+        const sessionUser = this.auth?._session?.user || null;
+
+        // RLS Mock: profiles update - bloquear cambio de platform_role si no es super_admin
+        if (this.tableName === 'profiles' && this._pendingAction === 'update') {
+            if (this._actionPayload?.platform_role && sessionUser?.platform_role !== 'super_admin') {
+                return resolve({ data: null, error: { message: 'No está autorizado para modificar platform_role.' } });
+            }
+        }
+
+        // RLS Mock: activity_log insert - prohibir anónimos
+        if (this.tableName === 'activity_log' && this._pendingAction === 'insert') {
+            const hasAnonymous = this._actionPayload.some(r => !r.user_id || !sessionUser);
+            if (hasAnonymous) {
+                return resolve({ data: null, error: { message: 'Violación RLS: activity_log exige user_id autenticado.' } });
+            }
+        }
 
         if (this._pendingAction === 'insert') {
             const newRows = this._actionPayload.map(item => ({
@@ -150,8 +160,17 @@ export class MockTableQueryBuilder {
             return resolve({ data: initialLen - remaining.length, error: null });
         }
 
-        // SELECT por defecto
+        // SELECT con RLS Mock
         let matching = this._applyFilters(tableRows);
+
+        if (this.tableName === 'profiles') {
+            matching = sessionUser ? matching.filter(r => r.id === sessionUser.id) : [];
+        } else if (this.tableName === 'businesses') {
+            matching = sessionUser ? matching.filter(r => r.owner_id === sessionUser.id) : [];
+        } else if (this.tableName === 'app_storage') {
+            matching = sessionUser ? matching.filter(r => r.owner_id === sessionUser.id) : [];
+        }
+
         if (this._limitCount != null) {
             matching = matching.slice(0, this._limitCount);
         }
@@ -174,57 +193,59 @@ export class MockTableQueryBuilder {
 
 export function createMockSupabaseClient() {
     const memoryStore = new Map();
-
-    return {
-        _store: memoryStore,
-        from(tableName) {
-            return new MockTableQueryBuilder(tableName, memoryStore);
+    const authState = {
+        _session: { user: { id: 'mock_uid_1', email: 'tester@buca.com', platform_role: 'super_admin' } },
+        setSession(s) { this._session = s; },
+        async getSession() {
+            return { data: { session: this._session }, error: null };
         },
-        auth: {
-            async getSession() {
-                return { data: { session: null }, error: null };
+        async getUser() {
+            return { data: { user: this._session?.user || null }, error: null };
+        },
+        async signInWithPassword({ email }) {
+            this._session = { user: { id: 'mock_uid_1', email, platform_role: 'super_admin' } };
+            return { data: { user: this._session.user }, error: null };
+        },
+        async signOut() {
+            this._session = null;
+            return { error: null };
+        },
+        onAuthStateChange(cb) {
+            return { data: { subscription: { unsubscribe: () => {} } } };
+        },
+        mfa: {
+            async getAuthenticatorAssuranceLevel() {
+                return { data: { currentLevel: 'aal1', nextLevel: 'aal1' }, error: null };
             },
-            async getUser() {
-                return { data: { user: null }, error: null };
+            async listFactors() {
+                return { data: { totp: [], all: [] }, error: null };
             },
-            async signInWithPassword({ email }) {
+            async enroll() {
                 return {
-                    data: { user: { id: 'mock_uid_1', email } },
+                    data: {
+                        id: 'mock_factor_1',
+                        totp: { secret: 'JBSWY3DPEHPK3PXP', qr_code: 'mock_qr', uri: 'otpauth://...' }
+                    },
                     error: null
                 };
             },
-            async signOut() {
-                return { error: null };
+            async challenge({ factorId }) {
+                return { data: { id: `mock_chal_${factorId}` }, error: null };
             },
-            onAuthStateChange(cb) {
-                return { data: { subscription: { unsubscribe: () => {} } } };
-            },
-            mfa: {
-                async getAuthenticatorAssuranceLevel() {
-                    return { data: { currentLevel: 'aal1', nextLevel: 'aal1' }, error: null };
-                },
-                async listFactors() {
-                    return { data: { totp: [], all: [] }, error: null };
-                },
-                async enroll() {
-                    return {
-                        data: {
-                            id: 'mock_factor_1',
-                            totp: { secret: 'JBSWY3DPEHPK3PXP', qr_code: 'mock_qr', uri: 'otpauth://...' }
-                        },
-                        error: null
-                    };
-                },
-                async challenge({ factorId }) {
-                    return { data: { id: `mock_chal_${factorId}` }, error: null };
-                },
-                async verify({ factorId, code }) {
-                    if (code === '000000' || code?.length !== 6) {
-                        return { data: null, error: { message: 'Código TOTP incorrecto.' } };
-                    }
-                    return { data: { user: { id: 'mock_uid_1' } }, error: null };
+            async verify({ factorId, code }) {
+                if (code === '000000' || code?.length !== 6) {
+                    return { data: null, error: { message: 'Código TOTP incorrecto.' } };
                 }
+                return { data: { user: { id: 'mock_uid_1' } }, error: null };
             }
+        }
+    };
+
+    return {
+        _store: memoryStore,
+        auth: authState,
+        from(tableName) {
+            return new MockTableQueryBuilder(tableName, memoryStore, authState);
         }
     };
 }

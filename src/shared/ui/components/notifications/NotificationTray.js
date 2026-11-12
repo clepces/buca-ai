@@ -6,6 +6,7 @@
  * =========================================================================
  */
 import { sessionState } from '@/core/state/session.js';
+import { escapeHTML } from '@/shared/utils/security.js';
 
 // Configuración visual por tipo de notificación
 const TYPE_CONFIG = {
@@ -72,6 +73,8 @@ export const NotificationTray = {
         const isRead = n.read_by?.includes(currentUid);
         const cfg = getTypeConfig(n.type);
         const timeStr = formatTime(n);
+        const safeTitle = escapeHTML(n.title || 'Alerta del Sistema');
+        const safeMessage = escapeHTML(n.message || '');
 
         return `
             <div class="notification-item position-relative p-2.5 mb-2 rounded-3 ${isRead ? 'item-read' : 'item-unread'}" 
@@ -84,10 +87,10 @@ export const NotificationTray = {
 
                     <div class="d-flex flex-column flex-grow-1 min-w-0">
                         <div class="d-flex align-items-center justify-content-between gap-1 mb-1">
-                            <span class="fw-bold text-main text-truncate notif-title">${n.title || 'Alerta del Sistema'}</span>
+                            <span class="fw-bold text-main text-truncate notif-title">${safeTitle}</span>
                             <span class="text-muted flex-shrink-0 notif-time">${timeStr}</span>
                         </div>
-                        <p class="mb-1 text-muted notif-desc">${n.message || ''}</p>
+                        <p class="mb-1 text-muted notif-desc">${safeMessage}</p>
                         
                         <div class="d-flex align-items-center justify-content-between pt-1">
                             <span class="badge rounded-pill notif-badge">${cfg.badgeText}</span>

@@ -5,9 +5,11 @@ import { createMockSupabaseClient } from './mocks/supabase.mock.js';
 import { FinanceRepository } from '../src/modules/finance/services/FinanceRepository.js';
 import { NotificationService } from '../src/core/services/NotificationService.js';
 import { ActivityLogService } from '../src/core/services/ActivityLogService.js';
+import { sessionState } from '../src/core/state/session.js';
 
 // Aislamiento total: Mock en memoria
 setMockSupabase(createMockSupabaseClient());
+sessionState.set({ user: { uid: 'mock_uid_1', email: 'tester@buca.com' } });
 
 describe('Finance Sync & Dual-Dispatch Notifications Suite (Etapa 6)', () => {
     it('FinanceRepository.calculateGap debe calcular con precisión la brecha porcentual', () => {

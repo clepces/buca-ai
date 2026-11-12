@@ -1,6 +1,6 @@
 -- =========================================================================
 -- B.U.C.A. AI - Migración RLS Hardening & Políticas PostgreSQL
--- Versión: 20261111000000_rls_hardening_and_policies.sql
+-- Versión: 20261111000000_rls_hardening_and_policies.sql (Revisión Etapa 8)
 -- Estándar: supabase-postgres-best-practices (InitPlan O(1) con (select auth.uid()))
 -- =========================================================================
 
@@ -46,7 +46,7 @@ BEGIN
     EXECUTE v_drop || '"app_storage_delete" ON public.app_storage;';
 END $$;
 
--- 3. Políticas RLS: profiles (Aislamiento por usuario autenticado)
+-- 3. Políticas RLS: profiles (Aislamiento y bloqueo de platform_role)
 CREATE POLICY "profiles_select_own" ON public.profiles
     FOR SELECT TO authenticated
     USING (id = (SELECT auth.uid()));
@@ -58,11 +58,39 @@ CREATE POLICY "profiles_insert_own" ON public.profiles
 CREATE POLICY "profiles_update_own" ON public.profiles
     FOR UPDATE TO authenticated
     USING (id = (SELECT auth.uid()))
-    WITH CHECK (id = (SELECT auth.uid()));
+    WITH CHECK (
+        id = (SELECT auth.uid())
+        AND (
+            platform_role IS NOT DISTINCT FROM (SELECT p.platform_role FROM public.profiles p WHERE p.id = (SELECT auth.uid()))
+            OR EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = (SELECT auth.uid()) AND p.platform_role = 'super_admin')
+        )
+    );
 
 CREATE POLICY "profiles_delete_own" ON public.profiles
     FOR DELETE TO authenticated
     USING (id = (SELECT auth.uid()));
+
+-- Trigger de protección contra escalación de privilegios en platform_role
+CREATE OR REPLACE FUNCTION public.check_profile_role_update()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.platform_role IS DISTINCT FROM OLD.platform_role THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE id = (SELECT auth.uid()) AND platform_role = 'super_admin'
+        ) THEN
+            RAISE EXCEPTION 'No está autorizado para modificar platform_role.';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS tr_check_profile_role ON public.profiles;
+CREATE TRIGGER tr_check_profile_role
+    BEFORE UPDATE ON public.profiles
+    FOR EACH ROW
+    EXECUTE FUNCTION public.check_profile_role_update();
 
 -- 4. Políticas RLS: businesses (Aislamiento por owner_id)
 CREATE POLICY "businesses_select_owner" ON public.businesses
@@ -84,7 +112,7 @@ CREATE POLICY "businesses_delete_owner" ON public.businesses
 
 -- 5. Políticas RLS: staff (Acceso a miembros asignados y propietarios)
 CREATE POLICY "staff_select" ON public.staff
-    FOR SELECT TO authenticated, anon
+    FOR SELECT TO authenticated
     USING (user_id = (SELECT auth.uid()) OR EXISTS (
         SELECT 1 FROM public.businesses b WHERE b.id = staff.business_id AND b.owner_id = (SELECT auth.uid())
     ));
@@ -110,65 +138,99 @@ CREATE POLICY "staff_delete" ON public.staff
         SELECT 1 FROM public.businesses b WHERE b.id = staff.business_id AND b.owner_id = (SELECT auth.uid())
     ));
 
--- 6. Políticas RLS: finance_rates (Lectura pública y cotizaciones operativas)
+-- 6. Políticas RLS: finance_rates (Lectura pública, escritura exclusiva de super_admin)
 CREATE POLICY "finance_rates_select" ON public.finance_rates
     FOR SELECT TO authenticated, anon
     USING (true);
 
 CREATE POLICY "finance_rates_insert" ON public.finance_rates
-    FOR INSERT TO authenticated, anon
-    WITH CHECK (true);
+    FOR INSERT TO authenticated
+    WITH CHECK (EXISTS (
+        SELECT 1 FROM public.profiles WHERE id = (SELECT auth.uid()) AND platform_role = 'super_admin'
+    ));
 
 CREATE POLICY "finance_rates_update" ON public.finance_rates
-    FOR UPDATE TO authenticated, anon
-    USING (true)
-    WITH CHECK (true);
+    FOR UPDATE TO authenticated
+    USING (EXISTS (
+        SELECT 1 FROM public.profiles WHERE id = (SELECT auth.uid()) AND platform_role = 'super_admin'
+    ))
+    WITH CHECK (EXISTS (
+        SELECT 1 FROM public.profiles WHERE id = (SELECT auth.uid()) AND platform_role = 'super_admin'
+    ));
 
 CREATE POLICY "finance_rates_delete" ON public.finance_rates
     FOR DELETE TO authenticated
-    USING ((SELECT auth.uid()) IS NOT NULL);
+    USING (EXISTS (
+        SELECT 1 FROM public.profiles WHERE id = (SELECT auth.uid()) AND platform_role = 'super_admin'
+    ));
 
--- 7. Políticas RLS: notifications (Dual-Dispatch & read_by array)
+-- 7. Políticas RLS: notifications (Dual-Dispatch & validación de pertenencia)
 CREATE POLICY "notifications_select" ON public.notifications
-    FOR SELECT TO authenticated, anon
-    USING (user_id IS NULL OR user_id = (SELECT auth.uid()) OR (SELECT auth.uid()) = ANY(read_by));
+    FOR SELECT TO authenticated
+    USING (
+        user_id = (SELECT auth.uid())
+        OR (SELECT auth.uid()) = ANY(read_by)
+        OR EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = target_tenant AND b.owner_id = (SELECT auth.uid()))
+        OR EXISTS (SELECT 1 FROM public.staff s WHERE s.business_id = target_tenant AND s.user_id = (SELECT auth.uid()))
+    );
 
 CREATE POLICY "notifications_insert" ON public.notifications
-    FOR INSERT TO authenticated, anon
-    WITH CHECK (true);
+    FOR INSERT TO authenticated
+    WITH CHECK (
+        user_id = (SELECT auth.uid())
+        OR EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = target_tenant AND b.owner_id = (SELECT auth.uid()))
+        OR EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = (SELECT auth.uid()) AND p.platform_role = 'super_admin')
+    );
 
 CREATE POLICY "notifications_update" ON public.notifications
-    FOR UPDATE TO authenticated, anon
-    USING (user_id IS NULL OR user_id = (SELECT auth.uid()) OR (SELECT auth.uid()) IS NOT NULL)
-    WITH CHECK (user_id IS NULL OR user_id = (SELECT auth.uid()) OR (SELECT auth.uid()) IS NOT NULL);
+    FOR UPDATE TO authenticated
+    USING (
+        user_id = (SELECT auth.uid())
+        OR (SELECT auth.uid()) = ANY(read_by)
+        OR EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = target_tenant AND b.owner_id = (SELECT auth.uid()))
+    )
+    WITH CHECK (
+        user_id = (SELECT auth.uid())
+        OR (SELECT auth.uid()) = ANY(read_by)
+        OR EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = target_tenant AND b.owner_id = (SELECT auth.uid()))
+    );
 
 CREATE POLICY "notifications_delete" ON public.notifications
     FOR DELETE TO authenticated
-    USING (user_id = (SELECT auth.uid()));
+    USING (
+        user_id = (SELECT auth.uid())
+        OR EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = target_tenant AND b.owner_id = (SELECT auth.uid()))
+    );
 
--- 8. Políticas RLS: activity_log (Bitácora inmutable)
+-- 8. Políticas RLS: activity_log (Bitácora inmutable con auth.uid() obligatorio)
 CREATE POLICY "activity_log_select" ON public.activity_log
-    FOR SELECT TO authenticated, anon
-    USING (user_id IS NULL OR user_id = (SELECT auth.uid()));
+    FOR SELECT TO authenticated
+    USING (
+        user_id = (SELECT auth.uid())
+        OR EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = (SELECT auth.uid()) AND p.platform_role = 'super_admin')
+    );
 
 CREATE POLICY "activity_log_insert" ON public.activity_log
-    FOR INSERT TO authenticated, anon
-    WITH CHECK (user_id IS NULL OR user_id = (SELECT auth.uid()) OR (SELECT auth.uid()) IS NOT NULL);
+    FOR INSERT TO authenticated
+    WITH CHECK (
+        (SELECT auth.uid()) IS NOT NULL
+        AND user_id = (SELECT auth.uid())
+    );
 
--- 9. Políticas RLS: app_storage (Aislamiento Multi-Tenant de Clave-Valor)
+-- 9. Políticas RLS: app_storage (Aislamiento Multi-Tenant estricto; prohíbe owner_id IS NULL)
 CREATE POLICY "app_storage_select" ON public.app_storage
-    FOR SELECT TO authenticated, anon
-    USING (owner_id IS NULL OR owner_id = (SELECT auth.uid()));
+    FOR SELECT TO authenticated
+    USING (owner_id = (SELECT auth.uid()));
 
 CREATE POLICY "app_storage_insert" ON public.app_storage
-    FOR INSERT TO authenticated, anon
-    WITH CHECK (owner_id IS NULL OR owner_id = (SELECT auth.uid()));
+    FOR INSERT TO authenticated
+    WITH CHECK (owner_id = (SELECT auth.uid()));
 
 CREATE POLICY "app_storage_update" ON public.app_storage
-    FOR UPDATE TO authenticated, anon
-    USING (owner_id IS NULL OR owner_id = (SELECT auth.uid()))
-    WITH CHECK (owner_id IS NULL OR owner_id = (SELECT auth.uid()));
+    FOR UPDATE TO authenticated
+    USING (owner_id = (SELECT auth.uid()))
+    WITH CHECK (owner_id = (SELECT auth.uid()));
 
 CREATE POLICY "app_storage_delete" ON public.app_storage
-    FOR DELETE TO authenticated, anon
-    USING (owner_id IS NULL OR owner_id = (SELECT auth.uid()));
+    FOR DELETE TO authenticated
+    USING (owner_id = (SELECT auth.uid()));
