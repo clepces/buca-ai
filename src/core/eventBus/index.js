@@ -9,7 +9,9 @@ class EventBus {
     constructor() {
         this.events = new Map();
         this.middlewares = new Set();
-        offlineReplayQueue.registerEmitter((ev, ...args) => this.emit(ev, ...args));
+        offlineReplayQueue.registerEmitter(async (ev, ...args) => {
+            await this.emitAsync(ev, ...args);
+        });
     }
 
     /**

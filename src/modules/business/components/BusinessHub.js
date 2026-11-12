@@ -1,7 +1,7 @@
 /**
  * @fileoverview BusinessHub Component (Módulo de Negocios)
  * @module modules/business/components/BusinessHub
- * @description Gestión de unidades de negocio conectadas a Firebase Firestore con display_cache.
+ * @description Gestión de unidades de negocio conectadas a Supabase con display_cache.
  */
 
 import { escapeHTML } from '@/shared/utils/security.js';
@@ -13,6 +13,9 @@ export const BusinessHub = {
     _items: [],
     _isLoading: true,
     _currentFilter: 'all',
+    _eventUnsubs: [],
+    _sectionEl: null,
+    _clickHandler: null,
 
     render() {
         return `
@@ -89,9 +92,11 @@ export const BusinessHub = {
         const { name, type, status = 'Active', membership_type = 'owner' } = business;
         const isWarning = String(status).toLowerCase() === 'warning';
         const isOwner = membership_type === 'owner';
+        const safePayload = escapeHTML(JSON.stringify({ id: business.id }));
+        const safeId = escapeHTML(String(business.id));
         
         return `
-            <div class="hub-card-compact glass-surface clickable" data-action="ui:enter_business" data-payload='{"id": "${business.id}"}'>
+            <div class="hub-card-compact glass-surface clickable" data-action="ui:enter_business" data-id="${safeId}" data-payload="${safePayload}">
                 <div class="card-status-line ${isWarning ? 'bg-warning' : 'bg-success'}"></div>
                 <div class="card-content">
                     <div class="d-flex justify-content-between align-items-start mb-1">
@@ -155,7 +160,7 @@ export const BusinessHub = {
                                         </div>
                                     </div>
 
-                                    <button type="button" class="btn btn-primary w-100 rounded-pill btn-sm fw-bold shadow-sm" data-action="ui:enter_business" data-payload='{"id": "${b.id}"}'>
+                                    <button type="button" class="btn btn-primary w-100 rounded-pill btn-sm fw-bold shadow-sm" data-action="ui:enter_business" data-id="${escapeHTML(String(b.id))}" data-payload="${escapeHTML(JSON.stringify({ id: b.id }))}">
                                         Gestionar Unidad <i class="bi bi-arrow-right ms-1"></i>
                                     </button>
                                 </div>
@@ -199,32 +204,27 @@ export const BusinessHub = {
         const section = document.getElementById('business-hub-section');
         if (!section || section._bucaInit) return;
         section._bucaInit = true;
+        this._sectionEl = section;
 
         this.loadBusinesses();
 
-        eventBus.on('workspace:business_created', () => {
-            this._isLoading = true;
-            this.loadBusinesses();
-        });
+        // Limpieza previa si existían suscripciones
+        this._eventUnsubs.forEach(unsub => { if (typeof unsub === 'function') unsub(); });
+        this._eventUnsubs = [];
 
-        eventBus.on('workspace:refresh_data', () => {
-            this.loadBusinesses();
-        });
+        this._eventUnsubs.push(
+            eventBus.on('workspace:business_created', () => { this._isLoading = true; this.loadBusinesses(); }),
+            eventBus.on('workspace:refresh_data', () => { this.loadBusinesses(); }),
+            eventBus.on('auth:login-success', () => { businessService.clearCache(); this._isLoading = true; this.loadBusinesses(); }),
+            eventBus.on('workspace:filter_context', (payload = {}) => {
+                const filter = payload?.filter || payload?.context || 'all';
+                this._currentFilter = filter === 'properties' ? 'owner' : (filter === 'collaborations' ? 'worker' : 'all');
+                this._isLoading = true;
+                this.loadBusinesses();
+            })
+        );
 
-        eventBus.on('auth:login-success', () => {
-            businessService.clearCache();
-            this._isLoading = true;
-            this.loadBusinesses();
-        });
-
-        eventBus.on('workspace:filter_context', (payload = {}) => {
-            const filter = payload?.filter || payload?.context || 'all';
-            this._currentFilter = filter === 'properties' ? 'owner' : (filter === 'collaborations' ? 'worker' : 'all');
-            this._isLoading = true;
-            this.loadBusinesses();
-        });
-
-        section.addEventListener('click', (e) => {
+        this._clickHandler = (e) => {
             const prev = e.target.closest('#hub-prev');
             const next = e.target.closest('#hub-next');
             const container = section.querySelector('#hub-scroll-container');
@@ -262,7 +262,31 @@ export const BusinessHub = {
                     }
                 });
             }
-        });
+        };
+
+        section.addEventListener('click', this._clickHandler);
+    },
+
+    /**
+     * Limpieza completa del ciclo de vida para prevenir fugas de memoria
+     */
+    destroy() {
+        if (this._sectionEl && this._clickHandler) {
+            this._sectionEl.removeEventListener('click', this._clickHandler);
+            delete this._sectionEl._bucaInit;
+            this._sectionEl = null;
+            this._clickHandler = null;
+        }
+
+        if (Array.isArray(this._eventUnsubs)) {
+            this._eventUnsubs.forEach(unsub => {
+                if (typeof unsub === 'function') unsub();
+            });
+            this._eventUnsubs = [];
+        }
+
+        this._items = [];
+        this._isLoading = true;
     }
 };
 

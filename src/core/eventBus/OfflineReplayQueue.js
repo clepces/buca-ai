@@ -51,12 +51,17 @@ class OfflineReplayQueue {
     }
 
     /**
-     * Encola un evento transaccional si el cliente está offline.
+     * Encola un evento transaccional si el cliente está offline con clave idempotente.
      */
     async enqueue(event, ...args) {
         if (!this._isTransactional(event)) return false;
 
+        const idempotencyKey = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+            ? crypto.randomUUID()
+            : `idemp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
         const record = {
+            idempotency_key: idempotencyKey,
             event,
             args,
             timestamp: Date.now()
@@ -93,14 +98,15 @@ class OfflineReplayQueue {
         if (this._isReplaying) return 0;
         this._isReplaying = true;
         let count = 0;
+        const targetEmitter = emitterFn || this._onOnlineEmitter;
 
         try {
-            // 1. Drenar cola en memoria de manera resiliente
+            // 1. Drenar cola en memoria de manera resiliente e idempotente
             while (this._inMemoryQueue.length > 0) {
                 const item = this._inMemoryQueue[0];
-                if (typeof emitterFn === 'function') {
+                if (typeof targetEmitter === 'function') {
                     try {
-                        await emitterFn(item.event, ...item.args);
+                        await targetEmitter(item.event, ...item.args);
                         this._inMemoryQueue.shift();
                         count++;
                     } catch (emitErr) {
@@ -112,7 +118,7 @@ class OfflineReplayQueue {
                 }
             }
 
-            // 2. Drenar IndexedDB confirmando transacción por transacción
+            // 2. Drenar IndexedDB confirmando transacción por transacción con clave idempotente
             const db = await this._openDB();
             if (!db) return count;
 
@@ -130,9 +136,9 @@ class OfflineReplayQueue {
 
             if (records.length > 0) {
                 for (const item of records) {
-                    if (typeof emitterFn === 'function') {
+                    if (typeof targetEmitter === 'function') {
                         try {
-                            await emitterFn(item.event, ...item.args);
+                            await targetEmitter(item.event, ...item.args);
 
                             // Descartar el evento de IndexedDB solo tras confirmación asíncrona exitosa
                             await new Promise((resolve) => {
@@ -148,7 +154,7 @@ class OfflineReplayQueue {
                             });
                             count++;
                         } catch (err) {
-                            console.warn('[OfflineReplayQueue] Fallo en confirmación de evento persistido. Deteniendo drenaje para reintento:', err);
+                            console.warn('[OfflineReplayQueue] Fallo en confirmación de comando persistido:', item.idempotency_key, err);
                             break;
                         }
                     }

@@ -62,6 +62,17 @@ describe('Database Security & RLS Hardening Suite (Etapa 5 y 8)', () => {
         client.auth.setSession({ user: { id: 'mock_uid_1', email: 'tester@buca.com', platform_role: 'super_admin' } });
     });
 
+    it('Debe bloquear la inserción de perfiles con platform_role distinto de user (autoasignación)', async () => {
+        client.auth.setSession({ user: { id: 'new_user_hacker', email: 'hacker@buca.com', platform_role: 'user' } });
+        const { error } = await client
+            .from('profiles')
+            .insert({ id: 'new_user_hacker', platform_role: 'super_admin', first_name: 'Hacker' });
+
+        assert.ok(error, 'Debe rechazar inserción con rol administrativo no autorizado');
+        assert.match(error.message, /platform_role/);
+        client.auth.setSession({ user: { id: 'mock_uid_1', email: 'tester@buca.com', platform_role: 'super_admin' } });
+    });
+
     it('Debe impedir el registro de logs anónimos en activity_log', async () => {
         client.auth.setSession(null);
         const { error } = await client

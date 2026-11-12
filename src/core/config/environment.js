@@ -1,6 +1,9 @@
 /**
- * BUCA - Environment Wrapper
- * Handles VITE env variables and Supabase cloud configuration.
+ * BUCA - Environment Wrapper (Supabase Native)
+ * =========================================================================
+ * Variables de entorno VITE y configuración del backend de Supabase.
+ * Cero dependencias ni credenciales residuales de Firebase.
+ * =========================================================================
  */
 
 const viteEnv = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {};

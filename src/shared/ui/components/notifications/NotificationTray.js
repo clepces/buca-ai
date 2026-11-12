@@ -75,10 +75,11 @@ export const NotificationTray = {
         const timeStr = formatTime(n);
         const safeTitle = escapeHTML(n.title || 'Alerta del Sistema');
         const safeMessage = escapeHTML(n.message || '');
+        const safeId = escapeHTML(String(n.id || ''));
 
         return `
             <div class="notification-item position-relative p-2.5 mb-2 rounded-3 ${isRead ? 'item-read' : 'item-unread'}" 
-                 data-id="${n.id}"
+                 data-id="${safeId}"
                  style="--notif-accent: ${cfg.color}; --notif-color: ${cfg.color}; --notif-bg: ${cfg.bg};">
                 <div class="d-flex align-items-start gap-2.5">
                     <div class="notif-type-icon d-flex align-items-center justify-content-center rounded-2 flex-shrink-0 mt-0.5">
@@ -95,7 +96,7 @@ export const NotificationTray = {
                         <div class="d-flex align-items-center justify-content-between pt-1">
                             <span class="badge rounded-pill notif-badge">${cfg.badgeText}</span>
                             ${!isRead ? `
-                                <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none d-flex align-items-center gap-1 text-primary fw-semibold notif-action-btn" data-action="notifications:mark_as_read" data-id="${n.id}">
+                                <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none d-flex align-items-center gap-1 text-primary fw-semibold notif-action-btn" data-action="notifications:mark_as_read" data-id="${safeId}">
                                     <i class="bi bi-check2"></i> Marcar leída
                                 </button>
                             ` : `

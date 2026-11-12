@@ -20,7 +20,7 @@ export const AuthLayout = {
                 <!-- Contenedor de Flotantes (Solo visible en Desktop/Tablet) -->
                 <div class="auth-floating-ecosystem d-none d-md-block">
                     <div class="floating-icon google" title="Acceso Google">
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                        <i class="bi bi-google"></i>
                     </div>
                     <div class="floating-icon microsoft" title="Acceso Microsoft">
                         <i class="bi bi-microsoft"></i>
