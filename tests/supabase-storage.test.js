@@ -1,7 +1,12 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { setMockSupabase } from '../src/core/config/supabase.js';
+import { createMockSupabaseClient } from './mocks/supabase.mock.js';
 import { SupabaseDriver } from '../src/core/storage/drivers/SupabaseDriver.js';
 import { storage } from '../src/core/storage/StorageAdapter.js';
+
+// Aislamiento total: Usar cliente en memoria mock (0 llamadas remotas)
+setMockSupabase(createMockSupabaseClient());
 
 describe('SupabaseDriver & StorageAdapter Integration Tests', () => {
     const driver = new SupabaseDriver('app_storage');

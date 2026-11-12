@@ -85,6 +85,12 @@ export const LoginForm = {
 
                     try {
                         const result = await AuthService.login(email, password);
+
+                        if (result.mfaRequired) {
+                            this.showFeedback('Verificación MFA (TOTP) requerida...', 'success');
+                            setTimeout(() => onSubmit({ email, mfaRequired: true, factorId: result.factorId }), 500);
+                            return;
+                        }
                         
                         if (!result.success) {
                             let errorMsg = 'Credenciales inválidas. Verifique sus datos.';
@@ -98,12 +104,14 @@ export const LoginForm = {
                                 errorMsg = 'Esta cuenta corporativa ha sido inhabilitada.';
                             } else if (result.error === 'auth/invalid-email') {
                                 errorMsg = 'El formato del correo corporativo no es válido.';
+                            } else if (result.error) {
+                                errorMsg = result.error;
                             }
                             throw new Error(errorMsg);
                         }
 
-                        this.showFeedback('Acceso Aprobado. Iniciando verificación...', 'success');
-                        setTimeout(() => onSubmit({ email, password, remember }), 800);
+                        this.showFeedback('Acceso Aprobado. Iniciando sesión...', 'success');
+                        setTimeout(() => onSubmit({ email, mfaRequired: false }), 500);
 
                     } catch (error) {
                         this.showFeedback(error.message, 'error');

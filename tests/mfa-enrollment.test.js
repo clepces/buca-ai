@@ -39,5 +39,15 @@ describe('ETAPA 4: MFA Enrollment, Canvas QR & Backup Keys Tests', () => {
             });
             assert.equal(RouterGuards.requiresAuth(), true);
         });
+
+        it('requiresAAL2 debe rechazar por defecto si hay MFA pendiente (fail-closed)', async () => {
+            sessionState.set({
+                isAuthenticated: true,
+                mfaPending: true,
+                user: { uid: 'user_123' }
+            });
+            const allowed = await RouterGuards.requiresAAL2();
+            assert.equal(allowed, false, 'Debe bloquear la navegación si mfaPending es true');
+        });
     });
 });

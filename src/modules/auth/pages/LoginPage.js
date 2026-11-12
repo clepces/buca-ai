@@ -61,14 +61,18 @@ export const LoginPage = {
             const innerSlot = document.getElementById('login-form-slot');
             if (innerSlot) {
                 innerSlot.innerHTML = LoginForm.render();
-                LoginForm.init((credentials) => {
-                    this.showPINView(credentials.email);
+                LoginForm.init((data) => {
+                    if (data?.mfaRequired) {
+                        this.showPINView(data.email, data.factorId);
+                    } else {
+                        this.showWelcomeAndLoading(data?.email);
+                    }
                 });
             }
         });
     },
 
-    async showPINView(email) {
+    async showPINView(email, factorId = null) {
         const footer = document.getElementById('auth-footer-slot');
         if (footer) footer.classList.add('d-none');
 
@@ -76,17 +80,45 @@ export const LoginPage = {
             hasTotp: true 
         });
 
-        await this._switchView(pinHTML, 'Verificación de Identidad');
+        await this._switchView(pinHTML, 'Verificación de Identidad (AAL2)');
 
         const bindPINVerification = () => {
             PINForm.init(
                 async (enteredPin) => {
                     const cleanPin = String(enteredPin || '').trim();
-                    if (cleanPin.length === 6) {
-                        this.showWelcomeAndLoading(email);
-                    } else {
+                    if (cleanPin.length !== 6) {
                         PINForm.showFeedback('Por favor, ingrese un código válido de 6 dígitos.', 'error');
-                        const btnVerify = document.getElementById('btn-verify-pin');
+                        return;
+                    }
+
+                    const btnVerify = document.getElementById('btn-verify-pin');
+                    if (btnVerify) {
+                        btnVerify.disabled = true;
+                        btnVerify.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Verificando TOTP...';
+                    }
+
+                    try {
+                        const { AuthService } = await import('../services/AuthService.js');
+                        let currentFactorId = factorId;
+
+                        if (!currentFactorId) {
+                            const { SupabaseProvider } = await import('../services/SupabaseProvider.js');
+                            const factors = await SupabaseProvider.mfaListFactors();
+                            currentFactorId = factors?.totp?.[0]?.id;
+                        }
+
+                        if (!currentFactorId) {
+                            throw new Error('No se encontró un factor TOTP registrado para esta cuenta.');
+                        }
+
+                        const verifyRes = await AuthService.verifyMFAChallenge(currentFactorId, cleanPin);
+                        if (verifyRes.success) {
+                            this.showWelcomeAndLoading(email);
+                        } else {
+                            throw new Error(verifyRes.error || 'Código TOTP incorrecto o expirado.');
+                        }
+                    } catch (err) {
+                        PINForm.showFeedback(err.message || 'Fallo en la verificación MFA.', 'error');
                         if (btnVerify) {
                             btnVerify.disabled = false;
                             btnVerify.innerHTML = '<span>VERIFICAR IDENTIDAD</span><i class="bi bi-shield-check ms-2"></i>';
@@ -106,7 +138,7 @@ export const LoginPage = {
         bindPINVerification();
     },
 
-    showWelcomeAndLoading(email = 'superadmin@buca.com') {
+    showWelcomeAndLoading(email = '') {
         const welcomeHTML = `
             <div class="welcome-container text-center animate__animated animate__fadeIn">
                 <div class="welcome-badge mb-3">

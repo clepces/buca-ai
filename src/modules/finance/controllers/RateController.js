@@ -25,7 +25,7 @@ export function formatVariation(raw) {
 
 export const RateController = {
     id: 'rate-management-modal',
-    currentRate: 889.58,
+    currentRate: 0,
     financialData: null,
     activeTab: 'overview',
     historyPage: 1,
@@ -180,14 +180,14 @@ export const RateController = {
 
         if (btnAnchorUsd && input) {
             btnAnchorUsd.onclick = () => {
-                const val = this.financialData?.bcv?.current?.usd || 889.58;
+                const val = this.financialData?.bcv?.current?.usd || this.currentRate || 0;
                 input.value = val;
                 input.dispatchEvent(new Event('input'));
             };
         }
         if (btnAnchorEur && input) {
             btnAnchorEur.onclick = () => {
-                const val = this.financialData?.bcv?.current?.eur || 991.25;
+                const val = this.financialData?.bcv?.current?.eur || 0;
                 input.value = val;
                 input.dispatchEvent(new Event('input'));
             };

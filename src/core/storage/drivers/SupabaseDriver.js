@@ -2,7 +2,7 @@
  * SupabaseDriver - Motor de Persistencia Remota Oficial
  * =========================================================================
  * Almacenamiento estructurado en la nube con Supabase (PostgreSQL / Key-Value).
- * Métodos estándar: get, set, remove, list.
+ * Aislamiento Multi-Tenant estricto filtrando por 'owner_id'.
  * =========================================================================
  */
 import { getSupabase } from '../../config/supabase.js';
@@ -20,6 +20,16 @@ export class SupabaseDriver {
         return this.client;
     }
 
+    async _getCurrentUserId() {
+        try {
+            const client = this._getClient();
+            const session = (await client.auth.getSession())?.data?.session;
+            return session?.user?.id || null;
+        } catch {
+            return null;
+        }
+    }
+
     /**
      * Guarda un valor serializable en Supabase.
      * @param {string} key 
@@ -34,9 +44,9 @@ export class SupabaseDriver {
                 value,
                 updated_at: new Date().toISOString()
             };
-            const session = (await client.auth.getSession())?.data?.session;
-            if (session?.user?.id && this.tableName === 'app_storage') {
-                payload.owner_id = session.user.id;
+            const userId = await this._getCurrentUserId();
+            if (userId && this.tableName === 'app_storage') {
+                payload.owner_id = userId;
             }
 
             const { error } = await client
@@ -55,18 +65,24 @@ export class SupabaseDriver {
     }
 
     /**
-     * Obtiene un valor desde Supabase por su clave.
+     * Obtiene un valor desde Supabase filtrando por owner_id del usuario.
      * @param {string} key 
      * @returns {Promise<any|null>}
      */
     async get(key) {
         try {
             const client = this._getClient();
-            const { data, error } = await client
+            const userId = await this._getCurrentUserId();
+            let query = client
                 .from(this.tableName)
                 .select('value')
-                .eq('key', key)
-                .maybeSingle();
+                .eq('key', key);
+
+            if (userId && this.tableName === 'app_storage') {
+                query = query.or(`owner_id.eq.${userId},owner_id.is.null`);
+            }
+
+            const { data, error } = await query.maybeSingle();
 
             if (error) {
                 console.warn(`[SupabaseDriver] Error reading key "${key}":`, error.message);
@@ -81,17 +97,24 @@ export class SupabaseDriver {
     }
 
     /**
-     * Elimina una clave de Supabase.
+     * Elimina una clave de Supabase verificando la propiedad del registro.
      * @param {string} key 
      * @returns {Promise<boolean>}
      */
     async remove(key) {
         try {
             const client = this._getClient();
-            const { error } = await client
+            const userId = await this._getCurrentUserId();
+            let query = client
                 .from(this.tableName)
                 .delete()
                 .eq('key', key);
+
+            if (userId && this.tableName === 'app_storage') {
+                query = query.eq('owner_id', userId);
+            }
+
+            const { error } = await query;
 
             if (error) {
                 console.warn(`[SupabaseDriver] Error deleting key "${key}":`, error.message);
@@ -105,14 +128,19 @@ export class SupabaseDriver {
     }
 
     /**
-     * Lista pares clave-valor que coincidan con un prefijo.
+     * Lista pares clave-valor que coincidan con un prefijo y pertenezcan al usuario.
      * @param {string} prefix 
      * @returns {Promise<Array<{key: string, value: any}>>}
      */
     async list(prefix = '') {
         try {
             const client = this._getClient();
+            const userId = await this._getCurrentUserId();
             let query = client.from(this.tableName).select('key, value');
+
+            if (userId && this.tableName === 'app_storage') {
+                query = query.or(`owner_id.eq.${userId},owner_id.is.null`);
+            }
 
             if (prefix) {
                 query = query.like('key', `${prefix}%`);

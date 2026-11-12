@@ -1,8 +1,13 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { setMockSupabase } from '../src/core/config/supabase.js';
+import { createMockSupabaseClient } from './mocks/supabase.mock.js';
 import { FinanceRepository } from '../src/modules/finance/services/FinanceRepository.js';
 import { NotificationService } from '../src/core/services/NotificationService.js';
 import { ActivityLogService } from '../src/core/services/ActivityLogService.js';
+
+// Aislamiento total: Mock en memoria
+setMockSupabase(createMockSupabaseClient());
 
 describe('Finance Sync & Dual-Dispatch Notifications Suite (Etapa 6)', () => {
     it('FinanceRepository.calculateGap debe calcular con precisión la brecha porcentual', () => {

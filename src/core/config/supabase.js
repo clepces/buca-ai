@@ -9,8 +9,22 @@ import { ENV } from './environment.js';
 import { uiState } from '../state/ui.js';
 
 let clientInstance = null;
+let mockClient = null;
+
+/**
+ * Permite inyectar un cliente mock para aislamiento de pruebas (Zero Remote Calls).
+ */
+export const setMockSupabase = (mock) => {
+    mockClient = mock;
+};
+
+export const resetSupabase = () => {
+    clientInstance = null;
+    mockClient = null;
+};
 
 export const getSupabase = () => {
+    if (mockClient) return mockClient;
     if (clientInstance) return clientInstance;
 
     const url = ENV.SUPABASE.URL;

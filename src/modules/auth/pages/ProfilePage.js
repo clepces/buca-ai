@@ -105,8 +105,8 @@ export const ProfilePage = {
                 return;
             }
 
-            const displayName = user.displayName || 'Usuario Corporativo';
-            const email = user.email || '---';
+            const displayName = user.displayName || user.email || '';
+            const email = user.email || '';
             const photoURL = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=2563eb&color=fff&size=96`;
 
             document.getElementById('profile-display-name').textContent = displayName;
@@ -131,13 +131,13 @@ export const ProfilePage = {
                     try {
                         const nameParts = nameInput.value.trim().split(' ');
                         await userService.updateProfile({
-                            firstName: nameParts[0] || 'Operador',
-                            lastName: nameParts.slice(1).join(' ') || 'BUCA',
+                            firstName: nameParts[0] || '',
+                            lastName: nameParts.slice(1).join(' ') || '',
                             username: user.email.split('@')[0],
                             mail: user.email
                         });
 
-                        document.getElementById('profile-display-name').textContent = nameInput.value || 'Usuario Corporativo';
+                        document.getElementById('profile-display-name').textContent = nameInput.value || user.email || '';
                         feedback.textContent = 'Perfil actualizado exitosamente.';
                         feedback.className = 'alert alert-success animate__animated animate__fadeIn py-2 small mb-4 text-center';
                         feedback.classList.remove('d-none');

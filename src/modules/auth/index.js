@@ -47,8 +47,25 @@ export const AuthModule = {
                         role = 'user';
                     }
 
+                    try {
+                        const aal = await SupabaseProvider.getAssuranceLevel();
+                        if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+                            sessionState.set({
+                                isAuthenticated: false,
+                                mfaPending: true,
+                                user: null,
+                                currentRole: 'guest'
+                            });
+                            console.log('[AuthModule] -> Sesión retenida: AAL2 pendiente de verificación TOTP.');
+                            return;
+                        }
+                    } catch (aalErr) {
+                        console.warn('[AuthModule] -> Error evaluando AAL:', aalErr.message);
+                    }
+
                     sessionState.set({
                         isAuthenticated: true,
+                        mfaPending: false,
                         user: {
                             uid: user.id,
                             email: user.email,

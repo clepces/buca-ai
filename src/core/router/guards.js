@@ -28,6 +28,12 @@ export const RouterGuards = {
     async requiresAAL2() {
         if (!this.requiresAuth()) return false;
 
+        const { mfaPending } = sessionState.get();
+        if (mfaPending) {
+            console.warn('[RouterGuard] Bloqueo AAL2: Desafío MFA pendiente.');
+            return false;
+        }
+
         try {
             const { SupabaseProvider } = await import('@/modules/auth/services/SupabaseProvider.js');
             const aal = await SupabaseProvider.getAssuranceLevel();
@@ -39,8 +45,8 @@ export const RouterGuards = {
 
             return true;
         } catch (err) {
-            console.warn('[RouterGuard] Error evaluando nivel AAL2:', err.message || err);
-            return true; // Fallback tolerante si falla la red
+            console.warn('[RouterGuard] Error evaluando nivel AAL2 (Fail-Closed):', err.message || err);
+            return false; // Fail-closed estricto ante cualquier fallo
         }
     },
 

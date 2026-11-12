@@ -7,10 +7,10 @@
 import { escapeHTML } from '@/shared/utils/security.js';
 
 export const ProfileSubscriptionTab = (data = {}) => {
-    const rawTier = (data.planTier || 'ENTERPRISE MASTER GOLD VIP').toUpperCase();
-    const planTierDisplay = rawTier === 'GOLD' ? 'GOLD ENTERPRISE MASTER VIP (PROPIETARIO ROOT)' : rawTier;
-    const planStatus = data.planStatus || 'ACTIVO (ILIMITADO)';
-    const validUntil = data.validUntil || 'Licencia Vitalicia Master (Sin Expiración)';
+    const rawTier = (data.planTier || 'ESTÁNDAR').toUpperCase();
+    const planTierDisplay = rawTier;
+    const planStatus = data.planStatus || 'ACTIVO';
+    const validUntil = data.validUntil || 'Vigente';
 
     return `
         <div class="tab-content-pane feature-disabled" id="tab-profile-subscription">

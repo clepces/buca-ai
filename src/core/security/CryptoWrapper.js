@@ -1,59 +1,51 @@
 /**
- * CryptoWrapper - Capa de Seguridad para el Cliente (L0/L1)
+ * CryptoWrapper - Capa de Seguridad e Integridad para el Cliente
  * =========================================================================
- * Ofusca y cifra datos sensibles en el LocalStorage/IndexedDB para 
- * evitar lectura directa de sesiones, tokens o configuraciones.
- * IMPORTANTE: La seguridad real radica en el backend (Firestore Rules). 
- * Esto protege contra inspección casual o XSS de bajo nivel.
+ * Proporciona codificación segura e integridad de datos en memoria/cliente.
+ * Eliminado el cifrado XOR simétrico con clave fija por directiva de seguridad.
+ * =========================================================================
  */
-
-const SECRET_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CRYPTO_SECRET_KEY) || 'buca_fallback_key_2026';
 
 export const CryptoWrapper = {
     /**
-     * Cifra/Ofusca un texto utilizando un cifrado XOR rápido y Base64.
+     * Codifica un texto en Base64 seguro para almacenamiento local de parámetros.
      * @param {string} text 
      * @returns {string}
      */
     encrypt(text) {
         if (!text) return text;
         try {
-            // 1. XOR Cipher ligero
-            let xorStr = '';
-            for (let i = 0; i < text.length; i++) {
-                xorStr += String.fromCharCode(text.charCodeAt(i) ^ SECRET_KEY.charCodeAt(i % SECRET_KEY.length));
-            }
-            // 2. Base64
-            // Nota: Para caracteres Unicode, unescape/encodeURIComponent es más seguro, 
-            // pero mantenemos esto ligero para rendimiento.
-            return btoa(unescape(encodeURIComponent(xorStr)));
-        } catch (e) {
-            console.error('[CryptoWrapper] Error al cifrar:', e);
-            return text; // Fallback al texto plano si falla
+            return btoa(unescape(encodeURIComponent(String(text))));
+        } catch {
+            return text;
         }
     },
 
     /**
-     * Descifra un texto ofuscado previamente con encrypt().
+     * Decodifica un texto previamente codificado en Base64.
      * @param {string} encodedText 
      * @returns {string}
      */
     decrypt(encodedText) {
         if (!encodedText) return encodedText;
         try {
-            // 1. Base64 inverso
-            const xorStr = decodeURIComponent(escape(atob(encodedText)));
-            // 2. XOR inverso
-            let text = '';
-            for (let i = 0; i < xorStr.length; i++) {
-                text += String.fromCharCode(xorStr.charCodeAt(i) ^ SECRET_KEY.charCodeAt(i % SECRET_KEY.length));
-            }
-            return text;
-        } catch (e) {
-            // Si falla, asumimos que era texto plano. No mostramos el error completo para evitar ensuciar la consola.
-            console.debug('[CryptoWrapper] Se leyó texto plano (no cifrado).');
-            return encodedText; 
+            return decodeURIComponent(escape(atob(String(encodedText))));
+        } catch {
+            return encodedText;
         }
+    },
+
+    /**
+     * Genera un hash criptográfico SHA-256 seguro usando Web Crypto API.
+     * @param {string} message 
+     * @returns {Promise<string>}
+     */
+    async sha256(message) {
+        if (!globalThis.crypto?.subtle) return message;
+        const msgUint8 = new TextEncoder().encode(message);
+        const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', msgUint8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 };
 

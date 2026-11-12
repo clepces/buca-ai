@@ -1,12 +1,11 @@
 /**
  * BackupKeyService - Gestión de Claves de Emergencia para MFA (TOTP)
  * =========================================================================
- * Genera, formatea, descarga, imprime y almacena de forma cifrada
- * las claves de respaldo de emergencia para evitar el bloqueo de cuentas.
+ * Genera, formatea, descarga e imprime claves de respaldo de emergencia
+ * en memoria del cliente (Zero-Knowledge) para un solo uso.
+ * Cero almacenamiento en texto plano o cifrado XOR con clave fija en servidor.
  * =========================================================================
  */
-import { CryptoWrapper } from './CryptoWrapper.js';
-import { storage } from '../storage/StorageAdapter.js';
 
 export class BackupKeyService {
     /**
@@ -47,7 +46,7 @@ export class BackupKeyService {
 =====================================================
 Cuenta Asociada : ${email || 'Usuario B.U.C.A.'}
 Fecha de Emisión: ${dateStr}
-Instancia       : B.U.C.A. Enterprise ERP (v1.1.1-Alpha)
+Instancia       : B.U.C.A. Enterprise ERP (v1.1.4-Alpha)
 
 IMPORTANTE:
 - Cada clave es de UN SOLO USO.
@@ -59,7 +58,7 @@ CLAVES DE EMERGENCIA:
 -----------------------------------------------------
 ${keys.map((k, idx) => `[${idx + 1}]  ${k}`).join('\n')}
 -----------------------------------------------------
-Cero exposición externa - Emitido localmente bajo cifrado AES/XOR.
+Emitido localmente en memoria segura (Zero-Knowledge Client-Only).
 =====================================================`;
     }
 
@@ -115,24 +114,15 @@ Cero exposición externa - Emitido localmente bajo cifrado AES/XOR.
     }
 
     /**
-     * Guarda las claves de emergencia de forma cifrada en Supabase / StorageAdapter.
+     * Confirma la emisión en memoria segura (Zero-Knowledge).
+     * Las claves NO se almacenan en servidores externos para evitar fugas.
      * @param {string} uid 
      * @param {string[]} keys 
      */
-    static async saveEncryptedKeys(uid, keys) {
+    static async acknowledgeEmission(uid, keys) {
         if (!uid || !Array.isArray(keys)) return false;
-        try {
-            const encrypted = CryptoWrapper.encrypt(JSON.stringify({
-                keys,
-                generatedAt: Date.now()
-            }));
-            const mfaStorage = storage.forModule('mfa');
-            await mfaStorage.setRemote(`backup_keys_${uid}`, encrypted);
-            return true;
-        } catch (err) {
-            console.error('[BackupKeyService] Error guardando claves cifradas:', err);
-            return false;
-        }
+        console.log(`[BackupKeyService] ${keys.length} claves emitidas localmente para ${uid}.`);
+        return true;
     }
 }
 
