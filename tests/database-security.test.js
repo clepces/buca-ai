@@ -7,7 +7,7 @@ import { SupabaseDriver } from '../src/core/storage/drivers/SupabaseDriver.js';
 // Aislamiento total: Mock en memoria
 setMockSupabase(createMockSupabaseClient());
 
-describe('Database Security & RLS Hardening Suite (Etapa 5)', () => {
+describe('Database Security & RLS Hardening Suite (Etapa 5 y 8)', () => {
     const driver = new SupabaseDriver('app_storage');
     const client = getSupabase();
 
@@ -27,18 +27,19 @@ describe('Database Security & RLS Hardening Suite (Etapa 5)', () => {
     });
 
     it('Debe proteger public.profiles de accesos no autenticados', async () => {
-        // Sin token de sesión autenticada, profiles no debe filtrar datos de otros usuarios
+        client.auth.setSession(null);
         const { data, error } = await client
             .from('profiles')
             .select('*');
 
-        // Bajo RLS estricto, o retorna arreglo vacío para anon o no expone filas
         assert.equal(error, null);
         assert.ok(Array.isArray(data));
         assert.equal(data.length, 0, 'Usuario anónimo no debe ver perfiles privados');
+        client.auth.setSession({ user: { id: 'mock_uid_1', email: 'tester@buca.com', platform_role: 'super_admin' } });
     });
 
     it('Debe proteger public.businesses de accesos no autorizados', async () => {
+        client.auth.setSession(null);
         const { data, error } = await client
             .from('businesses')
             .select('*');
@@ -46,6 +47,29 @@ describe('Database Security & RLS Hardening Suite (Etapa 5)', () => {
         assert.equal(error, null);
         assert.ok(Array.isArray(data));
         assert.equal(data.length, 0, 'Usuario anónimo no debe ver negocios privados');
+        client.auth.setSession({ user: { id: 'mock_uid_1', email: 'tester@buca.com', platform_role: 'super_admin' } });
+    });
+
+    it('Debe bloquear la auto-asignación de platform_role para usuarios no autorizados', async () => {
+        client.auth.setSession({ user: { id: 'user_regular_1', email: 'user@buca.com', platform_role: 'user' } });
+        const { error } = await client
+            .from('profiles')
+            .update({ platform_role: 'super_admin' })
+            .eq('id', 'user_regular_1');
+
+        assert.ok(error, 'Debe retornar error de violación RLS / trigger de seguridad');
+        assert.match(error.message, /platform_role/);
+        client.auth.setSession({ user: { id: 'mock_uid_1', email: 'tester@buca.com', platform_role: 'super_admin' } });
+    });
+
+    it('Debe impedir el registro de logs anónimos en activity_log', async () => {
+        client.auth.setSession(null);
+        const { error } = await client
+            .from('activity_log')
+            .insert({ action: 'ANON_ATTEMPT', title: 'Intento anónimo' });
+
+        assert.ok(error, 'Debe rechazar inserciones sin usuario autenticado');
+        client.auth.setSession({ user: { id: 'mock_uid_1', email: 'tester@buca.com', platform_role: 'super_admin' } });
     });
 
     it('SupabaseDriver.set debe manejar payload de app_storage con timestamps y claves', async () => {

@@ -48,7 +48,17 @@ export const AuthService = {
                     }
                 }
             } catch (mfaCheckErr) {
-                console.warn('[AuthService] No se pudo evaluar nivel AAL:', mfaCheckErr.message);
+                console.error('[AuthService] Fallo evaluando nivel AAL (Fail-Closed):', mfaCheckErr.message);
+                sessionState.set({
+                    isAuthenticated: false,
+                    mfaPending: true,
+                    user: null,
+                    currentRole: 'guest'
+                });
+                return {
+                    success: false,
+                    error: 'Error de verificación de seguridad AAL. Se requiere autenticación estricta.'
+                };
             }
 
             // Cargar o sincronizar perfil en la tabla 'profiles'

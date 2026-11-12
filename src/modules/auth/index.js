@@ -60,7 +60,14 @@ export const AuthModule = {
                             return;
                         }
                     } catch (aalErr) {
-                        console.warn('[AuthModule] -> Error evaluando AAL:', aalErr.message);
+                        console.error('[AuthModule] -> Fallo evaluando AAL (Fail-Closed):', aalErr.message);
+                        sessionState.set({
+                            isAuthenticated: false,
+                            mfaPending: true,
+                            user: null,
+                            currentRole: 'guest'
+                        });
+                        return;
                     }
 
                     sessionState.set({

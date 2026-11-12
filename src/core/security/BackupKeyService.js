@@ -94,18 +94,17 @@ Emitido localmente en memoria segura (Zero-Knowledge Client-Only).
             return;
         }
 
-        printWindow.document.write(`
-            <html>
-                <head>
-                    <title>B.U.C.A. AI - Claves de Emergencia MFA</title>
-                    <style>
-                        body { font-family: monospace; padding: 24px; white-space: pre-wrap; font-size: 13px; color: #000; }
-                    </style>
-                </head>
-                <body>${textContent}</body>
-            </html>
-        `);
-        printWindow.document.close();
+        const doc = printWindow.document;
+        doc.title = 'B.U.C.A. AI - Claves de Emergencia MFA';
+
+        const style = doc.createElement('style');
+        style.textContent = 'body { font-family: monospace; padding: 24px; white-space: pre-wrap; font-size: 13px; color: #000; }';
+        doc.head.appendChild(style);
+
+        const pre = doc.createElement('pre');
+        pre.textContent = textContent;
+        doc.body.appendChild(pre);
+
         printWindow.focus();
         setTimeout(() => {
             printWindow.print();

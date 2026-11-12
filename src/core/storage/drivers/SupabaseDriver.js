@@ -45,7 +45,11 @@ export class SupabaseDriver {
                 updated_at: new Date().toISOString()
             };
             const userId = await this._getCurrentUserId();
-            if (userId && this.tableName === 'app_storage') {
+            if (this.tableName === 'app_storage') {
+                if (!userId) {
+                    console.warn(`[SupabaseDriver] Bloqueo de seguridad: No se permite escribir en app_storage sin owner_id.`);
+                    return false;
+                }
                 payload.owner_id = userId;
             }
 
@@ -78,8 +82,9 @@ export class SupabaseDriver {
                 .select('value')
                 .eq('key', key);
 
-            if (userId && this.tableName === 'app_storage') {
-                query = query.or(`owner_id.eq.${userId},owner_id.is.null`);
+            if (this.tableName === 'app_storage') {
+                if (!userId) return null;
+                query = query.eq('owner_id', userId);
             }
 
             const { data, error } = await query.maybeSingle();
@@ -110,7 +115,8 @@ export class SupabaseDriver {
                 .delete()
                 .eq('key', key);
 
-            if (userId && this.tableName === 'app_storage') {
+            if (this.tableName === 'app_storage') {
+                if (!userId) return false;
                 query = query.eq('owner_id', userId);
             }
 
@@ -138,8 +144,9 @@ export class SupabaseDriver {
             const userId = await this._getCurrentUserId();
             let query = client.from(this.tableName).select('key, value');
 
-            if (userId && this.tableName === 'app_storage') {
-                query = query.or(`owner_id.eq.${userId},owner_id.is.null`);
+            if (this.tableName === 'app_storage') {
+                if (!userId) return [];
+                query = query.eq('owner_id', userId);
             }
 
             if (prefix) {

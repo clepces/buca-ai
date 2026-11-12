@@ -38,6 +38,26 @@ describe('EventBus Offline Replay Queue Suite (Etapa 6)', () => {
         assert.ok(replayedEvents.some(e => e.event === 'tx:payment_processed'));
     });
 
+    it('Debe retener eventos si la confirmación remota falla (resiliencia transaccional)', async () => {
+        offlineReplayQueue._inMemoryQueue.push({
+            event: 'tx:sync_retry',
+            args: [{ retry: 1 }],
+            timestamp: Date.now()
+        });
+
+        // Emitter que simula fallo de red
+        const failingEmitter = async () => {
+            throw new Error('Network timeout simulado en Supabase');
+        };
+
+        const count = await offlineReplayQueue.drain(failingEmitter);
+        assert.equal(count, 0, 'No debe contabilizar como procesado un evento fallido');
+        assert.equal(offlineReplayQueue._inMemoryQueue.length, 1, 'El evento debe conservarse en cola para reintento');
+
+        // Limpiar para siguientes tests
+        offlineReplayQueue._inMemoryQueue = [];
+    });
+
     it('eventBus.emit debe despachar eventos a suscriptores activos', () => {
         let received = null;
         const unsubscribe = eventBus.on('test:echo', (data) => {

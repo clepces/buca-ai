@@ -110,7 +110,9 @@ export class MFAEnrollmentModal {
 
         const enrollment = await AuthService.enrollTOTP();
         if (!enrollment.success) {
-            container.innerHTML = `<div class="alert alert-danger py-2 small">Error generando TOTP: ${enrollment.error}</div>`;
+            container.innerHTML = '<div class="alert alert-danger py-2 small" id="mfa-enroll-error"></div>';
+            const errEl = document.getElementById('mfa-enroll-error');
+            if (errEl) errEl.textContent = `Error generando TOTP: ${enrollment.error}`;
             return;
         }
 
@@ -123,9 +125,7 @@ export class MFAEnrollmentModal {
                     <canvas id="mfa-canvas-qr" width="220" height="220"></canvas>
                 </div>
                 <div class="small text-muted mt-2 mb-1">O ingrese esta clave secreta manualmente:</div>
-                <div class="p-2 rounded bg-body-tertiary border font-monospace small fw-bold text-primary text-break user-select-all mb-2" id="mfa-secret-text">
-                    ${enrollment.secret}
-                </div>
+                <div class="p-2 rounded bg-body-tertiary border font-monospace small fw-bold text-primary text-break user-select-all mb-2" id="mfa-secret-text"></div>
             </div>
             <div class="mb-3">
                 <label class="form-label small fw-bold text-muted text-uppercase mb-1">Código de 6 dígitos de la App <span class="text-danger">*</span></label>
@@ -136,6 +136,9 @@ export class MFAEnrollmentModal {
                 <div id="mfa-verify-feedback" class="small text-danger mt-1 d-none"></div>
             </div>
         `;
+
+        const secretEl = document.getElementById('mfa-secret-text');
+        if (secretEl) secretEl.textContent = enrollment.secret;
 
         // Renderizado nativo del QR en Canvas (Cero APIs externas)
         const canvas = document.getElementById('mfa-canvas-qr');
