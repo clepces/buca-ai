@@ -21,6 +21,7 @@ describe('EventBus Offline Replay Queue Suite (Etapa 6)', () => {
             const lastItem = offlineReplayQueue._inMemoryQueue[offlineReplayQueue._inMemoryQueue.length - 1];
             assert.equal(lastItem.event, 'tx:payment_processed');
             assert.deepEqual(lastItem.args[0], { amount: 150, currency: 'USD' });
+            assert.ok(typeof lastItem.idempotency_key === 'string' && lastItem.idempotency_key.length > 5, 'Debe incluir clave idempotente única');
         } finally {
             offlineReplayQueue.isOnline = originalIsOnline;
         }

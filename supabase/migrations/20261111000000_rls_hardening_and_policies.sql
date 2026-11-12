@@ -53,7 +53,10 @@ CREATE POLICY "profiles_select_own" ON public.profiles
 
 CREATE POLICY "profiles_insert_own" ON public.profiles
     FOR INSERT TO authenticated
-    WITH CHECK (id = (SELECT auth.uid()));
+    WITH CHECK (
+        id = (SELECT auth.uid())
+        AND (platform_role = 'user' OR platform_role IS NULL)
+    );
 
 CREATE POLICY "profiles_update_own" ON public.profiles
     FOR UPDATE TO authenticated
@@ -70,16 +73,30 @@ CREATE POLICY "profiles_delete_own" ON public.profiles
     FOR DELETE TO authenticated
     USING (id = (SELECT auth.uid()));
 
--- Trigger de protección contra escalación de privilegios en platform_role
-CREATE OR REPLACE FUNCTION public.check_profile_role_update()
+-- Trigger de protección contra escalación de privilegios en platform_role (INSERT y UPDATE)
+CREATE OR REPLACE FUNCTION public.check_profile_role_security()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF NEW.platform_role IS DISTINCT FROM OLD.platform_role THEN
-        IF NOT EXISTS (
-            SELECT 1 FROM public.profiles
-            WHERE id = (SELECT auth.uid()) AND platform_role = 'super_admin'
-        ) THEN
-            RAISE EXCEPTION 'No está autorizado para modificar platform_role.';
+    IF TG_OP = 'INSERT' THEN
+        IF NEW.platform_role IS DISTINCT FROM 'user' AND NEW.platform_role IS NOT NULL THEN
+            IF NOT EXISTS (
+                SELECT 1 FROM public.profiles
+                WHERE id = (SELECT auth.uid()) AND platform_role = 'super_admin'
+            ) THEN
+                RAISE EXCEPTION 'No está autorizado para auto-asignarse privilegios administrativos en inserción.';
+            END IF;
+        END IF;
+        IF NEW.platform_role IS NULL THEN
+            NEW.platform_role := 'user';
+        END IF;
+    ELSIF TG_OP = 'UPDATE' THEN
+        IF NEW.platform_role IS DISTINCT FROM OLD.platform_role THEN
+            IF NOT EXISTS (
+                SELECT 1 FROM public.profiles
+                WHERE id = (SELECT auth.uid()) AND platform_role = 'super_admin'
+            ) THEN
+                RAISE EXCEPTION 'No está autorizado para modificar platform_role.';
+            END IF;
         END IF;
     END IF;
     RETURN NEW;
@@ -88,9 +105,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS tr_check_profile_role ON public.profiles;
 CREATE TRIGGER tr_check_profile_role
-    BEFORE UPDATE ON public.profiles
+    BEFORE INSERT OR UPDATE ON public.profiles
     FOR EACH ROW
-    EXECUTE FUNCTION public.check_profile_role_update();
+    EXECUTE FUNCTION public.check_profile_role_security();
 
 -- 4. Políticas RLS: businesses (Aislamiento por owner_id)
 CREATE POLICY "businesses_select_owner" ON public.businesses

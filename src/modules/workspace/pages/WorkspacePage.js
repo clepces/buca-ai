@@ -93,6 +93,12 @@ export const WorkspacePage = {
         if (typeof RecentActivity.init === 'function') RecentActivity.init();
         if (typeof SystemWidgets.init === 'function') SystemWidgets.init();
         if (typeof SystemHealthMonitor.init === 'function') SystemHealthMonitor.init();
+    },
+    destroy() {
+        console.log('[WorkspacePage] -> Destroying workspace components...');
+        if (typeof BusinessHub.destroy === 'function') BusinessHub.destroy();
+        if (typeof RecentActivity.destroy === 'function') RecentActivity.destroy();
+        if (typeof WorkspaceNavRibbon.unmount === 'function') WorkspaceNavRibbon.unmount();
     }
 };
 export default WorkspacePage;

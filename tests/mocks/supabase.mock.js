@@ -103,6 +103,14 @@ export class MockTableQueryBuilder {
             }
         }
 
+        // RLS Mock: profiles insert - bloquear autoasignación de platform_role si no es super_admin
+        if (this.tableName === 'profiles' && this._pendingAction === 'insert') {
+            const hasUnauthorizedRole = this._actionPayload.some(r => r.platform_role && r.platform_role !== 'user');
+            if (hasUnauthorizedRole && sessionUser?.platform_role !== 'super_admin') {
+                return resolve({ data: null, error: { message: 'Violación RLS: platform_role en inserción debe ser user.' } });
+            }
+        }
+
         // RLS Mock: activity_log insert - prohibir anónimos
         if (this.tableName === 'activity_log' && this._pendingAction === 'insert') {
             const hasAnonymous = this._actionPayload.some(r => !r.user_id || !sessionUser);

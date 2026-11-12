@@ -13,6 +13,8 @@ import { sessionState } from '@/core/state/session.js';
 export const RecentActivity = {
     _items: [],
     _isLoading: true,
+    _unsubActivity: null,
+    _filterClickHandler: null,
 
     _getIconMeta(category) {
         switch (String(category).toLowerCase()) {
@@ -132,8 +134,11 @@ export const RecentActivity = {
             this._refreshDOM();
         }
 
-        // Suscribirse a nuevos eventos en tiempo real
-        eventBus.on('activity:logged', (newAct) => {
+        // Suscribirse de forma limpia a nuevos eventos en tiempo real
+        if (typeof this._unsubActivity === 'function') {
+            this._unsubActivity();
+        }
+        this._unsubActivity = eventBus.on('activity:logged', (newAct) => {
             if (newAct) {
                 this._items.unshift(newAct);
                 this._refreshDOM();
@@ -149,7 +154,11 @@ export const RecentActivity = {
     },
 
     _bindFilterEvents() {
-        document.addEventListener('click', (e) => {
+        if (this._filterClickHandler) {
+            document.removeEventListener('click', this._filterClickHandler);
+        }
+
+        this._filterClickHandler = (e) => {
             const btn = e.target.closest('.activity-filter-pill');
             if (!btn) return;
 
@@ -171,7 +180,25 @@ export const RecentActivity = {
                     item.style.display = 'none';
                 }
             });
-        });
+        };
+
+        document.addEventListener('click', this._filterClickHandler);
+    },
+
+    /**
+     * Limpieza completa del ciclo de vida para prevenir memory leaks
+     */
+    destroy() {
+        if (typeof this._unsubActivity === 'function') {
+            this._unsubActivity();
+            this._unsubActivity = null;
+        }
+        if (this._filterClickHandler) {
+            document.removeEventListener('click', this._filterClickHandler);
+            this._filterClickHandler = null;
+        }
+        this._items = [];
+        this._isLoading = true;
     }
 };
 
