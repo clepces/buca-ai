@@ -137,7 +137,7 @@ export const BusinessWizardController = {
 
         try {
             const created = await BusinessRepository.registerBusiness(uid, data);
-            this.showFeedback('¡Negocio registrado y sincronizado exitosamente con Firestore!', 'success');
+            this.showFeedback('¡Negocio registrado y sincronizado exitosamente con Supabase!', 'success');
             
             eventBus.emit('notifications:push', {
                 title: 'Comercio Registrado',
@@ -161,7 +161,7 @@ export const BusinessWizardController = {
 
         } catch (err) {
             console.error('[BusinessWizardController] Registration error:', err);
-            this.showFeedback('Error al registrar el negocio en Firestore. Verifique su conexión.', 'error');
+            this.showFeedback('Error al registrar el negocio en Supabase. Verifique su conexión.', 'error');
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Registrar Comercio';

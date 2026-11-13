@@ -2,8 +2,9 @@
 
 **Proyecto:** B.U.C.A. AI (Business Under Control Access)  
 **ID de Proyecto Supabase:** `rdvezglzxjjcfbodpfzo`  
-**Versión de Plataforma:** `v1.1.3-Alpha`  
-**Motor:** PostgreSQL 15+ (Supabase Cloud)  
+**Versión de Plataforma:** `v1.1.7-Alpha`  
+**Motor:** PostgreSQL 15+ (Supabase Cloud — Único Backend de Datos & Auth)  
+**Hosting Estático:** Firebase Hosting (Vite `dist/`)  
 **Estándar Aplicado:** `supabase-postgres-best-practices`
 
 ---
@@ -281,18 +282,18 @@ Todas las políticas aplican la directriz **`auth_rls_initplan`** encapsulando `
 | `staff` | `DELETE` | `authenticated` | `exists (select 1 from businesses b where b.id = staff.business_id and b.owner_id = (select auth.uid()))` |
 | `finance_rates` | `SELECT` | `authenticated, anon` | `true` |
 | `finance_rates` | `INSERT` | `authenticated` | `(select auth.uid()) is not null` |
-| `finance_rates` | `UPDATE` | `authenticated` | `(select auth.uid()) is not null` |
-| `finance_rates` | `DELETE` | `authenticated` | `(select auth.uid()) is not null` |
-| `notifications` | `SELECT` | `authenticated, anon` | `user_id is null or user_id = (select auth.uid()) or (select auth.uid()) = any(read_by)` |
-| `notifications` | `INSERT` | `authenticated, anon` | `true` |
-| `notifications` | `UPDATE` | `authenticated, anon` | `user_id is null or user_id = (select auth.uid()) or (select auth.uid()) is not null` |
+| `finance_rates` | `UPDATE` | `authenticated` | `public.is_super_admin()` |
+| `finance_rates` | `DELETE` | `authenticated` | `public.is_super_admin()` |
+| `notifications` | `SELECT` | `authenticated` | `user_id is null or user_id = (select auth.uid()) or (select auth.uid())::text = any(read_by)` |
+| `notifications` | `INSERT` | `authenticated` | `(select auth.uid()) is not null` |
+| `notifications` | `UPDATE` | `REVOCADO` | Revocado a authenticated/anon. Gestionado por RPC `mark_notification_read(text)`. |
 | `notifications` | `DELETE` | `authenticated` | `user_id = (select auth.uid())` |
-| `activity_log` | `SELECT` | `authenticated, anon` | `user_id is null or user_id = (select auth.uid())` |
-| `activity_log` | `INSERT` | `authenticated, anon` | `user_id is null or user_id = (select auth.uid()) or (select auth.uid()) is not null` |
-| `app_storage` | `SELECT` | `authenticated, anon` | `owner_id is null or owner_id = (select auth.uid())` |
-| `app_storage` | `INSERT` | `authenticated, anon` | `owner_id is null or owner_id = (select auth.uid())` |
-| `app_storage` | `UPDATE` | `authenticated, anon` | `owner_id is null or owner_id = (select auth.uid())` |
-| `app_storage` | `DELETE` | `authenticated, anon` | `owner_id is null or owner_id = (select auth.uid())` |
+| `activity_log` | `SELECT` | `authenticated` | `user_id = (select auth.uid())` |
+| `activity_log` | `INSERT` | `authenticated` | `user_id = (select auth.uid())` |
+| `app_storage` | `SELECT` | `authenticated` | `owner_id = (select auth.uid())` |
+| `app_storage` | `INSERT` | `authenticated` | `owner_id = (select auth.uid())` |
+| `app_storage` | `UPDATE` | `authenticated` | `owner_id = (select auth.uid())` |
+| `app_storage` | `DELETE` | `authenticated` | `owner_id = (select auth.uid())` |
 
 ---
 
@@ -312,3 +313,13 @@ Todas las políticas aplican la directriz **`auth_rls_initplan`** encapsulando `
 | `activity_log` | `activity_log_created_at_idx`| `(created_at desc)` | Optimiza despliegue en tiempo real de actividad reciente. |
 | `staff` | `staff_business_id_idx` | `(business_id)` | Acelera resolución de personal por negocio. |
 | `staff` | `staff_user_id_idx` | `(user_id)` | Acelera pertenencia de usuario a múltiples empresas. |
+| `idempotency_keys` | `idempotency_keys_pkey` | `(idempotency_key)` | Llave primaria y resolución instantánea O(1) de deduplicación. |
+
+---
+
+## 5. Procedimientos Almacenados y RPCs de Mínimo Privilegio
+
+### 5.1. `public.mark_notification_read(p_notification_id text)`
+- **Seguridad:** `SECURITY DEFINER` con `SET search_path = public, pg_temp`.
+- **Propósito:** Reemplaza el privilegio masivo de `UPDATE` sobre `public.notifications`. Valida estrictamente que `auth.uid()` no sea nulo, verifica la autorización del suscriptor y añade atómicamente el UID al arreglo `read_by` sin permitir la alteración de título, mensaje o metadatos.
+- **Idempotencia:** Si el UID ya existe en `read_by`, la operación retorna sin mutar la fila.

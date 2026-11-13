@@ -100,7 +100,7 @@ export const ActionDispatcher = {
         eventBus.on('ui:open_performance', openPerformanceModal);
         eventBus.on('ui:open_perf', openPerformanceModal);
 
-        // Perfil de Usuario (Full-Screen Modal conectado a Firestore)
+        // Perfil de Usuario (Full-Screen Modal conectado a Supabase)
         eventBus.on('ui:open_profile', (payload) => {
             ModalService.showProfileModal(payload?.tab || 'general');
         });

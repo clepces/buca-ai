@@ -67,55 +67,69 @@ class OfflineReplayQueue {
             timestamp: Date.now()
         };
 
+        // Registro inmediato en cola volátil
+        this._inMemoryQueue.push(record);
+
         const db = await this._openDB();
-        if (!db) {
-            this._inMemoryQueue.push(record);
-            return true;
+        if (db) {
+            await new Promise((resolve) => {
+                try {
+                    const tx = db.transaction(STORE_NAME, 'readwrite');
+                    const store = tx.objectStore(STORE_NAME);
+                    store.add(record);
+                    tx.oncomplete = () => {
+                        // Persistido en IndexedDB; remover de memoria para evitar duplicación
+                        const idx = this._inMemoryQueue.indexOf(record);
+                        if (idx >= 0) this._inMemoryQueue.splice(idx, 1);
+                        resolve(true);
+                    };
+                    tx.onerror = () => resolve(false);
+                } catch {
+                    resolve(false);
+                }
+            });
         }
 
-        return new Promise((resolve) => {
-            try {
-                const tx = db.transaction(STORE_NAME, 'readwrite');
-                const store = tx.objectStore(STORE_NAME);
-                store.add(record);
-                tx.oncomplete = () => resolve(true);
-                tx.onerror = () => {
-                    this._inMemoryQueue.push(record);
-                    resolve(true);
-                };
-            } catch {
-                this._inMemoryQueue.push(record);
-                resolve(true);
-            }
-        });
+        return true;
     }
 
     /**
      * Reejecuta los eventos pendientes a través del emisor suministrado.
-     * Espera la confirmación asíncrona de éxito antes de descartar cada evento.
+     * Semántica at-least-once estricta con confirmación asíncrona y orden garantizado.
      */
     async drain(emitterFn) {
         if (this._isReplaying) return 0;
+        const targetEmitter = emitterFn || this._onOnlineEmitter;
+
+        // No descartar ni drenar si no existe emisor registrado
+        if (typeof targetEmitter !== 'function') {
+            console.warn('[OfflineReplayQueue] Cero emisores registrados. Drenaje suspendido.');
+            return 0;
+        }
+
         this._isReplaying = true;
         let count = 0;
-        const targetEmitter = emitterFn || this._onOnlineEmitter;
 
         try {
             // 1. Drenar cola en memoria de manera resiliente e idempotente
+            let inMemoryHalted = false;
             while (this._inMemoryQueue.length > 0) {
                 const item = this._inMemoryQueue[0];
-                if (typeof targetEmitter === 'function') {
-                    try {
-                        await targetEmitter(item.event, ...item.args);
-                        this._inMemoryQueue.shift();
-                        count++;
-                    } catch (emitErr) {
-                        console.warn('[OfflineReplayQueue] Fallo en retransmisión de evento en memoria. Deteniendo drenaje:', emitErr);
-                        break;
-                    }
-                } else {
+                try {
+                    const idempKey = item.idempotency_key || `mem_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+                    item.idempotency_key = idempKey;
+                    await targetEmitter(item.event, ...item.args, { idempotency_key: idempKey, timestamp: item.timestamp });
                     this._inMemoryQueue.shift();
+                    count++;
+                } catch (emitErr) {
+                    console.warn('[OfflineReplayQueue] Fallo en retransmisión en memoria. Deteniendo drenaje para preservar orden:', emitErr);
+                    inMemoryHalted = true;
+                    break;
                 }
+            }
+
+            if (inMemoryHalted) {
+                return count; // Preservar orden secuencial estricto
             }
 
             // 2. Drenar IndexedDB confirmando transacción por transacción con clave idempotente
@@ -136,27 +150,30 @@ class OfflineReplayQueue {
 
             if (records.length > 0) {
                 for (const item of records) {
-                    if (typeof targetEmitter === 'function') {
-                        try {
-                            await targetEmitter(item.event, ...item.args);
+                    try {
+                        const idempKey = item.idempotency_key || `legacy_${item.id || Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+                        item.idempotency_key = idempKey;
 
-                            // Descartar el evento de IndexedDB solo tras confirmación asíncrona exitosa
-                            await new Promise((resolve) => {
-                                try {
-                                    const tx = db.transaction(STORE_NAME, 'readwrite');
-                                    const store = tx.objectStore(STORE_NAME);
-                                    const delReq = store.delete(item.id);
-                                    delReq.onsuccess = () => resolve();
-                                    delReq.onerror = () => resolve();
-                                } catch {
-                                    resolve();
-                                }
-                            });
-                            count++;
-                        } catch (err) {
-                            console.warn('[OfflineReplayQueue] Fallo en confirmación de comando persistido:', item.idempotency_key, err);
-                            break;
-                        }
+                        // Esperar la resolución asíncrona real del handler
+                        await targetEmitter(item.event, ...item.args, { idempotency_key: idempKey, timestamp: item.timestamp });
+
+                        // Descartar de IndexedDB solo tras confirmación asíncrona completa (tx.oncomplete)
+                        await new Promise((resolve, reject) => {
+                            try {
+                                const tx = db.transaction(STORE_NAME, 'readwrite');
+                                const store = tx.objectStore(STORE_NAME);
+                                store.delete(item.id);
+                                tx.oncomplete = () => resolve();
+                                tx.onerror = (e) => reject(e.target?.error || new Error('Delete transaction error'));
+                                tx.onabort = (e) => reject(e.target?.error || new Error('Delete transaction aborted'));
+                            } catch (delErr) {
+                                reject(delErr);
+                            }
+                        });
+                        count++;
+                    } catch (err) {
+                        console.warn('[OfflineReplayQueue] Fallo en confirmación de comando persistido. Deteniendo drenaje:', item.idempotency_key, err);
+                        break;
                     }
                 }
             }

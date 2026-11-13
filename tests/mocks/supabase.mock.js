@@ -119,6 +119,11 @@ export class MockTableQueryBuilder {
             }
         }
 
+        // RLS Mock: notifications update - revocado en favor de la RPC mark_notification_read
+        if (this.tableName === 'notifications' && this._pendingAction === 'update') {
+            return resolve({ data: null, error: { message: 'permission denied: direct UPDATE on notifications revoked. Use mark_notification_read RPC.' } });
+        }
+
         if (this._pendingAction === 'insert') {
             const newRows = this._actionPayload.map(item => ({
                 id: item.id || `mock_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -254,6 +259,25 @@ export function createMockSupabaseClient() {
         auth: authState,
         from(tableName) {
             return new MockTableQueryBuilder(tableName, memoryStore, authState);
+        },
+        async rpc(fnName, params = {}) {
+            if (fnName === 'mark_notification_read') {
+                const notifId = params.p_notification_id;
+                const notifs = memoryStore.get('notifications') || [];
+                const notif = notifs.find(n => n.id === notifId);
+                if (!notif) return { data: false, error: null };
+                const userUid = authState._session?.user?.id;
+                if (!userUid) return { data: null, error: { message: 'Usuario no autenticado.' } };
+                if (notif.user_id && notif.user_id !== userUid && notif.tenant_id !== 'allowed_tenant') {
+                    return { data: null, error: { message: 'No está autorizado para marcar esta notificación como leída.' } };
+                }
+                if (!Array.isArray(notif.read_by)) notif.read_by = [];
+                if (!notif.read_by.includes(userUid)) {
+                    notif.read_by.push(userUid);
+                }
+                return { data: true, error: null };
+            }
+            return { data: null, error: null };
         }
     };
 }

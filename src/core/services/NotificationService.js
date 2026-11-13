@@ -160,15 +160,17 @@ export const NotificationService = {
                 notif.read_by.push(currentUid);
                 eventBus.emit('notifications:updated', this._notifications);
 
-                // Actualizar en Supabase
+                // Actualizar de forma segura en Supabase mediante RPC de mínimo privilegio
                 try {
                     const client = this._getClient();
-                    await client
-                        .from('notifications')
-                        .update({ read_by: notif.read_by })
-                        .eq('id', notif.id);
+                    const { error } = await client.rpc('mark_notification_read', {
+                        p_notification_id: String(notif.id)
+                    });
+                    if (error) {
+                        console.warn('[NotificationService] Advertencia en RPC mark_notification_read:', error.message);
+                    }
                 } catch (e) {
-                    console.warn('[NotificationService] Error actualizando read_by en Supabase:', e.message);
+                    console.warn('[NotificationService] Error llamando mark_notification_read en Supabase:', e.message);
                 }
             }
         }

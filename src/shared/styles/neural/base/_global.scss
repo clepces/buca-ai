@@ -155,17 +155,6 @@ body {
     }
 }
 
-/* ── FIREBASE EMULATOR UI OVERRIDE ──────────────────────── */
-/* Bloqueo total del banner nativo para priorizar el EmulatorModal corporativo */
-.firebase-emulator-warning, 
-[class*="firebase-emulator"] {
-    display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-    height: 0 !important;
-    z-index: -1000 !important;
-}
-
 /* ── ERROR LAYOUTS (Full Screen) ────────────────────────── */
 .full-screen-error-layout {
     position: fixed;

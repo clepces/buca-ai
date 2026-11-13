@@ -156,7 +156,7 @@ export const WorkspaceNavRibbon = {
         if (!ribbon || ribbon._bucaInit) return;
         ribbon._bucaInit = true;
 
-        // Cargar contador real de empresas desde Firestore
+        // Cargar contador real de empresas desde Supabase
         const updateBusinessCount = async () => {
             try {
                 const { businessService } = await import('@/modules/workspace/services/BusinessService.js');

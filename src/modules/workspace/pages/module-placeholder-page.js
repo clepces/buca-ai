@@ -4,9 +4,16 @@
  * cumpliendo con los estándares de diseño Corporate Hybrid Glass.
  */
 
-export const createModulePage = ({ title, category, icon, description }) => ({
-    render() {
-        return `
+export const createModulePage = ({ title, category, icon, description }) => {
+    const modalPayload = JSON.stringify({
+        title: `Módulo ${title}`,
+        subtitle: 'Estado del Desarrollo',
+        body: `<div class="text-center"><i class="bi bi-tools fs-1 text-primary mb-2 d-block"></i><h5>${title}</h5><p class="text-muted">Este submódulo está planificado en el roadmap corporativo. Se integrará automáticamente con Supabase y el sistema de permisos multi-tenant.</p></div>`
+    }).replace(/'/g, '&apos;');
+
+    return {
+        render() {
+            return `
             <div class="module-page-container fade-in py-2">
                 <!-- Header con Breadcrumbs -->
                 <div class="glass-surface p-3 p-md-4 rounded-4 border-glass shadow-sm mb-4">
@@ -42,7 +49,7 @@ export const createModulePage = ({ title, category, icon, description }) => ({
                             <span class="x-small opacity-85">La arquitectura y esquema de base de datos están vinculados. Los componentes interactivos finales estarán disponibles en la próxima versión.</span>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-sm btn-info text-white rounded-pill px-3 fw-bold" data-action="ui:open_modal" data-payload='{"title": "Módulo ${title}", "subtitle": "Estado del Desarrollo", "body": "<div class=text-center><i class=\"bi bi-tools fs-1 text-primary mb-2 d-block\"></i><h5>${title}</h5><p class=text-muted>Este submódulo está planificado en el roadmap corporativo. Se integrará automáticamente con Firestore y el sistema de permisos multi-tenant.</p></div>"}'>
+                    <button type="button" class="btn btn-sm btn-info text-white rounded-pill px-3 fw-bold" data-action="ui:open_modal" data-payload='${modalPayload}'>
                         Ver Roadmap
                     </button>
                 </div>
@@ -112,6 +119,7 @@ export const createModulePage = ({ title, category, icon, description }) => ({
     init() {
         console.log(`[ModuleSection] -> Sección cargada: ${title}`);
     }
-});
+};
+};
 
 export default createModulePage;

@@ -1,7 +1,7 @@
 /**
  * ProfileController - Controlador interactivo para el perfil de usuario.
  * =========================================================================
- * Maneja pestañas modulares, actualización en Firestore y vinculación de
+ * Maneja pestañas modulares, actualización en Supabase y vinculación de
  * Google Authenticator (TOTP) 100% nativa y gratuita ($0).
  * =========================================================================
  */

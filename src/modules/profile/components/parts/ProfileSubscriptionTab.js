@@ -116,7 +116,7 @@ export const ProfileSubscriptionTab = (data = {}) => {
                     <div class="col-12 col-sm-6 col-md-3">
                         <div class="p-3 rounded-4 bg-body-tertiary border h-100 shadow-xs">
                             <div class="d-flex align-items-center justify-content-between mb-1.5">
-                                <span class="fw-bold text-info small"><i class="bi bi-database-fill-check me-1"></i> Cloud DB Firestore</span>
+                                <span class="fw-bold text-info small"><i class="bi bi-database-fill-check me-1"></i> Cloud DB Supabase</span>
                                 <span class="badge bg-info text-white rounded-pill profile-badge-micro">2.4 / 50 GB</span>
                             </div>
                             <div class="fs-4 fw-bold font-monospace text-main mb-1">2.4 GB DB</div>
@@ -223,7 +223,7 @@ export const ProfileSubscriptionTab = (data = {}) => {
                 <div>
                     <div class="fw-bold small">Garantía Técnica de Licencia Vitalicia Root & SLA 99.99%</div>
                     <div class="small opacity-85 profile-subtext-micro">
-                        Esta cuenta posee certificado de firma digital maestro verificado en Google Cloud Firestore. Garantiza soporte prioritario sin cobros por comisión de transacción ni caducidad de licencia.
+                        Esta cuenta posee certificado de firma digital maestro verificado en Supabase PostgreSQL. Garantiza soporte prioritario sin cobros por comisión de transacción ni caducidad de licencia.
                     </div>
                 </div>
             </div>

@@ -10,7 +10,7 @@ class EventBus {
         this.events = new Map();
         this.middlewares = new Set();
         offlineReplayQueue.registerEmitter(async (ev, ...args) => {
-            await this.emitAsync(ev, ...args);
+            await this.emitTransactional(ev, ...args);
         });
     }
 
@@ -137,8 +137,9 @@ class EventBus {
      * @param {...any} args Datos ilimitados asociados al evento
      */
     emit(event, ...args) {
-        if (!offlineReplayQueue.isOnline()) {
+        if (offlineReplayQueue._isTransactional(event) && !offlineReplayQueue.isOnline()) {
             offlineReplayQueue.enqueue(event, ...args);
+            return; // Prevenir duplicación de efectos de negocio offline
         }
 
         if (!this._runMiddlewares(event, args)) return;
@@ -158,6 +159,25 @@ class EventBus {
                 }
             }
         });
+    }
+
+    /**
+     * Emisión estricta de comandos transaccionales.
+     * Propaga errores y exige la presencia de handlers.
+     */
+    async emitTransactional(event, ...args) {
+        if (!this._runMiddlewares(event, args)) {
+            throw new Error(`[EventBus] Middleware interceptó el comando "${event}".`);
+        }
+
+        const targets = this._getListeners(event);
+        if (targets.length === 0) {
+            throw new Error(`[EventBus] Cero handlers registrados para el comando transaccional "${event}".`);
+        }
+
+        for (const callback of targets) {
+            await callback(...args);
+        }
     }
 
     /**
