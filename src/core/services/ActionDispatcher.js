@@ -7,6 +7,9 @@ import { eventBus } from '@/core/eventBus/index.js';
 import { ModalService } from '@/shared/ui/services/ModalService.js';
 import { ModalTemplates } from '@/shared/ui/templates/ModalTemplates.js';
 import { router } from '@/core/router/router.js';
+import { NotificationService } from '@/core/services/NotificationService.js';
+import { NotificationTray } from '@/shared/ui/components/notifications/NotificationTray.js';
+import { Header } from '@/shared/ui/layouts/components/TopBar.js';
 
 export const ActionDispatcher = {
     _initialized: false,
@@ -59,26 +62,18 @@ export const ActionDispatcher = {
         eventBus.on('notifications:mark_as_read', (payload) => {
             const id = payload.id;
             if (id) {
-                import('@/core/services/NotificationService.js').then(({ NotificationService }) => {
-                    NotificationService.markAsRead(id);
-                });
+                NotificationService.markAsRead(id);
             }
         });
 
         eventBus.on('ui:clear_notifications', () => {
-            import('@/core/services/NotificationService.js').then(({ NotificationService }) => {
-                NotificationService.clearNotifications();
-            });
+            NotificationService.clearNotifications();
         });
 
         eventBus.on('tray:filter_tab', (payload) => {
             const tab = payload.tab || 'all';
-            import('@/shared/ui/components/notifications/NotificationTray.js').then(({ NotificationTray }) => {
-                NotificationTray.setActiveTab(tab);
-                import('@/shared/ui/layouts/components/TopBar.js').then(({ Header }) => {
-                    Header.syncNotifications();
-                });
-            });
+            NotificationTray.setActiveTab(tab);
+            Header.syncNotifications();
         });
 
         // Gestión de Tasa BCV

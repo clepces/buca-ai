@@ -6,6 +6,7 @@
  * =========================================================================
  */
 import { eventBus } from '@/core/eventBus/index.js';
+import { businessService } from '@/modules/workspace/services/BusinessService.js';
 
 export const WorkspaceNavRibbon = {
     render() {
@@ -159,7 +160,6 @@ export const WorkspaceNavRibbon = {
         // Cargar contador real de empresas desde Supabase
         const updateBusinessCount = async () => {
             try {
-                const { businessService } = await import('@/modules/workspace/services/BusinessService.js');
                 const res = await businessService.getUserBusinesses();
                 const count = (res.success && Array.isArray(res.data)) ? res.data.length : 0;
                 ribbon.querySelectorAll('.pill-count').forEach(el => {
