@@ -1,0 +1,60 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-firebase-hosting-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & Deploy Production Hosting
+    runs-on: ubuntu-latest
+    if: github.repository == 'clepces/buca-ai'
+    environment:
+      name: production
+      url: https://buca-scdbs.web.app
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20 (LTS)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install Clean Dependencies
+        run: npm ci
+
+      - name: Validate Tests Before Deployment
+        run: npm test
+
+      - name: Production Build (Vite)
+        run: npm run build
+        env:
+          VITE_APP_ENV: production
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://rdvezglzxjjcfbodpfzo.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Verify Distribution Directory
+        run: |
+          if [ ! -d "dist" ] || [ ! -f "dist/index.html" ]; then
+            echo "::error::Directorio de distribución 'dist' no encontrado o inválido."
+            exit 1
+          fi
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BUCA_SCDBS }}
+          channelId: live
+          projectId: buca-scdbs

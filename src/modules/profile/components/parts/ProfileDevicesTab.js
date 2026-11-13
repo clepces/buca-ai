@@ -21,7 +21,7 @@ export const ProfileDevicesTab = (data = {}) => {
                 <div>
                     <div class="fw-bold small text-info-emphasis">Control Maestro de Sesiones & Huella Criptográfica SHA-256</div>
                     <div class="small text-muted profile-subtext-micro">
-                        Cada terminal conectada posee un token criptográfico validado en Firestore. Si detectas alguna sesión desconocida, revócala de inmediato para forzar su desconexión.
+                        Cada terminal conectada posee un token criptográfico validado en Supabase. Si detectas alguna sesión desconocida, revócala de inmediato para forzar su desconexión.
                     </div>
                 </div>
             </div>
@@ -150,7 +150,7 @@ export const ProfileDevicesTab = (data = {}) => {
                             </tr>
                             <tr>
                                 <td class="fw-semibold text-main">
-                                    <i class="bi bi-arrow-repeat text-info me-1.5"></i>Sincronización de Perfil Firestore
+                                    <i class="bi bi-arrow-repeat text-info me-1.5"></i>Sincronización de Perfil Supabase
                                 </td>
                                 <td class="font-monospace text-muted">Instancia Interna BNE</td>
                                 <td><span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill profile-badge-micro">SDK Cloud</span></td>

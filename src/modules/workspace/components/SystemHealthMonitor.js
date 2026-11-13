@@ -23,7 +23,7 @@ export const SystemHealthMonitor = {
                 <div class="card glass-surface p-3.5 p-md-4 rounded-4 border shadow-sm bg-white flex-grow-1 d-flex flex-column justify-content-between">
                     <div class="d-flex flex-column gap-3">
                         
-                        <!-- Metric Row 1: Firestore / Database Status -->
+                        <!-- Metric Row 1: Supabase / Database Status -->
                         <div class="p-3 rounded-3 border bg-light shadow-2xs d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="rounded-2 p-2 d-flex align-items-center justify-content-center health-card-icon-cloud">

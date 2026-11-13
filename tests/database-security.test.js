@@ -83,6 +83,59 @@ describe('Database Security & RLS Hardening Suite (Etapa 5 y 8)', () => {
         client.auth.setSession({ user: { id: 'mock_uid_1', email: 'tester@buca.com', platform_role: 'super_admin' } });
     });
 
+    it('Debe denegar UPDATE directo sobre la tabla public.notifications (privilegio revocado)', async () => {
+        const { error } = await client
+            .from('notifications')
+            .update({ title: 'Título Modificado Ilegalmente' })
+            .eq('id', 'any_id');
+
+        assert.ok(error, 'Debe fallar el UPDATE directo');
+        assert.match(error.message, /permission denied/i);
+    });
+
+    it('Debe permitir marcar como leída mediante RPC mark_notification_read de forma idempotente', async () => {
+        const notifId = `test_notif_${Date.now()}`;
+        await client.from('notifications').insert({
+            id: notifId,
+            title: 'Alerta Importante',
+            message: 'Mensaje de prueba',
+            user_id: 'mock_uid_1',
+            read_by: []
+        });
+
+        // 1. Primera invocación
+        const res1 = await client.rpc('mark_notification_read', { p_notification_id: notifId });
+        assert.equal(res1.error, null);
+        assert.equal(res1.data, true);
+
+        // 2. Segunda invocación idempotente (no debe fallar ni duplicar)
+        const res2 = await client.rpc('mark_notification_read', { p_notification_id: notifId });
+        assert.equal(res2.error, null);
+        assert.equal(res2.data, true);
+
+        // Verificar que solo se modificó read_by y no otros campos
+        const { data: updatedNotif } = await client.from('notifications').select('*').eq('id', notifId).single();
+        assert.equal(updatedNotif.title, 'Alerta Importante');
+        assert.deepEqual(updatedNotif.read_by, ['mock_uid_1']);
+    });
+
+    it('Debe rechazar mark_notification_read si el usuario no tiene autorización', async () => {
+        const alienNotifId = `alien_notif_${Date.now()}`;
+        await client.from('notifications').insert({
+            id: alienNotifId,
+            title: 'Privado',
+            message: 'Secreto de otro usuario',
+            user_id: 'other_user_uid',
+            read_by: []
+        });
+
+        client.auth.setSession({ user: { id: 'impostor_uid', email: 'impostor@buca.com', platform_role: 'user' } });
+        const { error } = await client.rpc('mark_notification_read', { p_notification_id: alienNotifId });
+        assert.ok(error, 'Debe rechazar la operación por falta de autorización');
+
+        client.auth.setSession({ user: { id: 'mock_uid_1', email: 'tester@buca.com', platform_role: 'super_admin' } });
+    });
+
     it('SupabaseDriver.set debe manejar payload de app_storage con timestamps y claves', async () => {
         const testKey = `audit_sec_${Date.now()}`;
         const testPayload = { secure: true, timestamp: Date.now() };

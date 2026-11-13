@@ -1,7 +1,7 @@
 # AI & CODE AGENT DIRECTIVES
 
 > **Target Project:** B.U.C.A. AI (Business Under Control Access)  
-> **Architecture:** Clean Core Vanilla JS (ES6+), Native DOM, SASS, Vite, Firebase  
+> **Architecture:** Clean Core Vanilla JS (ES6+), Native DOM, SASS, Vite, Supabase Backend & Firebase Hosting  
 > **Audience:** Google AI Studio, Antigravity, GitHub Copilot, Cursor, Windsurf, Claude Code, and all autonomous agents.
 
 ---
@@ -32,10 +32,10 @@
    - Always use dynamic CSS variables (`var(--border-glass)`, `var(--surface-glass)`, `var(--blur-intensity)`).
    - Any surface using `backdrop-filter: blur(...)` **MUST** provide a solid fallback for `[data-buca-perf="L0"]` using `var(--surface-solid)` for constrained GPUs.
 
-5. **DATABASE & MULTI-TENANCY (Firestore v4.1.0):**
-   - Collections must always be plural and lowercase.
-   - Business data scoped under `/businesses/{business_id}/`.
+5. **DATABASE & MULTI-TENANCY (Supabase PostgreSQL / RLS):**
+   - Tables must always be plural and lowercase in `snake_case` (e.g. `businesses`, `profiles`, `finance_rates`, `notifications`).
+   - Business data scoped under tenant isolation (`business_id` / `tenant_id`) enforced by strict Row Level Security (RLS).
    - Never query real-time rates for historic logs; enforce the **Snapshot Pattern**.
-   - Preserve `firestore.rules`, `firebase-applet-config.json`, and `firebase-blueprint.json`.
+   - Supabase is the sole backend (Auth, PostgreSQL DB, Storage, RPCs). Firebase is strictly used for static Firebase Hosting.
 
 ALWAYS follow the architecture specified in `docs/structure.md` and rules in `.agents/rules/`.

@@ -50,7 +50,7 @@ export const ProfileGeneralTab = (data = {}) => {
                             <i class="bi bi-person-vcard-fill text-primary"></i> Identidad & Cuenta Corporativa
                         </h5>
                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold px-2.5 py-1 rounded-pill profile-badge-md">
-                            <i class="bi bi-cloud-check-fill me-1"></i>Sincronizado Firestore
+                            <i class="bi bi-cloud-check-fill me-1"></i>Sincronizado Supabase
                         </span>
                     </div>
 
@@ -228,7 +228,7 @@ export const ProfileGeneralTab = (data = {}) => {
                 <!-- BOTÓN SUBMIT GENERAL -->
                 <div class="d-flex justify-content-end">
                     <button type="submit" id="btn-save-profile-general" class="btn btn-primary rounded-pill px-4 py-2.5 fw-bold shadow-sm">
-                        <i class="bi bi-cloud-arrow-up-fill me-2"></i> Guardar Identidad General en Firestore
+                        <i class="bi bi-cloud-arrow-up-fill me-2"></i> Guardar Identidad General en Supabase
                     </button>
                 </div>
             </form>

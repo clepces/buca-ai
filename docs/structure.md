@@ -31,7 +31,7 @@ Cada dominio de negocio dentro de `src/modules/` debe mantener la siguiente anat
   ├── logic/            # Reglas de negocio, cálculos y controladores
   ├── pages/            # Vistas principales del módulo
   ├── styles/           # Archivos .scss locales del módulo
-  ├── services/         # Llamadas a Firebase Firestore / Auth o APIs externas
+  ├── services/         # Llamadas a Supabase (Auth, DB, Storage, RPCs) o APIs externas
   └── constants/        # Constantes, configuraciones y enumeradores locales
 ```
 
@@ -51,23 +51,25 @@ buca-system/
 ├── .markuplintrc                  # Reglas de auditoría para HTML5 semántico
 ├── .stylelintrc.json              # Configuración de Stylelint para arquitectura SASS
 ├── .gitignore                     # Exclusión de artefactos, caches, dependencias y .env
-├── firebase-applet-config.json    # Credenciales y configuración del proyecto Firebase (buca-scdbs)
-├── firebase-blueprint.json        # Esquema blueprint de la infraestructura Firebase
-├── firestore.rules                # Reglas de seguridad declarativas de Cloud Firestore
+├── firebase.json                  # Configuración exclusiva de Firebase Hosting para el build Vite (dist/)
+├── .firebaserc                    # Alias del proyecto Firebase buca-scdbs para Hosting estático
+├── supabase/                      # Migraciones SQL, esquema relacional y configuración Supabase
+│   └── migrations/                # Scripts SQL versionados con políticas RLS y RPCs
 ├── .agents/                       # Reglas maestras de agentes de IA
 │   ├── readme.md                  # Índice corporativo de directivas
 │   └── rules/                     # Reglas específicas por rol
 │       ├── architect.md           # Estándares de ingeniería y Cero Frameworks
 │       ├── designer.md            # BNE, glassmorphism, densidad ERP y z-index
-│       ├── database-rules.md      # Firestore v4.1.0 y Snapshot Pattern
-│       ├── cost-guard.md          # Políticas Spark Plan $0.00
+│       ├── database-rules.md      # PostgreSQL, Supabase RLS y Snapshot Pattern
+│       ├── cost-guard.md          # Políticas Free Tier Supabase $0.00
 │       └── cloud-functions.md     # Serverless, cold starts y límites de memoria
 ├── docs/                          # Documentación técnica corporativa
 │   ├── readme.md                  # Visión general, slogan y filosofía de roles
 │   ├── structure.md               # Árbol maestro y reglas de código
 │   ├── api.md                     # Contratos de red y servicios externos
 │   ├── components.md              # Catálogo de componentes visuales modulares
-│   ├── database.md                # Esquema Firestore v4.1.0 y colecciones
+│   ├── database-supabase.md       # Esquema maestro PostgreSQL, RLS y RPCs de Supabase
+│   ├── database.md                # Esquema histórico y evolución de datos
 │   ├── domain-logic.md            # Reglas de negocio bi-monetarias y de inventario
 │   ├── events.md                  # Especificación del Bus de Eventos Pub/Sub
 │   ├── interface.md               # Diseño Glassmorphism, SASS y correcciones responsivas
@@ -86,7 +88,6 @@ buca-system/
 │   │   ├── config/                # Configuraciones maestras del sistema
 │   │   │   ├── config.js          # Constantes globales y flags de entorno ENV
 │   │   │   ├── environment.js     # Detección de host, IPs locales y variables Vite
-│   │   │   ├── firebase.js        # Inicialización de Firebase SDK (Firestore, Auth, Functions)
 │   │   │   └── permissions.js     # Mapa de claims granulares y validación de roles
 │   │   ├── engine/                # BUCA NEURAL ENGINE (Motor Gráfico y Optimización)
 │   │   │   ├── engine.js          # Fachada central del motor gráfico
@@ -146,7 +147,7 @@ buca-system/
 │   │   │   ├── logic/             # AuthValidator.js, SessionManager.js
 │   │   │   ├── pages/             # LoginPage, RegisterPage, RecoveryPage, ProfilePage, SettingsPage
 │   │   │   ├── schemas/           # userProfileSchema.js (validación Zod)
-│   │   │   ├── services/          # AuthService.js, FirebaseProvider.js, UserService.js
+│   │   │   ├── services/          # AuthService.js, UserService.js
 │   │   │   └── styles/            # auth.scss y parciales (_auth_base, _auth_forms, etc.)
 │   │   │
 │   │   ├── business/              # MÓDULO DE NEGOCIOS Y ESPACIOS

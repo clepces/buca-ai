@@ -464,7 +464,7 @@ export const ProfileWorkerTab = (data = {}) => {
                 <!-- BOTÓN SUBMIT LABORAL -->
                 <div class="d-flex justify-content-end">
                     <button type="submit" id="btn-save-profile-worker" class="btn btn-primary rounded-pill px-4 py-2.5 fw-bold shadow-sm">
-                        <i class="bi bi-cloud-arrow-up-fill me-2"></i> Actualizar Talento & Fichas en Firestore
+                        <i class="bi bi-cloud-arrow-up-fill me-2"></i> Actualizar Talento & Fichas en Supabase
                     </button>
                 </div>
             </form>
