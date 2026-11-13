@@ -1,6 +1,7 @@
 import { uiState } from '@/core/state/ui.js';
 import { sessionState } from '@/core/state/session.js';
 import { eventBus } from '@/core/eventBus/index.js';
+import { NotificationTray } from '@/shared/ui/components/notifications/NotificationTray.js';
 import { FloatingPanelManager } from '@/shared/ui/services/FloatingPanelManager.js';
 import { KeyboardShortcuts } from '@/core/services/KeyboardShortcuts.js';
 import { initTouchGestures } from '@/shared/utils/touchGestures.js';
