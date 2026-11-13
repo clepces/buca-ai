@@ -98,6 +98,11 @@ export class ModalService {
     static hideModal() {
         const modalBase = document.getElementById('modal-base');
         if (modalBase) {
+            // Remover el foco de cualquier elemento dentro del modal antes de ocultar
+            const focusedInside = modalBase.querySelector(':focus');
+            if (focusedInside && typeof focusedInside.blur === 'function') {
+                focusedInside.blur();
+            }
             modalBase.classList.remove('active');
             modalBase.setAttribute('aria-hidden', 'true');
         }

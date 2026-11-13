@@ -7,10 +7,11 @@
  */
 
 import { z } from 'zod';
+import { ENV } from '@/core/config/environment.js';
 
-export const DOLAR_VZLA_KEY = '8d7da8345df5e4bd436fe31c0f7648a9d208b8b2c750edc69234ca595d76fa1d';
-export const CDN_BASE = 'https://rates.dolarvzla.com';
-export const API_BASE = 'https://api.dolarvzla.com';
+export const DOLAR_VZLA_KEY = ENV.DOLAR_VZLA.KEY;
+export const CDN_BASE = ENV.DOLAR_VZLA.CDN;
+export const API_BASE = ENV.DOLAR_VZLA.API;
 
 /**
  * Función pura para redondeo exacto a 2 decimales sin desbordamiento de coma flotante.
@@ -179,8 +180,9 @@ export class DolarVzlaService {
 
         this._inflightPromises.usdt = (async () => {
             try {
-                let res = await fetch(`${this.config.cdnBase}/bcv/usdt.json?t=${Date.now()}`, { cache: 'no-store' }).catch(() => null);
-                if (!res || !res.ok) {
+                let res = null;
+                // Si contamos con API Key configurada, consultar directamente el endpoint oficial
+                if (this.config.apiKey) {
                     res = await fetch(`${this.config.apiBase}/public/usdt/exchange-rate?t=${Date.now()}`, {
                         method: 'GET',
                         headers: {
@@ -188,6 +190,11 @@ export class DolarVzlaService {
                             'Content-Type': 'application/json'
                         }
                     }).catch(() => null);
+                }
+
+                // Fallback secundario a CDN estático si existiera
+                if (!res || !res.ok) {
+                    res = await fetch(`${this.config.cdnBase}/bcv/usdt.json?t=${Date.now()}`, { cache: 'no-store' }).catch(() => null);
                 }
                 if (!res || !res.ok) throw new Error(`HTTP Error: ${res ? res.status : 'Network'}`);
                 const data = await res.json();

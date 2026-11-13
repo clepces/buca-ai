@@ -6,6 +6,7 @@
  */
 
 import * as d3 from 'd3';
+import 'd3-transition';
 import { PerformanceStorage } from '@/core/storage/PerformanceStorage.js';
 import GraphicsEngine from '@/core/engine/engine.js';
 import { eventBus } from '@/core/eventBus/index.js';
@@ -342,11 +343,16 @@ export class PerformanceD3Dashboard {
                 this.selectProfile(d.id);
             });
 
-        bars.transition()
-            .duration(650)
-            .ease(d3.easeCubicOut)
-            .attr('y', d => yScale(Number(d.avgLoadMs) || 0))
-            .attr('height', d => Math.max(2, innerHeight - yScale(Number(d.avgLoadMs) || 0)));
+        if (typeof bars.transition === 'function') {
+            bars.transition()
+                .duration(650)
+                .ease(d3.easeCubicOut)
+                .attr('y', d => yScale(Number(d.avgLoadMs) || 0))
+                .attr('height', d => Math.max(2, innerHeight - yScale(Number(d.avgLoadMs) || 0)));
+        } else {
+            bars.attr('y', d => yScale(Number(d.avgLoadMs) || 0))
+                .attr('height', d => Math.max(2, innerHeight - yScale(Number(d.avgLoadMs) || 0)));
+        }
 
         const labels = g.selectAll('.perf-bar-label')
             .data(dataList)
@@ -361,10 +367,14 @@ export class PerformanceD3Dashboard {
             .style('fill', d => d.color || '#3b82f6')
             .text(d => `${Number(d.avgLoadMs) || 0}ms`);
 
-        labels.transition()
-            .duration(650)
-            .ease(d3.easeCubicOut)
-            .attr('y', d => yScale(Number(d.avgLoadMs) || 0) - 7);
+        if (typeof labels.transition === 'function') {
+            labels.transition()
+                .duration(650)
+                .ease(d3.easeCubicOut)
+                .attr('y', d => yScale(Number(d.avgLoadMs) || 0) - 7);
+        } else {
+            labels.attr('y', d => yScale(Number(d.avgLoadMs) || 0) - 7);
+        }
 
         this._updateIndicator(g, xScale, yScale, activeProfile, innerHeight);
 

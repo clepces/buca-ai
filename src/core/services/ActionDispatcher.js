@@ -76,12 +76,8 @@ export const ActionDispatcher = {
             Header.syncNotifications();
         });
 
-        // Gestión de Tasa BCV
-        eventBus.on('ui:open_rate', () => {
-            import('@/modules/finance/controllers/RateController.js').then(({ RateController }) => {
-                RateController.show();
-            });
-        });
+        // Gestión de Tasa BCV: despachada de forma única por FinanceModule para evitar doble apertura
+        // eventBus.on('ui:open_rate', ...) delegado al FinanceModule (RateController)
 
         // Gestor de Rendimiento / Telemetría Gráfica D3
         const openPerformanceModal = () => {
