@@ -9,6 +9,7 @@
 import { eventBus } from '@/core/eventBus/index.js';
 import { RouteConfig } from './RouteConfig.js';
 import { Logger } from '@/shared/utils/logger.js';
+import ModuleLoader from '@/core/ModuleLoader.js';
 
 class Router {
     #popstateHandler = null;
@@ -87,7 +88,6 @@ class Router {
             let route = this.routes.find(r => r.path === path);
             
             if (!route && !path.startsWith('/auth')) {
-                const { default: ModuleLoader } = await import('@/core/ModuleLoader.js');
                 if (!ModuleLoader.isLoaded('workspace')) {
                     await ModuleLoader.load('workspace');
                     route = this.routes.find(r => r.path === path);
