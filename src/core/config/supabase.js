@@ -30,8 +30,9 @@ export const getSupabase = () => {
     const url = ENV.SUPABASE.URL;
     const anonKey = ENV.SUPABASE.ANON_KEY;
 
+    // Si no hay credenciales (p.ej. entorno de pruebas unitarias sin mock activo), no invocar createClient
     if (!url || !anonKey) {
-        console.warn('[Supabase] Missing URL or Anon Key. Using offline/local fallback.');
+        return null;
     }
 
     clientInstance = createClient(url, anonKey, {
@@ -48,6 +49,10 @@ export const getSupabase = () => {
 
 export const initSupabase = async () => {
     const client = getSupabase();
+    if (!client) {
+        uiState.set({ isConnecting: false, isOnline: false });
+        return { client: null, session: null };
+    }
     try {
         uiState.set({ isConnecting: true });
         // Verificación ligera contra auth session
@@ -62,5 +67,10 @@ export const initSupabase = async () => {
     }
 };
 
-export const supabase = getSupabase();
+export const supabase = {
+    get from() { return (...args) => (getSupabase() || {}).from?.(...args); },
+    get auth() { return (getSupabase() || {}).auth; },
+    get rpc() { return (...args) => (getSupabase() || {}).rpc?.(...args); },
+    get storage() { return (getSupabase() || {}).storage; }
+};
 export default supabase;

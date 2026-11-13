@@ -383,7 +383,7 @@ export const rateManagementTemplate = ({
                         <div class="mb-3">
                             <label for="cfg-api-key" class="form-label x-small fw-bold text-muted text-uppercase">Clave API</label>
                             <div class="input-group">
-                                <input type="${apiConfig?.showKey ? 'text' : 'password'}" id="cfg-api-key" class="form-control glass-input font-monospace small" value="${apiConfig?.apiKey || '8d7da8345df5e4bd436fe31c0f7648a9d208b8b2c750edc69234ca595d76fa1d'}">
+                                <input type="${apiConfig?.showKey ? 'text' : 'password'}" id="cfg-api-key" class="form-control glass-input font-monospace small" value="${apiConfig?.apiKey || ''}">
                                 <button type="button" class="btn btn-outline-secondary" id="btn-toggle-api-key-vis">
                                     <i class="bi ${apiConfig?.showKey ? 'bi-eye-slash-fill' : 'bi-eye-fill'}"></i>
                                 </button>
