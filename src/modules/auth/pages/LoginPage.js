@@ -138,7 +138,7 @@ export const LoginPage = {
         bindPINVerification();
     },
 
-    showWelcomeAndLoading(email = '') {
+    showWelcomeAndLoading(_email = '') {
         const welcomeHTML = `
             <div class="welcome-container text-center animate__animated animate__fadeIn">
                 <div class="welcome-badge mb-3">

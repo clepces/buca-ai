@@ -12,7 +12,7 @@ export const renderFichaCardHtml = (card, idx = 0) => {
     } else if (card.job_role) {
         roleList = card.job_role.split(/[,/•&]/).map(r => r.trim()).filter(Boolean);
     }
-    if (roleList.length === 0) roleList = ['Operador Comercial'];
+    if (roleList.length === 0) roleList = ['Sin especificar'];
 
     const rolesHtml = roleList.map(r => `
         <span class="role-badge-pill shadow-2xs">
@@ -23,8 +23,8 @@ export const renderFichaCardHtml = (card, idx = 0) => {
     const shiftList = (Array.isArray(card.shifts) && card.shifts.length > 0)
         ? card.shifts
         : [
-            { name: 'Turno Asignado', time: card.schedule_label || '08:00 AM - 05:00 PM', days: 'Lunes a Sábado', theme: 'primary' },
-            { name: 'Descanso', time: 'Día Libre', days: 'Domingos Libres', theme: 'success' }
+            { name: 'Turno Asignado', time: card.schedule_label || 'Sin configurar', days: 'Sin configurar', theme: 'primary' },
+            { name: 'Descanso', time: 'Sin configurar', days: 'Sin configurar', theme: 'success' }
         ];
 
     const badgeThemes = {
@@ -55,13 +55,7 @@ export const renderFichaCardHtml = (card, idx = 0) => {
     return `
         <div class="p-3 rounded-4 experience-card-item mb-3 shadow-xs position-relative collapsed" data-card-id="${escapeHTML(cardId)}" data-ficha-json="${cardJson}">
             <!-- HEADER (SIEMPRE VISIBLE) -->
-            <div class="d-flex align-items-center justify-content-between cursor-pointer ficha-header-toggle" onclick="
-                const cards = this.closest('#experience-cards-list').querySelectorAll('.experience-card-item');
-                cards.forEach(c => {
-                    if (c !== this.parentElement) c.classList.add('collapsed');
-                });
-                this.parentElement.classList.toggle('collapsed');
-            ">
+            <div class="d-flex align-items-center justify-content-between cursor-pointer ficha-header-toggle" data-action="worker:toggle_ficha">
                 <div class="d-flex align-items-center gap-2.5 min-w-0">
                     <div class="profile-icon-box-sm rounded-circle bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0">
                         <i class="bi bi-building-check"></i>
@@ -98,11 +92,11 @@ export const renderFichaCardHtml = (card, idx = 0) => {
                             </div>
                             <div class="bg-body-secondary px-3 py-2 rounded-3 border">
                                 <span class="profile-subtext-micro text-muted fw-bold d-block">Tipo de Contrato:</span>
-                                <span class="small text-main fw-semibold">${escapeHTML(card.contract_type || 'Tiempo Completo')}</span>
+                                <span class="small text-main fw-semibold">${escapeHTML(card.contract_type || 'Sin especificar')}</span>
                             </div>
                             <div class="bg-body-secondary px-3 py-2 rounded-3 border">
                                 <span class="profile-subtext-micro text-muted fw-bold d-block">Departamento:</span>
-                                <span class="small text-main fw-semibold">${escapeHTML(card.department || 'Operaciones')}</span>
+                                <span class="small text-main fw-semibold">${escapeHTML(card.department || 'Sin especificar')}</span>
                             </div>
                         </div>
                     </div>
@@ -125,7 +119,7 @@ export const renderFichaCardHtml = (card, idx = 0) => {
                             <span class="profile-subtext-micro text-muted fw-bold d-block mb-1">
                                 <i class="bi bi-person-badge text-info me-1"></i>Supervisor Directo:
                             </span>
-                            <span class="small text-main">${escapeHTML(card.supervisor || 'Nombre Supervisor Ejemplo')}</span>
+                            <span class="small text-main">${escapeHTML(card.supervisor || 'Sin asignar')}</span>
                         </div>
                     </div>
                 </div>
@@ -141,7 +135,7 @@ export const renderFichaCardHtml = (card, idx = 0) => {
                     <span class="profile-subtext-micro text-muted fw-bold d-block mb-1">
                         <i class="bi bi-lightbulb text-warning me-1"></i>Logros Destacados:
                     </span>
-                    <p class="small text-muted mb-0">${escapeHTML(card.achievements || 'Optimización de procesos de cierre y atención al cliente.')}</p>
+                    <p class="small text-muted mb-0">${escapeHTML(card.achievements || 'Sin logros registrados.')}</p>
                 </div>
             </div>
         </div>

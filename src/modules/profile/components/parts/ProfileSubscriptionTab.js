@@ -4,20 +4,18 @@
  * Banner VIP Master Gold Premier | Cuotas & Consumo | Módulos ERP con Límites de Capacidad
  * =========================================================================================
  */
+
 import { escapeHTML } from '@/shared/utils/security.js';
 
 export const ProfileSubscriptionTab = (data = {}) => {
-    const rawTier = (data.planTier || 'ESTÁNDAR').toUpperCase();
-    const planTierDisplay = rawTier;
-    const planStatus = data.planStatus || 'ACTIVO';
-    const validUntil = data.validUntil || 'Vigente';
+    const planTier = (data.planTier || 'Estándar').toUpperCase();
 
     return `
         <div class="tab-content-pane feature-disabled" id="tab-profile-subscription">
             
             <!-- PLAN SELECTION BANNER -->
             <div class="card border rounded-4 p-4 mb-4 shadow-sm bg-body">
-                <h4 class="fw-bold mb-3">Planes de Suscripción</h4>
+                <h4 class="fw-bold mb-3">Planes de Suscripción (Actual: <span class="text-primary">${escapeHTML(planTier)}</span>)</h4>
                 <div class="row g-3">
                     <div class="col-6 col-md-3">
                         <div class="p-3 border rounded-3 bg-body-tertiary">

@@ -171,7 +171,7 @@ class BusinessService {
                 created_at: new Date().toISOString()
             };
 
-            const { data: inserted, error } = await client
+            const { error } = await client
                 .from('businesses')
                 .insert(payload)
                 .select()

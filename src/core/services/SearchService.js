@@ -1,5 +1,4 @@
 import { eventBus } from '@/core/eventBus/index.js';
-import { ModuleLoader } from '@/core/ModuleLoader.js';
 
 /**
  * SearchService - Orquestador de búsqueda global en BUCA OS

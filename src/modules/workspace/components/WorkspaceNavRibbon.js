@@ -222,7 +222,7 @@ export const WorkspaceNavRibbon = {
 
         // Listen for business creations and refreshes
         eventBus.on('workspace:business_created', () => updateBusinessCount());
-        eventBus.on('workspace:refresh_data', (payload) => {
+        eventBus.on('workspace:refresh_data', (_payload) => {
             updateBusinessCount();
             const icon = ribbon.querySelector('.bi-arrow-clockwise');
             if (icon) {

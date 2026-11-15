@@ -1,5 +1,3 @@
-import { CONFIG } from '@/core/config/config.js';
-
 /**
  * LoginForm - Componente de Entrada de Credenciales
  */
@@ -74,9 +72,8 @@ export const LoginForm = {
             if (form) {
                 form.onsubmit = async (e) => {
                     e.preventDefault();
-                    const email = document.getElementById('email').value;
-                    const password = pwdInput.value;
-                    const remember = document.getElementById('remember').checked;
+                    const email = emailInput ? emailInput.value.trim() : '';
+                    const password = pwdInput ? pwdInput.value : '';
 
                     // Estado de carga
                     btnSubmit.disabled = true;

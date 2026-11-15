@@ -222,7 +222,7 @@ export class PerformanceStorage {
             if (history.length > 10) history = history.slice(-10);
             localStorage.setItem(historyKey, JSON.stringify(history));
             return entry;
-        } catch (e) {
+        } catch {
             return null;
         }
     }

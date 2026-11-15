@@ -1,9 +1,8 @@
 /**
  * ProfileMonitoringTab - Pestaña de Monitoreo de Límites y Módulos ERP.
  */
-import { escapeHTML } from '@/shared/utils/security.js';
 
-export const ProfileMonitoringTab = (data = {}) => {
+export const ProfileMonitoringTab = (_data = {}) => {
     return `
         <div class="tab-content-pane feature-disabled" id="tab-profile-monitoring">
             <div class="row g-4">
