@@ -34,7 +34,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.109.0",
     "autoprefixer": "^10.6.2",
-    "bootstrap": "^5.3.8",
+    "bootstrap": "^5.3.9",
     "bootstrap-icons": "^1.13.2",
     "d3": "^7.9.0",
     "lucide": "^1.70.0",
