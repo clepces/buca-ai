@@ -221,7 +221,7 @@ export const RateController = {
                         });
 
                         this.hide();
-                    } catch (err) {
+                    } catch {
                         eventBus.emit('notifications:push', {
                             title: 'Error de Persistencia',
                             message: 'No se pudo guardar la tasa en la base de datos.',

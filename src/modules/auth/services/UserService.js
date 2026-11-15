@@ -180,7 +180,7 @@ class UserService {
     /**
      * Actualiza la configuración de seguridad
      */
-    async updateSecurity(securityUpdates) {
+    async updateSecurity(_securityUpdates) {
         const uid = this._getCurrentUid();
         if (!uid) return { success: false, error: 'Sesión no válida.' };
 

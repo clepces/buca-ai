@@ -34,7 +34,7 @@ export class LocalDriver {
         try {
             const decryptedData = CryptoWrapper.decrypt(encryptedData);
             return JSON.parse(decryptedData);
-        } catch (e) {
+        } catch {
             console.warn(`[LocalDriver] Failed to parse decrypted data for key: ${key}`);
             return null;
         }

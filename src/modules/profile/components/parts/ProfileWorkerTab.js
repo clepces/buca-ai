@@ -12,76 +12,35 @@ export { renderFichaCardHtml };
 
 export const ProfileWorkerTab = (data = {}) => {
     const { 
-        repScore = 5.0, 
-        shiftsCount = 350, 
-        jobTitle = 'Cajero Comercial & Operador ERP', 
+        repScore = 0.0, 
+        shiftsCount = 0, 
+        jobTitle = '', 
         availStatus = 'available', 
         bio = '', 
         skillsList = [],
         experienceCards = []
     } = data;
 
-    const defaultSkills = [
-        { name: 'Manejo de Caja & Cuadres', icon: 'bi-cash-coin', pts: '1,500 Pts' },
-        { name: 'Gestión de Inventario FIFO', icon: 'bi-boxes', pts: '1,280 Pts' },
-        { name: 'Operación Multimoneda BCV/USDT', icon: 'bi-currency-exchange', pts: '1,450 Pts' },
-        { name: 'Facturación & Ticketera SENIAT', icon: 'bi-receipt', pts: '1,100 Pts' },
-        { name: 'Atención al Cliente & POS', icon: 'bi-person-check-fill', pts: '980 Pts' },
-        { name: 'Auditoría de Cierres de Turno', icon: 'bi-shield-check', pts: '1,320 Pts' }
-    ];
-
     const formattedSkills = (Array.isArray(skillsList) && skillsList.length > 0)
-        ? skillsList.map((item, idx) => {
+        ? skillsList.map((item) => {
             if (typeof item === 'string') {
-                const defaultFallback = defaultSkills[idx % defaultSkills.length];
                 return {
                     name: item,
-                    icon: defaultFallback.icon,
-                    pts: defaultFallback.pts
+                    icon: 'bi-check2-circle',
+                    pts: '0 Pts'
                 };
             }
             return {
                 name: item.name || 'Habilidad Comercial',
                 icon: item.icon || 'bi-stars',
-                pts: item.pts || '1,000 Pts'
+                pts: item.pts || '0 Pts'
             };
         })
-        : defaultSkills;
+        : [];
 
     const expCards = (Array.isArray(experienceCards) && experienceCards.length > 0)
         ? experienceCards
-        : [
-            {
-                id: 'exp_01',
-                company_name: 'BUCA Enterprise Main HQ',
-                job_role: 'Super Administrador & Arquitecto Principal ERP',
-                roles: ['Super Administrador ERP', 'Arquitecto Principal POS'],
-                date_range: '2024 - Presente (2 años)',
-                branch_location: 'Caracas - Centro Empresarial B.U.C.A.',
-                schedule_label: '08:00 AM - 05:00 PM (Turno Rotativo)',
-                shifts: [
-                    { name: 'Turno Mañana', time: '08:00 AM - 01:00 PM', days: 'Lunes a Miércoles', theme: 'primary' },
-                    { name: 'Turno Tarde', time: '02:00 PM - 07:00 PM', days: 'Jueves a Sábado', theme: 'purple' },
-                    { name: 'Descanso', time: 'Día Libre', days: 'Domingos Libres', theme: 'success' }
-                ],
-                is_verified: true
-            },
-            {
-                id: 'exp_02',
-                company_name: 'Comercializadora Gran Plaza C.A.',
-                job_role: 'Gerente de Caja & Tesorería Multimoneda',
-                roles: ['Gerente de Caja', 'Tesorero BCV/USDT'],
-                date_range: '2022 - 2024 (2 años)',
-                branch_location: 'Sucursal Central Baruta',
-                schedule_label: '08:00 AM - 04:00 PM (Turno Fijo)',
-                shifts: [
-                    { name: 'Turno Mañana', time: '08:00 AM - 01:00 PM', days: 'Lunes a Viernes', theme: 'primary' },
-                    { name: 'Turno Tarde', time: '01:00 PM - 05:00 PM', days: 'Sábados Especiales', theme: 'warning' },
-                    { name: 'Descanso', time: 'Día Libre', days: 'Domingos Libres', theme: 'success' }
-                ],
-                is_verified: true
-            }
-        ];
+        : [];
 
     const statusMeta = {
         available: { label: 'Disponible en Turno', dotClass: 'status-dot-available' },
@@ -120,7 +79,16 @@ export const ProfileWorkerTab = (data = {}) => {
 
                             <!-- CONTENEDOR CON SCROLL GLOBAL UNIFICADO PARA ADMITIR FICHAS -->
                             <div class="buca-scroll-area buca-scroll-area--md flex-grow-1" id="experience-cards-list">
-                                ${expCards.map((card, idx) => renderFichaCardHtml(card, idx)).join('')}
+                                ${expCards.length > 0
+                                    ? expCards.map((card, idx) => renderFichaCardHtml(card, idx)).join('')
+                                    : `
+                                        <div class="p-4 text-center border rounded-4 bg-body-tertiary">
+                                            <i class="bi bi-journal-x fs-2 text-muted mb-2 d-block"></i>
+                                            <div class="fw-bold text-main small mb-1">Sin fichas laborales registradas</div>
+                                            <div class="text-muted profile-subtext-micro">No tienes historial laboral registrado. Haz clic en "Agregar Ficha" para vincular tus comercios y turnos.</div>
+                                        </div>
+                                    `
+                                }
                             </div>
                         </div>
                     </div>

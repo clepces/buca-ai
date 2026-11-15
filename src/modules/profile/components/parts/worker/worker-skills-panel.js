@@ -58,22 +58,33 @@ export function renderWorkerSkillsPanel({ jobTitle, bio, formattedSkills }) {
                     <!-- CONTENEDOR CON SCROLL GLOBAL UNIFICADO PARA HABILIDADES -->
                     <div class="buca-scroll-area buca-scroll-area--sm flex-grow-1" id="skills-list-container">
                         <div class="row g-2" id="skills-cards-row">
-                            ${formattedSkills.map((sk, idx) => `
-                                <div class="col-12 col-sm-6 skill-card-wrapper" data-skill-index="${idx}">
-                                    <div class="p-2.5 rounded-3 skill-card-item d-flex align-items-center justify-content-between gap-2 shadow-xs">
-                                        <div class="d-flex align-items-center gap-2 min-w-0">
-                                            <i class="bi ${escapeHTML(sk.icon)} text-primary fs-6 flex-shrink-0"></i>
-                                            <span class="fw-semibold small text-main text-truncate skill-name-label">${escapeHTML(sk.name)}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-1.5 flex-shrink-0">
-                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle font-monospace profile-badge-micro skill-pts-badge">${escapeHTML(sk.pts)}</span>
-                                            <button type="button" class="btn btn-sm text-danger p-0 border-0 btn-delete-skill" title="Quitar habilidad">
-                                                <i class="bi bi-x-circle-fill fs-6"></i>
-                                            </button>
+                            ${formattedSkills.length > 0
+                                ? formattedSkills.map((sk, idx) => `
+                                    <div class="col-12 col-sm-6 skill-card-wrapper" data-skill-index="${idx}">
+                                        <div class="p-2.5 rounded-3 skill-card-item d-flex align-items-center justify-content-between gap-2 shadow-xs">
+                                            <div class="d-flex align-items-center gap-2 min-w-0">
+                                                <i class="bi ${escapeHTML(sk.icon)} text-primary fs-6 flex-shrink-0"></i>
+                                                <span class="fw-semibold small text-main text-truncate skill-name-label">${escapeHTML(sk.name)}</span>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1.5 flex-shrink-0">
+                                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle font-monospace profile-badge-micro skill-pts-badge">${escapeHTML(sk.pts)}</span>
+                                                <button type="button" class="btn btn-sm text-danger p-0 border-0 btn-delete-skill" title="Quitar habilidad">
+                                                    <i class="bi bi-x-circle-fill fs-6"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            `).join('')}
+                                `).join('')
+                                : `
+                                    <div class="col-12">
+                                        <div class="p-3 text-center border rounded-3 bg-body-tertiary">
+                                            <i class="bi bi-award text-muted fs-3 d-block mb-1"></i>
+                                            <span class="small fw-semibold text-main d-block">Sin habilidades registradas</span>
+                                            <span class="profile-subtext-micro text-muted">Aún no has agregado competencias laborales. Pulsa "Agregar Habilidad" para registrarlas.</span>
+                                        </div>
+                                    </div>
+                                `
+                            }
                         </div>
                     </div>
                 </div>

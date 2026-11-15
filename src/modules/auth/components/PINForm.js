@@ -6,7 +6,7 @@
  * =========================================================================
  */
 export const PINForm = {
-    render(email = 'usuario@empresa.com', options = {}) {
+    render(email = 'usuario@empresa.com', _options = {}) {
         return `
             <div class="pin-verification-container animate__animated animate__fadeInUp">
                 <div class="text-center mb-3">

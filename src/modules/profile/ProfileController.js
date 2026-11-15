@@ -6,7 +6,6 @@
  * =========================================================================
  */
 import userService from '@/modules/auth/services/UserService.js';
-import { TOTPService } from '@/core/security/TOTPService.js';
 import { sessionState } from '@/core/state/session.js';
 import { MFAEnrollmentModal } from './components/MFAEnrollmentModal.js';
 import { eventBus } from '@/core/eventBus/index.js';
@@ -20,6 +19,7 @@ export const ProfileController = {
         this._bindTabs(initialTab);
         this._bindGeneralForm();
         this._bindSecurityTab();
+        this._bindWorkerTab();
     },
 
     _bindTabs(initialTab) {
@@ -142,16 +142,7 @@ export const ProfileController = {
 
     _bindSecurityTab() {
         const btnSetupTotp = document.getElementById('btn-setup-totp');
-        const setupBox = document.getElementById('totp-setup-box');
-        const qrSlot = document.getElementById('totp-qr-slot');
-        const secretDisplay = document.getElementById('totp-secret-key-display');
-        const testCodeInput = document.getElementById('totp-test-code');
-        const btnConfirm = document.getElementById('btn-confirm-totp');
-        const feedbackEl = document.getElementById('totp-setup-feedback');
         const toggle2FA = document.getElementById('profile-2fa-toggle');
-
-        const sessionUser = sessionState.get().user || {};
-        const userEmail = sessionUser.email || '';
 
         // 1. Desplegar Modal de Enrolamiento MFA Nativo con Canvas QR
         if (btnSetupTotp) {
@@ -182,12 +173,24 @@ export const ProfileController = {
         }
     },
 
-    _showTotpFeedback(msg, isError) {
-        const el = document.getElementById('totp-setup-feedback');
-        if (!el) return;
-        el.className = `x-small text-center py-1.5 px-2 rounded mt-2 ${isError ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'}`;
-        el.textContent = msg;
-        el.classList.remove('d-none');
+    _bindWorkerTab() {
+        const cardsList = document.getElementById('experience-cards-list');
+        if (!cardsList) return;
+
+        cardsList.addEventListener('click', (e) => {
+            const toggle = e.target.closest('[data-action="worker:toggle_ficha"]');
+            if (!toggle) return;
+            if (e.target.closest('button')) return;
+
+            const currentCard = toggle.closest('.experience-card-item');
+            if (!currentCard) return;
+
+            const allCards = cardsList.querySelectorAll('.experience-card-item');
+            allCards.forEach(c => {
+                if (c !== currentCard) c.classList.add('collapsed');
+            });
+            currentCard.classList.toggle('collapsed');
+        });
     }
 };
 

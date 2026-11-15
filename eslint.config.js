@@ -26,7 +26,11 @@ export default [
             "indent": "off",
             "quotes": "off",
             "semi": "off",
-            "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+            "no-unused-vars": ["warn", { 
+                "argsIgnorePattern": "^_",
+                "varsIgnorePattern": "^_",
+                "caughtErrorsIgnorePattern": "^_"
+            }],
             "no-console": "off",
             "no-undef": "error"
         }

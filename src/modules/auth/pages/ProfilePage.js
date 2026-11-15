@@ -115,7 +115,6 @@ export const ProfilePage = {
 
             const editForm = document.getElementById('profile-edit-form');
             const nameInput = document.getElementById('edit-display-name');
-            const photoInput = document.getElementById('edit-photo-url');
             const btnSave = document.getElementById('btn-save-profile');
             const feedback = document.getElementById('profile-feedback');
 

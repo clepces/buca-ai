@@ -36,7 +36,9 @@ export const BusinessRepository = {
     try {
       const client = this._getClient();
       const businessId = 'biz_' + Date.now();
-      const { businessId: _ignored, owner_id: _ignoredOwner, ...safeData } = businessData || {};
+      const safeData = { ...(businessData || {}) };
+      delete safeData.businessId;
+      delete safeData.owner_id;
 
       const payload = {
         ...safeData,

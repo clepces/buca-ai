@@ -86,7 +86,7 @@ export class MFAEnrollmentModal {
                 // Reautenticar con Supabase Auth
                 await SupabaseProvider.login(email, password);
                 await this._showStep2QR(email);
-            } catch (err) {
+            } catch {
                 if (feedback) {
                     feedback.textContent = 'Contraseña incorrecta. Se requiere reautenticación válida.';
                     feedback.classList.remove('d-none');
