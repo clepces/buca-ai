@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "buca-webapp",
     "public": "dist",
     "ignore": [
       "firebase.json",

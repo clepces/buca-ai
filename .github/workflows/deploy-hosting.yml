@@ -20,7 +20,7 @@ jobs:
     if: github.repository == 'clepces/buca-ai'
     environment:
       name: production
-      url: https://buca-scdbs.web.app
+      url: https://buca-webapp.web.app
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -58,3 +58,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BUCA_SCDBS || secrets.FIREBASE_SERVICE_ACCOUNT }}
           channelId: live
           projectId: buca-scdbs
+          target: buca-webapp

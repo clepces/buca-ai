@@ -25,7 +25,7 @@
     "globals": "^17.14.0",
     "markuplint": "^4.0.0",
     "prettier": "^3.5.0",
-    "sass-embedded": "^1.106.1",
+    "sass-embedded": "^1.108.1",
     "stylelint": "^16.15.0",
     "stylelint-config-standard-scss": "^14.0.0",
     "typescript": "^5.7.0",
@@ -37,7 +37,7 @@
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.2",
     "d3": "^7.9.0",
-    "lucide": "^1.63.0",
+    "lucide": "^1.70.0",
     "zod": "^4.6.7"
   }
 }
