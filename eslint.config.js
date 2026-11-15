@@ -26,9 +26,9 @@ export default [
             "indent": "off",
             "quotes": "off",
             "semi": "off",
-            "no-unused-vars": "off",
+            "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
             "no-console": "off",
-            "no-undef": "off"
+            "no-undef": "error"
         }
     }
 ];
