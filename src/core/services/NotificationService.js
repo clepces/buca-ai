@@ -150,7 +150,7 @@ export const NotificationService = {
             ? (target.id || target.notificationId || target.target)
             : target;
         
-        if (notifId == null) return;
+        if (notifId === null || notifId === undefined) return;
         const cleanId = String(notifId).trim();
 
         const notif = this._notifications.find(n => String(n.id) === cleanId);

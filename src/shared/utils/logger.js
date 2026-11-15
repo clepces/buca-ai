@@ -1,6 +1,10 @@
+const isDev = (typeof import.meta !== 'undefined' && import.meta.env)
+    ? Boolean(import.meta.env.DEV)
+    : (typeof globalThis.process !== 'undefined' && globalThis.process.env?.NODE_ENV !== 'production');
+
 export const Logger = {
     log: (message, ...args) => {
-        if (process.env.NODE_ENV !== 'production') {
+        if (isDev) {
             console.log(`[LOG]: ${message}`, ...args);
         }
     },
@@ -8,7 +12,7 @@ export const Logger = {
         console.error(`[ERROR]: ${message}`, ...args);
     },
     warn: (message, ...args) => {
-        if (process.env.NODE_ENV !== 'production') {
+        if (isDev) {
             console.warn(`[WARN]: ${message}`, ...args);
         }
     }

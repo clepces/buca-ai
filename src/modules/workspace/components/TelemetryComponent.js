@@ -151,7 +151,10 @@ export const TelemetryComponent = {
                 if (metric.id.startsWith('currency')) {
                     eventBus.emit('ui:open_rate');
                 } else {
-                    const { ModalTemplates } = await import('@/shared/ui/templates/ModalTemplates.js');
+                    const [{ ModalTemplates }, { ModalService }] = await Promise.all([
+                        import('@/shared/ui/templates/ModalTemplates.js'),
+                        import('@/shared/ui/overlays/ModalService.js')
+                    ]);
                     ModalService.showModal({
                         size: 'md',
                         header: ModalTemplates.buildHeader({
