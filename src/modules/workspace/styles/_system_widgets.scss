@@ -23,7 +23,7 @@
     .system-accordion-item {
         transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         border: 1px solid rgba(0, 0, 0, 0.08) !important;
-        background: #ffffff !important;
+        background: #fff !important;
 
         &:hover {
             border-color: rgba(37, 99, 235, 0.3) !important;
@@ -71,7 +71,7 @@
     .system-highlight-card {
         transition: all 0.2s ease;
         border: 1px solid rgba(0, 0, 0, 0.08) !important;
-        background: #ffffff !important;
+        background: #fff !important;
         min-width: 0;
 
         &:hover {
@@ -96,7 +96,7 @@
     .system-metric-box {
         margin-top: 1rem;
         border: 1px solid rgba(0, 0, 0, 0.08) !important;
-        background: #ffffff !important;
+        background: #fff !important;
     }
 }
 
@@ -165,7 +165,7 @@
 .health-badge-online {
     font-size: 0.65rem;
     background: #059669;
-    color: #ffffff;
+    color: #fff;
     font-weight: 700;
 }
 

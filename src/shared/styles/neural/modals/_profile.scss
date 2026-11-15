@@ -18,7 +18,7 @@
         height: 72px;
         font-size: 1.75rem;
         background: linear-gradient(135deg, #2563eb, #7c3aed);
-        color: #ffffff;
+        color: #fff;
         border: 3px solid rgba(255, 255, 255, 0.95);
         
         [data-theme="dark"] & {
@@ -33,7 +33,7 @@
 
         span {
             font-size: 1.75rem;
-            color: #ffffff;
+            color: #fff;
         }
     }
 
@@ -138,7 +138,7 @@
 
         .badge-gold-active {
             background-color: #15803d;
-            color: #ffffff;
+            color: #fff;
             border: 1px solid #86efac;
         }
 
@@ -200,6 +200,7 @@
         display: flex;
         overflow-x: auto;
         gap: 6px;
+
         @include hide-scrollbar;
 
         .modal-nav-tab {
@@ -220,7 +221,7 @@
             }
 
             &.active {
-                background: var(--surface-glass, #ffffff);
+                background: var(--surface-glass, #fff);
                 color: var(--buca-blue);
                 border-color: var(--border-glass-bright, rgba(37, 99, 235, 0.2));
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -310,7 +311,7 @@
             top: calc(100% + 6px);
             left: 0;
             width: 100%;
-            background: var(--surface-glass-heavy, #ffffff);
+            background: var(--surface-glass-heavy, #fff);
             border: 1.5px solid var(--border-glass-bright, rgba(37, 99, 235, 0.3));
             border-radius: 14px;
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
@@ -408,11 +409,6 @@
         }
     }
 
-    .shift-badge-item {
-        padding: 10px !important;
-        margin-bottom: 8px !important;
-    }
-
     .profile-module-card {
         transition: all 0.2s ease;
         border: 1px solid var(--border-glass, rgba(0, 0, 0, 0.08));
@@ -430,7 +426,8 @@
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        padding: 8px 12px;
+        padding: 10px !important;
+        margin-bottom: 8px !important;
         border-radius: 10px;
         background: var(--surface-glass, rgba(255, 255, 255, 0.75));
         border: 1px solid var(--border-glass, rgba(0, 0, 0, 0.08));

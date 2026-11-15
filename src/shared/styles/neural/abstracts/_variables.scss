@@ -63,7 +63,12 @@ $breakpoints: (
     /* Fase 3 Performance Tokens */
     --buca-blur-factor: 1;  /* Inyectado por JS: 1 / DPR */
     --buca-tier-num: 1;     /* Inyectado por JS: 0 (Eco) a 3 (Ultra) */
-    --blur-intensity: 16px;
+    --buca-v4-perf-level: "L1";
+    --blur-intensity: calc(16px * var(--buca-blur-factor, 1));
+    --opacity-glass: 0.7;
+    --anim-duration: 0.3s;
+    --interaction-scale: 1.02;
+    --glow-opacity: 0.1;
 
     /* Sistema de Sombras (Neural Mapping) */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -197,18 +202,6 @@ $breakpoints: (
 }
 
 /* ── SISTEMA DE RENDIMIENTO (Neural Auto-Profiling) ────────── */
-:root {
-    /* L1: Balanced (Default) */
-    --buca-v4-perf-level: "L1";
-    --buca-tier-num: 1;
-    --blur-intensity: calc(16px * var(--buca-blur-factor, 1));
-    --shadow-dynamic: var(--shadow-md);
-    --opacity-glass: 0.7;
-    --anim-duration: 0.3s;
-    --interaction-scale: 1.02;
-    --glow-opacity: 0.1;
-}
-
 [data-buca-perf="L0"] {
     --buca-v4-perf-level: "L0 - ECO";
     --buca-tier-num: 0;

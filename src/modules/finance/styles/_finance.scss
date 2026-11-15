@@ -20,6 +20,7 @@
         padding: 5px;
         border-radius: 18px;
         overflow-x: auto;
+
         @include hide-scrollbar;
 
         .rate-tab-btn {
@@ -52,11 +53,11 @@
 
             &.active {
                 background: var(--buca-blue);
-                color: #ffffff;
+                color: #fff;
                 box-shadow: 0 4px 12px var(--buca-blue-glow);
 
                 i {
-                    color: #ffffff;
+                    color: #fff;
                 }
             }
         }
@@ -92,6 +93,7 @@
         [data-theme="dark"] & {
             background: rgba(26, 34, 52, 0.85);
         }
+
         border: 1px solid var(--border-glass-bright);
         border-radius: 18px;
         padding: 16px;
@@ -179,7 +181,7 @@
 
         &:hover {
             background: var(--buca-blue);
-            color: #ffffff;
+            color: #fff;
             border-color: var(--buca-blue);
 
             .info-popover-tooltip {
@@ -199,7 +201,7 @@
             max-width: 80vw;
             padding: 8px 12px;
             background: rgba(15, 23, 42, 0.96);
-            color: #ffffff;
+            color: #fff;
             border-radius: 10px;
             font-size: 0.68rem;
             font-weight: 400;
@@ -231,6 +233,7 @@
         [data-theme="dark"] & {
             background: rgba(26, 34, 52, 0.85);
         }
+
         border: 1px solid var(--border-glass-bright);
         border-radius: 20px;
         padding: 20px;
@@ -263,6 +266,7 @@
         [data-theme="dark"] & {
             background: rgba(15, 23, 42, 0.9);
         }
+
         border: 1px solid var(--border-glass);
         border-radius: 16px;
         display: flex;

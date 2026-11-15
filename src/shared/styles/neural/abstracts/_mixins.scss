@@ -56,14 +56,20 @@
 
 /* Semántica para compatibilidad y legibilidad */
 @mixin mobile-lg { @include respond-to('sm') { @content; } }
+
 @mixin tablet-v  { @include respond-to('md') { @content; } }
+
 @mixin tablet-h  { @include respond-to('lg') { @content; } }
+
 @mixin laptop    { @include respond-to('xl') { @content; } }
+
 @mixin desktop   { @include respond-to('xxl') { @content; } }
+
 @mixin ultra-hd   { @include respond-to('4k') { @content; } }
 
 /* Mixins de Orientación */
 @mixin landscape { @media screen and (orientation: landscape) { @content; } }
+
 @mixin portrait  { @media screen and (orientation: portrait)  { @content; } }
 
 

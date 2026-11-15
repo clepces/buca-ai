@@ -474,6 +474,17 @@
     border-top: 1px solid var(--border-glass);
     padding: 8px 12px;
     gap: 0; /* El gap lo manejan las zonas */
+
+    @media (max-width: 400px) {
+        flex-direction: column;
+        gap: 8px;
+
+        .footer-zone { 
+            width: 100%; 
+            justify-content: center;
+            gap: 12px;
+        }
+    }
 }
 
 /* ── ZONAS (izquierda / derecha) ── */
@@ -503,18 +514,6 @@
 
     @media (max-width: 400px) {
         display: none;
-    }
-}
-
-.panel-footer-bar {
-    @media (max-width: 400px) {
-        flex-direction: column;
-        gap: 8px;
-        .footer-zone { 
-            width: 100%; 
-            justify-content: center;
-            gap: 12px;
-        }
     }
 }
 
@@ -834,7 +833,7 @@
 
     &:hover {
         background: var(--buca-blue);
-        color: #ffffff;
+        color: #fff;
         border-color: var(--buca-blue);
         transform: translateY(-2px) scale(1.08);
         box-shadow: 0 4px 12px var(--buca-blue-glow);
@@ -967,7 +966,7 @@
 
         &.active-tab {
             background: var(--buca-blue);
-            color: #ffffff;
+            color: #fff;
             box-shadow: 0 2px 8px var(--buca-blue-glow);
         }
     }

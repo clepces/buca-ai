@@ -83,6 +83,7 @@ body.buca-modal-open {
     [data-theme="dark"] & {
         background: rgba(18, 24, 38, 0.98) !important;
     }
+
     border: 1px solid var(--border-glass-bright, rgba(255, 255, 255, 0.35)) !important;
     border-radius: 26px !important;
     box-shadow: 0 25px 70px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.12) !important;
@@ -96,6 +97,7 @@ body.buca-modal-open {
         backdrop-filter: none !important;
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
     }
+
     position: relative;
     z-index: z('modal-overlay') + 1;
     transform: scale(0.96) translateY(18px);
@@ -292,7 +294,7 @@ body.buca-modal-open {
 
             i {
                 font-size: 20px !important;
-                color: #ffffff !important;
+                color: #fff !important;
                 z-index: 2 !important;
             }
 
@@ -540,7 +542,7 @@ body.buca-modal-open {
             .btn-primary {
                 background: var(--buca-blue) !important;
                 border: 1px solid var(--buca-blue) !important;
-                color: #ffffff !important;
+                color: #fff !important;
                 box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3) !important;
 
                 &:hover {
@@ -630,6 +632,7 @@ body.buca-modal-open {
     [data-theme="dark"] & {
         background: rgba(30, 41, 59, 0.65);
     }
+
     border: 1px solid var(--border-glass);
     border-radius: 18px;
     padding: 18px 20px;
@@ -646,6 +649,7 @@ body.buca-modal-open {
         [data-theme="dark"] & {
             background: rgba(30, 41, 59, 0.85);
         }
+
         border-color: var(--border-glass-bright);
     }
 
@@ -738,13 +742,13 @@ body.buca-modal-open {
 
         &.active {
             background: var(--buca-blue);
-            color: #ffffff;
+            color: #fff;
             border-color: var(--buca-blue);
             box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
 
             .step-number {
                 background: rgba(255, 255, 255, 0.25);
-                color: #ffffff;
+                color: #fff;
             }
         }
 
@@ -755,7 +759,7 @@ body.buca-modal-open {
 
             .step-number {
                 background: #10b981;
-                color: #ffffff;
+                color: #fff;
             }
         }
 
@@ -829,11 +833,11 @@ body.buca-modal-open {
 
         &.active {
             background: var(--buca-blue) !important;
-            color: #ffffff !important;
+            color: #fff !important;
             box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
 
             i {
-                color: #ffffff !important;
+                color: #fff !important;
             }
         }
 
@@ -881,7 +885,7 @@ body.buca-modal-open {
     height: 72px;
     border-radius: 24px;
     background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
-    color: #ffffff;
+    color: #fff;
     font-size: 1.8rem;
     font-weight: 800;
     display: flex;
@@ -926,7 +930,7 @@ body.buca-modal-open {
     .term-muted { color: #94a3b8; }
     .term-success { color: #4ade80; }
     .term-purple { color: #a78bfa; }
-    .term-white { color: #ffffff; }
+    .term-white { color: #fff; }
     .term-prompt { color: #64748b; }
 }
 

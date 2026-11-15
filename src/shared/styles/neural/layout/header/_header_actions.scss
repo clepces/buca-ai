@@ -104,8 +104,8 @@
 }
 
 @keyframes glow-pulse {
-    0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px currentColor); }
-    50% { opacity: 0.85; transform: scale(0.98); filter: drop-shadow(0 0 8px currentColor); }
+    0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px currentcolor); }
+    50% { opacity: 0.85; transform: scale(0.98); filter: drop-shadow(0 0 8px currentcolor); }
 }
 
 @keyframes status-rotate {
@@ -204,7 +204,7 @@
     .topbar-status-dot {
         width: 7px;
         height: 7px;
-        border: 2px solid #ffffff;
+        border: 2px solid #fff;
     }
 
     .topbar-user-name {

@@ -137,7 +137,7 @@ html[data-theme="dark"] {
     font-family: 'Outfit', sans-serif;
     font-size: 1.35rem;
     font-weight: 700;
-    margin: 0 0 8px 0;
+    margin: 0 0 8px;
     letter-spacing: -0.3px;
     color: var(--text-main, #0f172a);
 }
@@ -146,7 +146,7 @@ html[data-theme="dark"] {
     font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
     line-height: 1.5;
-    margin: 0 0 20px 0;
+    margin: 0 0 20px;
     opacity: 0.85;
     color: var(--text-muted, #475569);
 }
@@ -190,13 +190,13 @@ html[data-theme="dark"] {
 
         &--primary {
             background: #2563eb;
-            color: #ffffff !important;
+            color: #fff !important;
             box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
 
             &:hover {
                 background: #1d4ed8;
                 transform: translateY(-1px);
-                color: #ffffff !important;
+                color: #fff !important;
             }
         }
 
@@ -231,7 +231,7 @@ html[data-theme="dark"] {
     100% {
         opacity: 1;
         transform: scale(1) translateY(0);
-        filter: blur(0px);
+        filter: blur(0);
     }
 }
 

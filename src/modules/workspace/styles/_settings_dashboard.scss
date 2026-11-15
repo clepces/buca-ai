@@ -65,10 +65,11 @@
         }
 
         &.active {
-            background: var(--bg-surface, #ffffff);
+            background: var(--bg-surface, #fff);
             [data-theme="dark"] & {
                 background: rgba(30, 41, 59, 0.9);
             }
+
             border-color: var(--buca-blue);
             color: var(--text-main);
             box-shadow: 0 4px 14px rgba(37, 99, 235, 0.2);
@@ -230,7 +231,7 @@
     position: absolute;
     pointer-events: none;
     background: rgba(15, 23, 42, 0.94);
-    color: #ffffff;
+    color: #fff;
     padding: 10px 14px;
     border-radius: 12px;
     font-size: 0.78rem;

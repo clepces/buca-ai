@@ -125,6 +125,7 @@ html[data-theme="dark"] {
     [data-theme="dark"] & {
         background: rgba(15, 23, 42, 0.85);
     }
+
     -webkit-backdrop-filter: blur(16px);
     backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border-glass, rgba(226, 232, 240, 0.6));
@@ -268,6 +269,7 @@ html[data-theme="dark"] {
     [data-theme="dark"] & {
         background: rgba(18, 24, 38, 0.9);
     }
+
     border: 1px solid var(--border-glass-bright, rgba(255, 255, 255, 0.35));
     box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.18);
     -webkit-backdrop-filter: blur(20px);

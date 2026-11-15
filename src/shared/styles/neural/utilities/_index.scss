@@ -12,8 +12,7 @@
  */
 .buca-scroll-area,
 .panel-scroll-area {
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden auto;
     min-height: 0;
     padding-right: 4px;
     -webkit-overflow-scrolling: touch;

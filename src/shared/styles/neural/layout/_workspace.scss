@@ -103,7 +103,7 @@
         pointer-events: none;
         opacity: 0.85;
         
-        &.top { margin-top: 0px; }
+        &.top { margin-top: 0; }
     }
 
     /* Evitar selección accidental durante navegación táctil o drag */
@@ -500,7 +500,7 @@
 
         &.active {
             background: var(--buca-blue) !important;
-            color: #ffffff !important;
+            color: #fff !important;
             border-color: var(--buca-blue) !important;
             box-shadow: 0 0 12px var(--buca-blue-glow);
             transform: scale(1.05);
