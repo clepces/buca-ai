@@ -22,8 +22,8 @@ export const ProfileMonitoringTab = (data = {}) => {
                                 <span class="small fw-bold">Almacenamiento Base de Datos</span>
                                 <span class="small text-muted">37.5 GB / 50 GB</span>
                             </div>
-                            <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-warning" style="width: 75%"></div>
+                            <div class="progress u-progress-h-10">
+                                <div class="progress-bar bg-warning progress-w-75"></div>
                             </div>
                         </div>
                         <div class="bg-body p-3 rounded-3 border">
@@ -31,8 +31,8 @@ export const ProfileMonitoringTab = (data = {}) => {
                                 <span class="small fw-bold">Ancho de Banda API</span>
                                 <span class="small text-muted">450 GB / 1 TB</span>
                             </div>
-                            <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-primary" style="width: 45%"></div>
+                            <div class="progress u-progress-h-10">
+                                <div class="progress-bar bg-primary progress-w-45"></div>
                             </div>
                         </div>
                     </div>

@@ -12,14 +12,28 @@
         }
     }
 
+    .tel-card-premium {
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .tel-title-text {
+        line-height: 1.1;
+    }
+
     .tel-icon-box {
-        width: 38px;
-        height: 38px;
+        width: 36px;
+        height: 36px;
         border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.1rem;
+        color: #fff;
+        flex-shrink: 0;
+
+        &[data-metric="currency_usd"] { background: #2563eb; }
+        &[data-metric="currency_eur"] { background: #4f46e5; }
+        &[data-metric="crypto_usdt"]  { background: #d97706; }
+        &[data-metric="pos_sales"]    { background: #059669; }
     }
 
     .btn-tel-overflow {
@@ -33,11 +47,11 @@
     }
 
     .tel-nav-btn {
-        border: none;
+        border: 1px solid rgba(148, 163, 184, 0.2);
         background: #f8fafc;
         width: 22px;
         height: 22px;
-        border-radius: 4px;
+        border-radius: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -48,13 +62,21 @@
     }
 
     .tel-dots-indicator {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+
         .dot {
-            width: 4px;
+            width: 6px;
             height: 4px;
-            border-radius: 50%;
-            background: #e2e8f0;
-            transition: all 0.3s;
-            &.active { width: 12px; border-radius: 2px; background: #94a3b8; }
+            border-radius: 99px;
+            background: rgba(148, 163, 184, 0.3);
+            transition: all 0.25s ease;
+
+            &.active {
+                width: 16px;
+                background: var(--buca-blue, #2563eb);
+            }
         }
     }
 
@@ -75,4 +97,18 @@
         background: rgba(0, 0, 0, 0.03);
         font-size: 0.7rem;
     }
+}
+
+.tel-modal-icon {
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+
+    &[data-metric="currency_usd"] { background: #2563eb; }
+    &[data-metric="currency_eur"] { background: #4f46e5; }
+    &[data-metric="crypto_usdt"]  { background: #d97706; }
+    &[data-metric="pos_sales"]    { background: #059669; }
 }

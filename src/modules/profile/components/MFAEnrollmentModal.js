@@ -121,7 +121,7 @@ export class MFAEnrollmentModal {
         container.innerHTML = `
             <div class="text-center mb-3">
                 <p class="small text-muted mb-2">Escanee este código con Google Authenticator, Authy o Microsoft Authenticator:</p>
-                <div class="d-flex justify-content-center p-2 rounded-3 bg-white shadow-xs mx-auto border" style="width: 220px; height: 220px;">
+                <div class="d-flex justify-content-center p-2 rounded-3 bg-white shadow-xs mx-auto border u-box-220">
                     <canvas id="mfa-canvas-qr" width="220" height="220"></canvas>
                 </div>
                 <div class="small text-muted mt-2 mb-1">O ingrese esta clave secreta manualmente:</div>

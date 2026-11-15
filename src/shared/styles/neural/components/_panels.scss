@@ -994,6 +994,27 @@
             border-left: 3.5px solid var(--notif-accent, var(--buca-blue, #2563eb));
         }
 
+        &[data-notif-type="finance"], &[data-notif-type="warning"] {
+            --notif-accent: #f59e0b;
+            --notif-color: #f59e0b;
+            --notif-bg: rgba(245, 158, 11, 0.12);
+        }
+        &[data-notif-type="error"], &[data-notif-type="critical"] {
+            --notif-accent: #ef4444;
+            --notif-color: #ef4444;
+            --notif-bg: rgba(239, 68, 68, 0.12);
+        }
+        &[data-notif-type="success"], &[data-notif-type="verified"] {
+            --notif-accent: #10b981;
+            --notif-color: #10b981;
+            --notif-bg: rgba(16, 185, 129, 0.12);
+        }
+        &[data-notif-type="system"], &[data-notif-type="info"] {
+            --notif-accent: #2563eb;
+            --notif-color: #2563eb;
+            --notif-bg: rgba(37, 99, 235, 0.12);
+        }
+
         &.item-read {
             background: transparent;
             opacity: 0.65;

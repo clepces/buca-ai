@@ -79,14 +79,14 @@ export const TelemetryComponent = {
 
         return `
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="glass-surface p-3 p-md-3.5 rounded-4 border-glass shadow-sm position-relative overflow-hidden h-100 tel-card-premium transition-all shadow-2xs-hover" style="border-color: rgba(255,255,255,0.2) !important;">
+                <div class="glass-surface p-3 p-md-3.5 rounded-4 border-glass shadow-sm position-relative overflow-hidden h-100 tel-card-premium transition-all shadow-2xs-hover">
                     <div class="d-flex justify-content-between align-items-center mb-2.5">
                         <div class="d-flex align-items-center gap-2">
-                            <div class="rounded-3 d-flex align-items-center justify-content-center shadow-2xs" style="width: 36px; height: 36px; background: ${metric.color}; color: #fff;">
+                            <div class="tel-icon-box shadow-2xs" data-metric="${metric.id}">
                                 <i class="bi ${metric.icon} fs-6"></i>
                             </div>
                             <div>
-                                <span class="d-block fw-bold text-main small" style="line-height: 1.1;">
+                                <span class="d-block fw-bold text-main small tel-title-text">
                                     ${metric.flag} ${metric.title}
                                 </span>
                                 <span class="x-small text-muted">${v.sub || 'Indicador En Vivo'}</span>
@@ -107,8 +107,8 @@ export const TelemetryComponent = {
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="text-muted fw-bold text-uppercase x-small ls-1">${v.label}</span>
                             <div class="tel-nav-arrows d-flex gap-1">
-                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1.5 rounded-2 tel-nav-btn" data-dir="prev" data-index="${index}" style="font-size: 0.7rem;"><i class="bi bi-chevron-left"></i></button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1.5 rounded-2 tel-nav-btn" data-dir="next" data-index="${index}" style="font-size: 0.7rem;"><i class="bi bi-chevron-right"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1.5 rounded-2 tel-nav-btn" data-dir="prev" data-index="${index}"><i class="bi bi-chevron-left"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1.5 rounded-2 tel-nav-btn" data-dir="next" data-index="${index}"><i class="bi bi-chevron-right"></i></button>
                             </div>
                         </div>
                         <div class="d-flex align-items-baseline justify-content-between gap-2 mt-1">
@@ -121,7 +121,7 @@ export const TelemetryComponent = {
 
                     <div class="tel-dots-indicator d-flex justify-content-center gap-1.5 mt-2">
                         ${metric.variants.map((_, vi) => `
-                            <span class="dot ${vi === metric.activeIdx ? 'active' : ''}" style="width: ${vi === metric.activeIdx ? '16px' : '6px'}; height: 4px; border-radius: 99px; background: ${vi === metric.activeIdx ? 'var(--buca-blue, #2563eb)' : 'rgba(148, 163, 184, 0.3)'}; transition: all 0.25s;"></span>
+                            <span class="dot ${vi === metric.activeIdx ? 'active' : ''}"></span>
                         `).join('')}
                     </div>
                 </div>
@@ -164,7 +164,7 @@ export const TelemetryComponent = {
                         }),
                         body: `
                             <div class="p-3 text-center">
-                                <div class="rounded-circle p-3 mx-auto mb-3 d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 56px; height: 56px; background: ${metric.color}; color: #fff;">
+                                <div class="tel-modal-icon rounded-circle mx-auto mb-3 shadow-sm" data-metric="${metric.id}">
                                     <i class="bi ${metric.icon} fs-4"></i>
                                 </div>
                                 <h5 class="fw-bold mb-1">${metric.flag} ${metric.title}</h5>

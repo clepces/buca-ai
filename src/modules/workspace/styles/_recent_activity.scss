@@ -48,6 +48,23 @@
     .activity-icon-box {
         width: 42px;
         height: 42px;
+        background-color: rgba(37, 99, 235, 0.12);
+        color: #2563eb;
+    }
+
+    &[data-category="seguridad"] .activity-icon-box {
+        background-color: rgba(5, 150, 105, 0.12);
+        color: #059669;
+    }
+
+    &[data-category="sistemas"] .activity-icon-box {
+        background-color: rgba(2, 132, 199, 0.12);
+        color: #0284c7;
+    }
+
+    &[data-category="operaciones"] .activity-icon-box {
+        background-color: rgba(37, 99, 235, 0.12);
+        color: #2563eb;
     }
 
     .activity-title {

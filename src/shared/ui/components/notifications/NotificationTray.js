@@ -80,7 +80,7 @@ export const NotificationTray = {
         return `
             <div class="notification-item position-relative p-2.5 mb-2 rounded-3 ${isRead ? 'item-read' : 'item-unread'}" 
                  data-id="${safeId}"
-                 style="--notif-accent: ${cfg.color}; --notif-color: ${cfg.color}; --notif-bg: ${cfg.bg};">
+                 data-notif-type="${escapeHTML(n.type || 'info')}">
                 <div class="d-flex align-items-start gap-2.5">
                     <div class="notif-type-icon d-flex align-items-center justify-content-center rounded-2 flex-shrink-0 mt-0.5">
                         <i class="bi ${cfg.icon}"></i>
@@ -140,7 +140,7 @@ export const NotificationTray = {
 
         return `
             <div id="panel-notifications" class="glass-panel glass-panel--standard notification-tray-panel">
-                <div class="sheet-drag-handle d-md-none mx-auto my-1 rounded-pill" style="width: 40px; height: 4px; background: rgba(148, 163, 184, 0.4);"></div>
+                <div class="sheet-drag-handle d-md-none mx-auto my-1 rounded-pill u-sheet-drag-handle"></div>
                 <div class="panel-header d-flex align-items-center justify-content-between pb-2">
                     <div class="d-flex align-items-center gap-2">
                         <div class="notif-header-icon-box d-flex align-items-center justify-content-center rounded-circle">

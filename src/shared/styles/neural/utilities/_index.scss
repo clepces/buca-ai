@@ -77,12 +77,65 @@
 .progress-w-20  { width: 20%; }
 .progress-w-25  { width: 25%; }
 .progress-w-50  { width: 50%; }
+.progress-w-45  { width: 45%; }
 .progress-w-75  { width: 75%; }
 .progress-w-100 { width: 100%; }
 
 /**
  * Utilidades de dimensionado e iconos
  */
+.u-box-36 {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.u-box-56 {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+}
+
+.u-box-64 {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+}
+
+.u-box-220 {
+    width: 220px;
+    height: 220px;
+    flex-shrink: 0;
+}
+
+.u-progress-h-6 {
+    height: 6px;
+}
+
+.u-progress-h-10 {
+    height: 10px;
+}
+
+.u-sheet-drag-handle {
+    width: 40px;
+    height: 4px;
+    background: rgba(148, 163, 184, 0.4);
+}
+
+.u-badge-beta {
+    font-size: 0.65rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.u-border-translucent-15 {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.u-placeholder-dimmed {
+    filter: grayscale(0.85);
+    opacity: 0.85;
+}
+
 .u-icon-hero {
     font-size: 3rem;
 }
