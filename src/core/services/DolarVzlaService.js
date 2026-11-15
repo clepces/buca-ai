@@ -1,75 +1,42 @@
 /**
- * DolarVzlaService - Servicio de Integración con DolarVzla API (rates.dolarvzla.com & api.dolarvzla.com)
- * ==================================================================================================
- * Proporciona cotizaciones en tiempo real del Banco Central de Venezuela (BCV USD, BCV EUR),
- * USDT Binance P2P (Compra/Venta/Promedio), Intervenciones Cambiarias del BCV e Historial Oficial.
- * Tipado por Contratos Zod, Redondeo Matemático Seguro e Inmutabilidad con Object.freeze.
+ * @fileoverview DolarVzlaService - Servicio de Integración con DolarVzla API (rates.dolarvzla.com & api.dolarvzla.com)
+ * @module core/services/DolarVzlaService
+ * @description Orquestador central de cotizaciones BCV, USDT Binance P2P, intervenciones e historial.
  */
 
-import { z } from 'zod';
-import { ENV } from '@/core/config/environment.js';
+import {
+    DOLAR_VZLA_KEY,
+    CDN_BASE,
+    API_BASE,
+    safeRound2,
+    safeRound4,
+    BCVRateSchema,
+    USDTRateSchema
+} from './dolar-vzla/dolar-vzla-types.js';
 
-export const DOLAR_VZLA_KEY = ENV.DOLAR_VZLA.KEY;
-export const CDN_BASE = ENV.DOLAR_VZLA.CDN;
-export const API_BASE = ENV.DOLAR_VZLA.API;
+import {
+    getFallbackBCV,
+    getFallbackUSDT,
+    getFallbackInterventions,
+    getFallbackHistory
+} from './dolar-vzla/dolar-vzla-fallback.js';
 
-/**
- * Función pura para redondeo exacto a 2 decimales sin desbordamiento de coma flotante.
- * @param {number|string} val
- * @returns {number}
- */
-export function safeRound2(val) {
-    const num = Number(val);
-    if (isNaN(num)) return 0;
-    return Math.round((num + Number.EPSILON) * 100) / 100;
-}
+import {
+    fetchBCVData,
+    fetchUSDTData,
+    fetchInterventionsData,
+    fetchHistoryData
+} from './dolar-vzla/dolar-vzla-client.js';
 
-/**
- * Función pura para redondeo exacto a 4 decimales para variaciones finas.
- * @param {number|string} val
- * @returns {number}
- */
-export function safeRound4(val) {
-    const num = Number(val);
-    if (isNaN(num)) return 0;
-    return Math.round((num + Number.EPSILON) * 10000) / 10000;
-}
-
-export const BCVRateSchema = z.object({
-    current: z.object({
-        usd: z.number(),
-        eur: z.number(),
-        date: z.string()
-    }),
-    previous: z.object({
-        usd: z.number(),
-        eur: z.number(),
-        date: z.string()
-    }).optional(),
-    changePercentage: z.object({
-        usd: z.number(),
-        eur: z.number()
-    }).optional()
-});
-
-export const USDTRateSchema = z.object({
-    current: z.object({
-        buy: z.number(),
-        sell: z.number(),
-        average: z.number(),
-        date: z.string()
-    }),
-    previous: z.object({
-        buy: z.number(),
-        sell: z.number(),
-        average: z.number(),
-        date: z.string()
-    }).optional(),
-    changePercentage: z.object({
-        buy: z.number().optional(),
-        sell: z.number().optional()
-    }).optional()
-});
+export {
+    DOLAR_VZLA_KEY,
+    CDN_BASE,
+    API_BASE,
+    safeRound2,
+    safeRound4,
+    BCVRateSchema,
+    USDTRateSchema
+};
 
 export class DolarVzlaService {
     /** Configuración dinámica editable por el Superadministrador */
@@ -124,39 +91,12 @@ export class DolarVzlaService {
 
         this._inflightPromises.bcv = (async () => {
             try {
-                const res = await fetch(`${this.config.cdnBase}/bcv/current.json?t=${Date.now()}`, { cache: 'no-store' });
-                if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
-                const data = await res.json();
-                
-                if (data?.current?.usd) {
-                    const normalized = Object.freeze({
-                        current: Object.freeze({
-                            usd: safeRound2(data.current.usd),
-                            eur: safeRound2(data.current.eur),
-                            date: data.current.date || new Date().toISOString().split('T')[0]
-                        }),
-                        previous: Object.freeze({
-                            usd: safeRound2(data.previous?.usd || data.current.usd),
-                            eur: safeRound2(data.previous?.eur || data.current.eur),
-                            date: data.previous?.date || new Date(Date.now() - 86400000).toISOString().split('T')[0]
-                        }),
-                        changePercentage: Object.freeze({
-                            usd: safeRound4(data.changePercentage?.usd ?? 0),
-                            eur: safeRound4(data.changePercentage?.eur ?? 0)
-                        })
-                    });
-                    this._cache.bcv = normalized;
-                    return normalized;
-                }
-                throw new Error('Formato de respuesta inválido');
+                const data = await fetchBCVData(this.config);
+                this._cache.bcv = data;
+                return data;
             } catch (err) {
                 console.warn('[DolarVzlaService] Error consultando API BCV, aplicando valores de respaldo:', err);
-                const fallback = Object.freeze({
-                    current: Object.freeze({ usd: 889.58, eur: 991.25, date: new Date().toISOString().split('T')[0] }),
-                    previous: Object.freeze({ usd: 889.26, eur: 992.80, date: new Date(Date.now() - 86400000).toISOString().split('T')[0] }),
-                    changePercentage: Object.freeze({ usd: 0.036, eur: -0.156 })
-                });
-                return this._cache.bcv || fallback;
+                return this._cache.bcv || getFallbackBCV();
             } finally {
                 this._inflightPromises.bcv = null;
             }
@@ -166,7 +106,7 @@ export class DolarVzlaService {
     }
 
     /**
-     * Obtiene la cotización del USDT Binance P2P mediante la API autenticada.
+     * Obtiene la cotización del USDT Binance P2P mediante la API autenticada o CDN.
      * @returns {Promise<Readonly<Object>>}
      */
     static async getUSDTRate() {
@@ -180,56 +120,12 @@ export class DolarVzlaService {
 
         this._inflightPromises.usdt = (async () => {
             try {
-                let res = null;
-                // Si contamos con API Key configurada, consultar directamente el endpoint oficial
-                if (this.config.apiKey) {
-                    res = await fetch(`${this.config.apiBase}/public/usdt/exchange-rate?t=${Date.now()}`, {
-                        method: 'GET',
-                        headers: {
-                            'x-dolarvzla-key': this.config.apiKey,
-                            'Content-Type': 'application/json'
-                        }
-                    }).catch(() => null);
-                }
-
-                // Fallback secundario a CDN estático si existiera
-                if (!res || !res.ok) {
-                    res = await fetch(`${this.config.cdnBase}/bcv/usdt.json?t=${Date.now()}`, { cache: 'no-store' }).catch(() => null);
-                }
-                if (!res || !res.ok) throw new Error(`HTTP Error: ${res ? res.status : 'Network'}`);
-                const data = await res.json();
-                
-                if (data?.current?.average) {
-                    const normalized = Object.freeze({
-                        current: Object.freeze({
-                            buy: safeRound2(data.current.buy),
-                            sell: safeRound2(data.current.sell),
-                            average: safeRound2(data.current.average),
-                            date: data.current.date || new Date().toISOString()
-                        }),
-                        previous: Object.freeze({
-                            buy: safeRound2(data.previous?.buy || data.current.buy),
-                            sell: safeRound2(data.previous?.sell || data.current.sell),
-                            average: safeRound2(data.previous?.average || data.current.average),
-                            date: data.previous?.date || new Date(Date.now() - 86400000).toISOString()
-                        }),
-                        changePercentage: Object.freeze({
-                            buy: safeRound4(data.changePercentage?.buy ?? 0),
-                            sell: safeRound4(data.changePercentage?.sell ?? 0)
-                        })
-                    });
-                    this._cache.usdt = normalized;
-                    return normalized;
-                }
-                throw new Error('Formato de respuesta USDT inválido');
+                const data = await fetchUSDTData(this.config);
+                this._cache.usdt = data;
+                return data;
             } catch (err) {
                 console.warn('[DolarVzlaService] Error consultando API USDT Binance, aplicando valores de respaldo:', err);
-                const fallback = Object.freeze({
-                    current: Object.freeze({ buy: 989.31, sell: 982.43, average: 985.87, date: new Date().toISOString() }),
-                    previous: Object.freeze({ buy: 991.76, sell: 987.15, average: 989.46, date: new Date(Date.now() - 86400000).toISOString() }),
-                    changePercentage: Object.freeze({ buy: -0.25, sell: -0.48 })
-                });
-                return this._cache.usdt || fallback;
+                return this._cache.usdt || getFallbackUSDT();
             } finally {
                 this._inflightPromises.usdt = null;
             }
@@ -253,44 +149,14 @@ export class DolarVzlaService {
 
         this._inflightPromises.interventions = (async () => {
             try {
-                const [currRes, listRes] = await Promise.allSettled([
-                    fetch(`${this.config.cdnBase}/interventions/current.json?t=${Date.now()}`, { cache: 'no-store' }),
-                    fetch(`${this.config.cdnBase}/interventions/list.json?t=${Date.now()}`, { cache: 'no-store' })
-                ]);
-
-                let current = null;
-                let list = [];
-
-                if (currRes.status === 'fulfilled' && currRes.value.ok) {
-                    current = await currRes.value.json();
-                }
-                if (listRes.status === 'fulfilled' && listRes.value.ok) {
-                    const rawList = await listRes.value.json();
-                    if (Array.isArray(rawList)) {
-                        list = rawList.slice(0, 50).map(item => Object.freeze({
-                            ...item,
-                            rate: safeRound2(item.rate),
-                            date: item.date ? String(item.date).split('T')[0] : ''
-                        }));
-                    }
-                }
-
-                if (current && current.date) {
-                    current = Object.freeze({
-                        ...current,
-                        rate: safeRound2(current.rate),
-                        date: String(current.date).split('T')[0]
-                    });
-                }
-
-                const result = Object.freeze({ current, list: Object.freeze(list) });
-                if (current || list.length > 0) {
+                const result = await fetchInterventionsData(this.config);
+                if (result.current || result.list.length > 0) {
                     this._cache.interventions = result;
                 }
-                return result.current ? result : (this._cache.interventions || this._getFallbackInterventions());
+                return result.current ? result : (this._cache.interventions || getFallbackInterventions());
             } catch (err) {
                 console.warn('[DolarVzlaService] Error fetching Interventions:', err);
-                return this._cache.interventions || this._getFallbackInterventions();
+                return this._cache.interventions || getFallbackInterventions();
             } finally {
                 this._inflightPromises.interventions = null;
             }
@@ -299,25 +165,9 @@ export class DolarVzlaService {
         return this._inflightPromises.interventions;
     }
 
-    static _getFallbackInterventions() {
-        const today = new Date().toISOString().split('T')[0];
-        return Object.freeze({
-            current: Object.freeze({ id: 'INT-2026-42', date: today, rate: 889.58, usdAmount: '$ 75,000,000 USD' }),
-            list: Object.freeze([
-                Object.freeze({ id: 'INT-2026-42', date: today, rate: 889.58, usdAmount: '$ 75M USD' }),
-                Object.freeze({ id: 'INT-2026-41', date: '2026-10-27', rate: 885.20, usdAmount: '$ 60M USD' }),
-                Object.freeze({ id: 'INT-2026-40', date: '2026-10-20', rate: 880.15, usdAmount: '$ 80M USD' }),
-                Object.freeze({ id: 'INT-2026-39', date: '2026-10-13', rate: 875.40, usdAmount: '$ 50M USD' }),
-                Object.freeze({ id: 'INT-2026-38', date: '2026-10-06', rate: 870.10, usdAmount: '$ 65M USD' }),
-                Object.freeze({ id: 'INT-2026-37', date: '2026-09-29', rate: 865.00, usdAmount: '$ 70M USD' }),
-                Object.freeze({ id: 'INT-2026-36', date: '2026-09-22', rate: 860.25, usdAmount: '$ 55M USD' })
-            ])
-        });
-    }
-
     /**
      * Obtiene el historial de tasas BCV por año.
-     * @param {number} [year=2026]
+     * @param {number} [year=new Date().getFullYear()]
      * @returns {Promise<Readonly<Array>>}
      */
     static async getBCVHistory(year = new Date().getFullYear()) {
@@ -331,31 +181,12 @@ export class DolarVzlaService {
 
         this._inflightPromises.history = (async () => {
             try {
-                const res = await fetch(`${this.config.cdnBase}/bcv/${year}/list.json?t=${Date.now()}`, { cache: 'no-store' });
-                if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
-                const data = await res.json();
-                if (Array.isArray(data) && data.length > 0) {
-                    const cleaned = Object.freeze(data.slice(0, 50).map(item => Object.freeze({
-                        ...item,
-                        usd: safeRound2(item.usd),
-                        eur: safeRound2(item.eur),
-                        variation: safeRound4(item.variation),
-                        date: item.date ? String(item.date).split('T')[0] : ''
-                    })));
-                    this._cache.history = cleaned;
-                    return cleaned;
-                }
-                throw new Error('Historial vacío');
+                const data = await fetchHistoryData(this.config, year);
+                this._cache.history = data;
+                return data;
             } catch (err) {
                 console.warn('[DolarVzlaService] Error fetching BCV History:', err);
-                const fallback = Object.freeze([
-                    Object.freeze({ date: '2026-11-02', usd: 889.58, eur: 991.25, variation: 0.04 }),
-                    Object.freeze({ date: '2026-10-30', usd: 889.26, eur: 992.80, variation: 0.12 }),
-                    Object.freeze({ date: '2026-10-29', usd: 888.15, eur: 991.00, variation: -0.08 }),
-                    Object.freeze({ date: '2026-10-28', usd: 888.85, eur: 992.10, variation: 0.15 }),
-                    Object.freeze({ date: '2026-10-27', usd: 887.50, eur: 990.40, variation: 0.05 })
-                ]);
-                return this._cache.history || fallback;
+                return this._cache.history || getFallbackHistory();
             } finally {
                 this._inflightPromises.history = null;
             }
