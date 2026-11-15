@@ -41,7 +41,7 @@ export const createModulePage = ({ title, category, icon, description }) => {
                 <!-- Banner de Estado: En Desarrollo -->
                 <div class="alert alert-info border border-info-subtle bg-info-subtle text-info-emphasis rounded-4 p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2 shadow-xs">
                     <div class="d-flex align-items-center gap-2.5">
-                        <div class="rounded-circle bg-info text-white p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                        <div class="rounded-circle bg-info text-white p-2 d-flex align-items-center justify-content-center u-box-36">
                             <i class="bi bi-tools fs-6"></i>
                         </div>
                         <div>
@@ -55,7 +55,7 @@ export const createModulePage = ({ title, category, icon, description }) => {
                 </div>
 
                 <!-- Preview en Escala de Grises (Arquitectura en Maqueta) -->
-                <div class="glass-surface p-3 p-md-4 rounded-4 border-glass shadow-sm" style="filter: grayscale(0.85); opacity: 0.85;">
+                <div class="glass-surface p-3 p-md-4 rounded-4 border-glass shadow-sm u-placeholder-dimmed">
                     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-eye-fill text-muted"></i>

@@ -33,13 +33,13 @@ export const QuickActionsControl = {
                     <div class="row g-3 mb-3 flex-grow-1 align-content-start">
                         ${quickActions.map(act => `
                             <div class="col-12 col-sm-6">
-                                <a href="${act.route}" class="glass-surface qa-tile-link p-3 rounded-4 border d-flex flex-column justify-content-between text-decoration-none transition-all h-100 shadow-2xs-hover" style="border-color: rgba(255,255,255,0.15) !important;">
+                                <a href="${act.route}" class="glass-surface qa-tile-link p-3 rounded-4 border d-flex flex-column justify-content-between text-decoration-none transition-all h-100 shadow-2xs-hover u-border-translucent-15">
                                     <div class="d-flex align-items-center justify-content-between mb-2.5">
                                         <div class="rounded-3 p-2 d-flex align-items-center justify-content-center qa-tile-icon-box qa-tile-icon-box--${act.theme}">
                                             <i class="bi ${act.icon} fs-5"></i>
                                         </div>
                                         <div class="d-flex align-items-center gap-1.5">
-                                            <span class="badge bg-secondary-subtle text-muted rounded-pill px-2 py-0.5" style="font-size: 0.65rem; border: 1px solid rgba(148, 163, 184, 0.2);">Beta</span>
+                                            <span class="badge bg-secondary-subtle text-muted rounded-pill px-2 py-0.5 u-badge-beta">Beta</span>
                                             <span class="quick-badge fw-bold qa-badge qa-badge--${act.theme}">
                                                 <i class="bi bi-dot"></i> ${act.badge}
                                             </span>

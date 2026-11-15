@@ -96,7 +96,7 @@ export const RecentActivity = {
 
             return `
                 <li class="activity-item d-flex align-items-start gap-3 py-3 ${index !== 0 ? 'border-top border-light' : ''}" data-category="${escapeHTML(act.category || 'operaciones')}">
-                    <div class="widget-icon-box p-2.5 rounded-4 flex-shrink-0 d-flex align-items-center justify-content-center shadow-2xs activity-icon-box" style="--icon-bg: ${meta.bg}; --icon-color: ${meta.color}; background-color: var(--icon-bg); color: var(--icon-color);">
+                    <div class="widget-icon-box p-2.5 rounded-4 flex-shrink-0 d-flex align-items-center justify-content-center shadow-2xs activity-icon-box">
                         <i class="bi ${meta.icon} fs-5"></i>
                     </div>
                     <div class="flex-grow-1">

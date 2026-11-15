@@ -81,7 +81,7 @@ export const notificationsTemplate = () => `
 
 export const comingSoonTemplate = ({ title = 'Módulo en Desarrollo', icon = 'bi-rocket-takeoff' } = {}) => `
     <div class="coming-soon-container text-center p-4">
-        <div class="header-icon-box mx-auto mb-4" style="width: 64px; height: 64px;">
+        <div class="header-icon-box mx-auto mb-4 u-box-64">
             <i class="bi ${icon} fs-1 text-white"></i>
             <div class="icon-glow"></div>
         </div>
@@ -93,8 +93,8 @@ export const comingSoonTemplate = ({ title = 'Módulo en Desarrollo', icon = 'bi
                 <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                 <span class="small fw-bold text-main">Sincronizando con Roadmap Cloud...</span>
             </div>
-            <div class="progress rounded-pill bg-dark bg-opacity-10 border-glass" style="height: 6px;">
-                <div class="progress-bar progress-bar-striped progress-bar-animated rounded-pill" role="progressbar" style="width: 75%"></div>
+            <div class="progress rounded-pill bg-dark bg-opacity-10 border-glass u-progress-h-6">
+                <div class="progress-bar progress-bar-striped progress-bar-animated rounded-pill progress-w-75" role="progressbar"></div>
             </div>
         </div>
 

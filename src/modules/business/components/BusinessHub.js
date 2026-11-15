@@ -167,7 +167,7 @@ export const BusinessHub = {
                             </div>
                         `).join('') : `
                             <div class="col-12 py-5 text-center">
-                                <div class="rounded-circle bg-primary-subtle text-primary p-3 mx-auto mb-3 d-inline-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+                                <div class="rounded-circle bg-primary-subtle text-primary p-3 mx-auto mb-3 d-inline-flex align-items-center justify-content-center u-box-56">
                                     <i class="bi bi-buildings fs-4"></i>
                                 </div>
                                 <h5 class="fw-bold mb-1">Sin unidades comerciales registradas</h5>
@@ -245,7 +245,7 @@ export const BusinessHub = {
                     header: {
                         left: `
                             <div class="d-flex align-items-center gap-2">
-                                <div class="rounded-3 bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                <div class="rounded-3 bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center u-box-36">
                                     <i class="bi bi-buildings-fill fs-5"></i>
                                 </div>
                                 <div>
