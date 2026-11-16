@@ -206,13 +206,17 @@ npm run build
 
 Para consultar las especificaciones técnicas completas de arquitectura, modelos de base de datos y motores internos, consulta el índice maestro en la carpeta `docs/`:
 
-- [📑 Índice Maestro de Documentación](docs/README.md)
-- [🏗️ Arquitectura de Software y Ciclo de Vida](docs/architecture.md)
-- [🐘 Especificación de Base de Datos PostgreSQL y RLS](docs/database.md)
-- [🎨 Motor Gráfico BUCA Neural Engine (BNE)](docs/engine.md)
+- [📑 Portal Maestro de Documentación](docs/README.md)
+- [🏗️ Arquitectura de Software y Ciclo de Vida](docs/architecture/README.md)
 - [🧠 Motor Neuronal BENE (Balanced Effect Neural Engine v5.3 / v6.0)](docs/bene/README.md)
-- [🧩 Guía de Desarrollo de Módulos Plug-and-Play](docs/modules-guide.md)
-- [📖 Glosario Corporativo y Conceptual](docs/glossary.md)
+- [🐘 Especificación de Base de Datos PostgreSQL y RLS](docs/database/README.md)
+- [🧩 Ecosistema Modular y Ciclo de Vida UMCL](docs/modules/README.md)
+- [💎 Sistema de Diseño Visual y Trinidad BENE](docs/ui/README.md)
+- [⚡ Bus de Eventos y Cola de Retransmisión](docs/events/README.md)
+- [🔌 Conectividad, Clientes HTTP y Divisas](docs/api/README.md)
+- [🔔 Sistema de Notificaciones Dual-Dispatch](docs/notifications/README.md)
+- [🛡️ Seguridad Perimetral, MFA AAL2 y Cripto](docs/security/README.md)
+- [📖 Glosario Conceptual Vivo](docs/glossary.md)
 
 ---
 

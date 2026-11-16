@@ -20,6 +20,9 @@ Tabla relacional en PostgreSQL (`public.activity_log`) diseñada bajo la directr
 
 ### B
 
+#### BENE (Balanced Effect Neural Engine)
+Evolución de nueva generación (v6.0.0) del motor gráfico. Orquestador de efectos visuales agnóstico y paramétrico que gobierna múltiples lenguajes de diseño (Glassmorphic, Neumorphic, Claymorphic) mediante atributos semánticos `bne-*` y multiplicadores continuos (`--bne-fps-factor`), eliminando por completo la manipulación imperativa de estilos en JavaScript.
+
 #### BNE (Buca Neural Engine)
 Motor gráfico procedural del sistema (`src/core/engine/`) encargado de calibrar la tasa de cuadros por segundo (FPS), la latencia de renderizado y el consumo térmico/memoria, conmutando la interfaz entre perfiles de calidad gráfica `L0`, `L1`, `L2` y `L3`.
 
@@ -46,6 +49,9 @@ Lenguaje visual y sistema de diseño propio de B.U.C.A. AI. Combina superficies 
 
 #### Drive Pattern (Patrón Polimórfico de Almacenamiento)
 Arquitectura de persistencia desacoplada implementada a través de `StorageAdapter.js`. Permite a los módulos interactuar con una interfaz uniforme (`get`, `set`, `remove`, `list`) mientras el adaptador delega las operaciones al controlador idóneo (`MemoryDriver`, `LocalDriver`, `IndexedDBDriver` o `SupabaseDriver`).
+
+#### DRP (Deep Resource Planning Bridge)
+Puente de interconexión táctica entre el motor visual (`ResourceThrottle`) y los servicios de red. Ante sobrecarga severa de GPU/CPU, pausa automáticamente consultas secundarias de fondo (`buca:drp_pause_polling`) para priorizar la estabilidad de fotogramas del operador.
 
 #### Dual-Dispatch Notifications
 Patrón de despacho reactivo dual para notificaciones y alertas. El sistema emite la alerta simultáneamente hacia un HUD visual efímero en pantalla (toast inmediato con háptica) y hacia la base de datos persistente (`public.notifications`) con control de lectura multiusuario (`read_by: uuid[]`).
@@ -104,3 +110,13 @@ Modelo contable donde el valor monetario de los productos, cuentas por cobrar y 
 
 #### Thin Shell Satellite Architecture (Cascarón Satélite)
 Arquitectura del módulo `workspace` en la cual la página principal actúa como un cascarón orquestador de componentes livianos y provee vistas satélite procedimentales (`module-placeholder-page.js`) para rutas secundarias del dock, garantizando una navegación unificada y fluida sin deuda técnica.
+
+#### Trinidad del Diseño Visual (BENE Three-Tier UI)
+Principio de arquitectura CSS que divide cada componente en tres capas independientes: 1. Base Estructural (CSS limpio y sólido que forma el bloque sin efectos pesados); 2. Capa de Efectos BENE (propiedades declarativas `bne-effect` que aportan realismo y se apagan en L0); y 3. Adaptabilidad Cromática (temas claro/oscuro/OLED que adaptan la luminancia al entorno).
+
+---
+
+### U
+
+#### UMCL (Universal Module Controller Lifecycle)
+Estándar arquitectónico del ciclo de vida de controladores modulares compuesto por 5 fases estrictas: `load-file` (carga perezosa dinámica), `load-data` (validación de variables y estado), `load-content` (construcción del DOM), `load-tools` (enlace de herramientas globales y modulares) y `load-clear` (destrucción quirúrgica en memoria RAM al desmontar).

@@ -1,66 +1,55 @@
-# 📑 Índice Maestro de Documentación de Ingeniería — B.U.C.A. AI
+# 📑 Portal Maestro de Documentación de Ingeniería — B.U.C.A. AI
+## Sistema Documental Enterprise Modular y Versionado por Dominios
 
 > **Ecosistema:** B.U.C.A. AI (Business Under Control Access)  
-> **Versión de la Plataforma:** `v1.1.8-alpha`  
-> **Stack de Ingeniería:** Vanilla JS Modular (ES6+), SASS Embedded, Vite, Supabase (PostgreSQL 15+ con RLS)  
-> **Gobernanza:** Clean Core Architecture, Cero Frameworks Externos, Límite de 300 Líneas por Archivo
+> **Versión de la Plataforma:** `v1.1.8-alpha` (Producción) | `v6.0.0` (Investigación BENE)  
+> **Stack:** Vanilla JS Modular (ES6+), SASS Embedded, Vite 8, Supabase (PostgreSQL 15+ con RLS)  
+> **Gobernanza:** Clean Core, Cero Frameworks Externos, Límite de 300 Líneas por Archivo
 
-Bienvenido al repositorio documental de ingeniería de **B.U.C.A. AI**. Esta carpeta concentra las especificaciones de diseño, modelos relacionales, motores gráficos y manuales de arquitectura para el equipo de desarrollo, auditores técnicos y agentes de inteligencia artificial.
-
----
-
-## 🧭 Mapa de Navegación Documental
-
-### 1. Documentos Centrales de Arquitectura e Infraestructura
-* **[🏗️ Arquitectura de Software y Ciclo de Vida (`architecture.md`)](architecture.md)**  
-  Explicación profunda del patrón Clean Core de 3 capas (`core`, `modules`, `shared`), el ciclo de arranque procedural de `BucaKernel`, el gestor de carga asíncrona `ModuleLoader.js` y el patrón *Thin Shell Satellite* del módulo workspace.
-
-* **[🐘 Especificación de Base de Datos PostgreSQL y RLS (`database.md`)](database.md)**  
-  Esquema relacional en Tercera Forma Normal (3NF) sobre Supabase, diccionario de datos exhaustivo, matriz de políticas Row Level Security (RLS) con subconsultas escalares en $O(1)$ `(SELECT auth.uid())`, procedimientos almacenados (`SECURITY DEFINER`) y deduplicación con `idempotency_keys`.
-
-* **[🎨 Motor Gráfico BUCA Neural Engine (`engine.md`)](engine.md)**  
-  Especificación de BNE v5.3.0: monitores en tiempo real (`FPSMonitor`, `ThermalGuard`, `MemoryGuard`), perfiles adaptativos (`L0 Eco` a `L3 Ultra`), barreras de seguridad del DOM (`ReflowGuard`, `GhostSanitizer`, `AutoSleepGuard`) y cumplimiento estricto de la regla `BNE-RULE-001`.
-
-* **[🧠 Motor Neuronal BENE (Balanced Effect Neural Engine) (`bene/README.md`)](bene/README.md)**  
-  Documentación versionada de BENE: especificación activa v5.3.0 y plan arquitectónico de evolución hacia v6.0.0 (orquestador agnóstico de efectos multimodelo).
-
-* **[🧩 Guía de Desarrollo de Módulos Plug-and-Play (`modules-guide.md`)](modules-guide.md)**  
-  Manual de construcción modular estándar. Anatomía canónica de 8 partes (`index.js`, `routes.js`, `components/`, `logic/`, `pages/`, `styles/`, `services/`, `constants/`), paso a paso para dar de alta nuevos dominios de negocio y contratos con el `EventBus`.
-
-* **[📖 Glosario Corporativo y Conceptual (`glossary.md`)](glossary.md)**  
-  Diccionario canónico de terminología propia del sistema: *Drive Pattern*, *Corporate Hybrid Glass*, *Fail-Open Guard*, *Tasas Ancladas*, *Snapshot Pattern*, *Brecha Cambiaria*, *AAL2* y *Thin Shell*.
+Bienvenido al repositorio maestro de ingeniería de **B.U.C.A. AI**. La documentación se encuentra estrictamente organizada por directorios de dominio, incorporando las especificaciones de producción actuales y la hoja de ruta de innovación técnica `(new)`.
 
 ---
 
-### 2. Documentos Especializados y Subsistemas
+## 🧭 Mapa de Dominios de Ingeniería
 
-* **[⚡ Bus de Eventos y Cola de Retransmisión Offline (`events.md`)](events.md)**  
-  Protocolo de comunicación reactivo pub/sub, soporte de comodines (`*`), despacho transaccional (`emitTransactional`) y drenaje resiliente offline con `OfflineReplayQueue.js`.
+```mermaid
+flowchart TD
+    Root["docs/ (Portal Maestro)"]
 
-* **[🔔 Arquitectura del Sistema de Notificaciones Dual-Dispatch (`notificaciones.md`)](notificaciones.md)**  
-  Despacho dual simultáneo hacia HUD visual de usuario y bandeja persistente de base de datos (`public.notifications`) con control multiusuario (`read_by: uuid[]`).
-
-* **[📐 Estructura de Directorios y Organización del Workspace (`structure.md`)](structure.md)**  
-  Árbol detallado del código fuente y responsabilidades de cada directorio bajo `src/`.
-
-* **[🔌 Clientes de Red y Conectividad API (`api.md`)](api.md)**  
-  Estructura de la capa de comunicación HTTP (`BaseClient`, endpoints de cotización y servicios de tasas).
-
-* **[🪟 Catálogo de Componentes Visuales UI (`components.md`)](components.md)**  
-  Componentes nativos del sistema: modales dinámicos, paneles flotantes de cabecera, ribbons de navegación y tarjetas comerciales.
-
-* **[💎 Interfaz de Usuario y Sistema de Diseño (`interface.md`)](interface.md)**  
-  Directivas de diseño para la identidad *Corporate Hybrid Glass*, variables dinámicas y jerarquía de capas Z-Index.
-
-* **[💼 Lógica de Dominio y Reglas Comerciales (`domain-logic.md`)](domain-logic.md)**  
-  Reglas del modelo bi-monetario, cálculo de impuestos (IVA, IGTF) y anclaje de cotizaciones cambiarias.
+    Root --> Arch["🏗️ architecture/<br/>Clean Core, Kernel & Thin Shell"]
+    Root --> Bene["🧠 bene/<br/>BNE v5.3.0 & BENE v6.0.0"]
+    Root --> DB["🐘 database/<br/>PostgreSQL 3NF, RLS & RPCs"]
+    Root --> Mod["🧩 modules/<br/>Plug-and-Play, UMCL & Tools"]
+    Root --> UI["💎 ui/<br/>Trinidad CSS, Tokens & WCAG"]
+    Root --> Ev["⚡ events/<br/>EventBus, OfflineQueue & Broadcast"]
+    Root --> API["🔌 api/<br/>BaseClient, DolarVzla & Assets"]
+    Root --> Notif["🔔 notifications/<br/>Dual-Dispatch & Realtime"]
+    Root --> Sec["🛡️ security/<br/>MFA AAL2, Crypto & Fail-Fast"]
+    Root --> Glo["📖 glossary.md<br/>Glosario Conceptual Vivo"]
+```
 
 ---
 
-## 🏛️ Gobernanza y Directivas Globales
+## 📚 Índice de Dominios Técnicos
 
-Para conocer las pautas de control de versiones, contribución de código y seguridad perimetral, consulta los archivos en la raíz del proyecto:
-- [Guía de Contribución y Commits](../CONTRIBUTING.md)
-- [Política de Seguridad y Divulgación Responsable](../SECURITY.md)
-- [Registro de Versiones (Changelog)](../CHANGELOG.md)
-- [Directivas Generales para Agentes Autónomos](../AGENTS.md)
+| Dominio | Directorio | Descripción y Temas Clave | Estado |
+|---|---|---|:---:|
+| **Arquitectura Core** | [architecture/](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/architecture/README.md) | Clean Core de 3 capas, bootloader de `BucaKernel`, `ModuleLoader` resiliente y patrón `Workspace Thin Shell`. | `[v1.1.8]` `[Roadmap]` |
+| **Motor Gráfico BENE**| [bene/](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/bene/README.md) | Motor Neuronal de Efecto Equilibrado. Núcleo v5.3.0 (`L0-L3`) y arquitectura v6.0.0 (orquestador agnóstico de efectos `bne-*`). | `[v5.3]` `[v6.0]` |
+| **Persistencia Relacional** | [database/](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/database/README.md) | PostgreSQL 15+ sobre Supabase, políticas RLS O(1) InitPlan, RPCs `SECURITY DEFINER` y tabla `idempotency_keys`. | `[v1.1.8]` |
+| **Ecosistema Modular** | [modules/](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/modules/README.md) | Catálogo de módulos, ciclo de vida `UMCL` de 5 fases (`load-file` a `load-clear`), herramientas globales vs modulares y roadmap (`pos`, `ai-copilot`). | `[v1.1.8]` `[new]` |
+| **Sistema de Diseño Visual** | [ui/](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/ui/README.md) | La Trinidad Visual BENE (Base Sólida + Capa de Efectos + Adaptabilidad Cromática), tokens SCSS, Z-Index y WCAG AAA. | `[v1.1.8]` `[new]` |
+| **Bus de Eventos y Cola** | [events/](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/events/README.md) | Pub/Sub desacoplado con comodines, despacho transaccional `emitTransactional`, `OfflineReplayQueue` y sincronización multi-pestaña `BroadcastChannel`. | `[v1.1.8]` `[new]` |
+| **Conectividad y APIs**| [api/](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/api/README.md) | `BaseClient` con timeouts e interceptores, feed de divisas DolarVzla (BCV/Paralelo), cálculo de brecha % y capturas técnicas en `assets/`. | `[v1.1.8]` |
+| **Notificaciones Dual** | [notifications/](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/notifications/README.md) | Patrón Dual-Dispatch (HUD visual reactivo + tabla persistente `public.notifications`), canales Realtime y Web Push. | `[v1.1.8]` `[new]` |
+| **Seguridad y Cripto** | [security/](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/security/README.md) | Enrolamiento MFA AAL2 (TOTP RFC 6238), QR nativo en Canvas 2D, claves de respaldo `BUCA-XXXX-XXXX` y `CryptoWrapper`. | `[v1.1.8]` |
+| **Glosario Conceptual** | [glossary.md](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/glossary.md) | Diccionario canónico vivo de terminología propia: *Drive Pattern*, *Snapshot Pattern*, *BENE*, *UMCL*, *Trinidad Visual*, *Fail-Open Guard*. | `[Vivo]` |
+
+---
+
+## 🏛️ Gobernanza y Referencias de Raíz
+
+* [🤝 Guía de Contribución y Commits (CONTRIBUTING.md)](file:///c:/wamp64/www/Clepces/projects/buca-ai/CONTRIBUTING.md)
+* [🛡️ Política de Seguridad y Divulgación Responsable (SECURITY.md)](file:///c:/wamp64/www/Clepces/projects/buca-ai/SECURITY.md)
+* [📋 Registro Histórico de Versiones (CHANGELOG.md)](file:///c:/wamp64/www/Clepces/projects/buca-ai/CHANGELOG.md)
+* [🚨 Directivas de Agentes Autónomos (AGENTS.md)](file:///c:/wamp64/www/Clepces/projects/buca-ai/AGENTS.md)

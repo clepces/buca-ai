@@ -52,6 +52,6 @@ Cada dominio debe mantener la siguiente anatomía:
 ```
 
 ## 🔄 Comunicación y Estado
-* **EventBus Central:** Comunicación transversal y desacoplada mediante `src/core/eventBus/index.js` siguiendo `docs/events.md`.
+* **EventBus Central:** Comunicación transversal y desacoplada mediante `src/core/eventBus/index.js` siguiendo `docs/events/README.md`.
 * **State Store Central:** Reactividad unificada en `src/core/state/store.js`.
 * **Protección del Workspace Compilado:** Prohibido editar `/dist`. Todo desarrollo se hace en `/src`.

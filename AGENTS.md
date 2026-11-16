@@ -38,4 +38,4 @@
    - Never query real-time rates for historic logs; enforce the **Snapshot Pattern**.
    - Supabase is the sole backend (Auth, PostgreSQL DB, Storage, RPCs). Firebase is strictly used for static Firebase Hosting.
 
-ALWAYS follow the architecture specified in `docs/structure.md` and rules in `.agents/rules/`.
+ALWAYS follow the architecture specified in `docs/architecture/README.md` and rules in `.agents/rules/`.
