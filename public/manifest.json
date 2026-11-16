@@ -3,9 +3,9 @@
   "scope": "/",
   "dir": "auto",
   "lang": "es-VE",
-  "name": "BUCA Operational Ecosystem",
-  "short_name": "BUCA",
-  "description": "Ecosistema de Gestión Empresarial Modular y de Alto Rendimiento, potenciado por Buca Neural Engine.",
+  "name": "BUCA AI",
+  "short_name": "BUCA AI",
+  "description": "Ecosistema de Gestión Empresarial Modular y de Alto Rendimiento, potenciado por Buca Neural Engine e Inteligencia Artificial Integrada.",
   "display": "standalone",
   "start_url": "/",
   "theme_color": "#2563eb",
@@ -14,6 +14,18 @@
   "related_applications": [],
   "prefer_related_applications": false,
   "icons": [
+    {
+      "src": "/assets/icons/logo-light-ai.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icons/logo-dark-ai.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
     {
       "src": "/assets/icons/android/android-launchericon-48-48.png",
       "sizes": "48x48",
@@ -65,28 +77,80 @@
   ],
   "shortcuts": [
     {
-      "name": "Ir al Workspace",
+      "name": "Área de Trabajo",
       "short_name": "Workspace",
-      "description": "Acceder al centro de control principal",
-      "url": "/workspaces",
+      "description": "Centro de control, telemetría y negocios",
+      "url": "/workspace",
       "icons": [
         {
-          "src": "/assets/icons/android/android-launchericon-96-96.png",
+          "src": "/assets/icons/shortcuts/shortcut-workspace.svg",
           "sizes": "96x96",
-          "type": "image/png"
+          "type": "image/svg+xml"
         }
       ]
     },
     {
-      "name": "Configuraciones",
-      "short_name": "Settings",
-      "description": "Ajustes del perfil y seguridad",
-      "url": "/settings",
+      "name": "Punto de Venta (POS)",
+      "short_name": "POS",
+      "description": "Emisión rápida de comprobantes y cobro en divisas",
+      "url": "/pos",
       "icons": [
         {
-          "src": "/assets/icons/android/android-launchericon-96-96.png",
+          "src": "/assets/icons/shortcuts/shortcut-pos.svg",
           "sizes": "96x96",
-          "type": "image/png"
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Control de Tasas & Divisas",
+      "short_name": "Tasas",
+      "description": "Supervisión de cotizaciones BCV, paralelo y brecha cambiaria",
+      "url": "/workspace",
+      "icons": [
+        {
+          "src": "/assets/icons/shortcuts/shortcut-finance.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Inventario & Almacenes",
+      "short_name": "Inventario",
+      "description": "Control de existencias y almacenes",
+      "url": "/inventory",
+      "icons": [
+        {
+          "src": "/assets/icons/shortcuts/shortcut-inventory.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Gestión de Clientes",
+      "short_name": "Clientes",
+      "description": "Cartera comercial, crédito y facturación",
+      "url": "/clients",
+      "icons": [
+        {
+          "src": "/assets/icons/shortcuts/shortcut-clients.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Ajustes & Inteligencia Artificial",
+      "short_name": "Ajustes",
+      "description": "Configuración del sistema, seguridad y motor IA",
+      "url": "/workspace/settings",
+      "icons": [
+        {
+          "src": "/assets/icons/shortcuts/shortcut-settings.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
         }
       ]
     }

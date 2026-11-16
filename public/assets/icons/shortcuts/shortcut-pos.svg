@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="shortcut-pos" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" xml:space="preserve">
+<defs>
+	<linearGradient id="bucaIconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+		<stop offset="0%" stop-color="#38bdf8"/>
+		<stop offset="50%" stop-color="#2563eb"/>
+		<stop offset="100%" stop-color="#7c3aed"/>
+	</linearGradient>
+	<linearGradient id="bucaIconBg" x1="0%" y1="0%" x2="100%" y2="100%">
+		<stop offset="0%" stop-color="#0f172a"/>
+		<stop offset="100%" stop-color="#1e1b4b"/>
+	</linearGradient>
+	<filter id="iconGlow" x="-20%" y="-20%" width="140%" height="140%">
+		<feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#2563eb" flood-opacity="0.35"/>
+	</filter>
+</defs>
+<!-- Fondo Squircle Neumórfico -->
+<rect x="6" y="6" width="84" height="84" rx="24" fill="url(#bucaIconBg)" stroke="url(#bucaIconGrad)" stroke-width="2.5" filter="url(#iconGlow)"/>
+<g fill="none" stroke="url(#bucaIconGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+
+	<rect x="26" y="24" width="44" height="48" rx="8" fill="rgba(56, 189, 248, 0.1)" />
+	<rect x="34" y="32" width="28" height="16" rx="3" fill="rgba(124, 58, 237, 0.2)" />
+	<line x1="34" y1="56" x2="40" y2="56" />
+	<line x1="46" y1="56" x2="52" y2="56" />
+	<line x1="58" y1="56" x2="62" y2="56" />
+	<line x1="34" y1="62" x2="40" y2="62" />
+	<line x1="46" y1="62" x2="52" y2="62" />
+	<line x1="58" y1="62" x2="62" y2="62" />
+	<!-- Tarjeta ingresando -->
+	<path d="M 40 18 L 56 18" stroke="#38bdf8" stroke-width="3" />
+
+</g>
+</svg>

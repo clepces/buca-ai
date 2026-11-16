@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="buca-logo-dark-ai" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve">
+<defs>
+	<!-- Gradiente Original de la Flama (Modo Oscuro) -->
+	<linearGradient id="bucaLogoGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
+		<stop offset="0%" stop-color="#1e40af"/>
+		<stop offset="45%" stop-color="#2563eb"/>
+		<stop offset="100%" stop-color="#7c3aed"/>
+	</linearGradient>
+
+	<!-- Gradiente Luminoso del Texto AI (Modo Oscuro) -->
+	<linearGradient id="aiTextGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
+		<stop offset="0%" stop-color="#93c5fd"/>
+		<stop offset="50%" stop-color="#c4b5fd"/>
+		<stop offset="100%" stop-color="#f0abfc"/>
+	</linearGradient>
+
+	<!-- Gradiente del Borde de la Cápsula (Brillo Neón Sutil) -->
+	<linearGradient id="aiCapsuleBorderDark" x1="0%" y1="0%" x2="100%" y2="100%">
+		<stop offset="0%" stop-color="#38bdf8"/>
+		<stop offset="50%" stop-color="#6366f1"/>
+		<stop offset="100%" stop-color="#c084fc"/>
+	</linearGradient>
+
+	<!-- Fondo de la Cápsula (Obsidian Glass) -->
+	<linearGradient id="aiCapsuleBgDark" x1="0%" y1="0%" x2="100%" y2="100%">
+		<stop offset="0%" stop-color="#0b1120"/>
+		<stop offset="100%" stop-color="#1e1b4b"/>
+	</linearGradient>
+
+	<!-- Sombra Neumórfica Profunda con Aura Púrpura -->
+	<filter id="aiCapsuleShadowDark" x="-30%" y="-30%" width="160%" height="160%" filterUnits="userSpaceOnUse">
+		<feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.8"/>
+		<feDropShadow dx="0" dy="2" stdDeviation="8" flood-color="#7c3aed" flood-opacity="0.45"/>
+	</filter>
+
+	<!-- Brillo Tipográfico AI -->
+	<filter id="aiTextShadowDark" x="-20%" y="-20%" width="140%" height="140%">
+		<feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#38bdf8" flood-opacity="0.35"/>
+	</filter>
+
+	<!-- Destello Neural Neón -->
+	<linearGradient id="aiSparkGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
+		<stop offset="0%" stop-color="#38bdf8"/>
+		<stop offset="100%" stop-color="#e879f9"/>
+	</linearGradient>
+</defs>
+
+<!-- 1. Silueta Base del Logo (Flama BUCA) -->
+<path fill="url(#bucaLogoGradDark)" d="M182.2,298.2c29.1,0,52.7-23.6,52.7-52.7c0-29.1-10.5-42.2-21.1-63.2C191.2,137,209.1,96.8,256,55.7
+	c10.5,52.7,42.2,103.3,84.3,137s63.2,73.8,63.2,115.9c0,81.5-66.1,147.6-147.6,147.6s-147.6-66.1-147.6-147.6
+	c0-24.3,9.1-48.4,21.1-63.2C129.5,274.6,153.1,298.2,182.2,298.2z"/>
+
+<!-- 2. Capa Neumórfica AI (Posición Inferior Derecha: Ancla Dimensional) -->
+<g transform="translate(270, 316)">
+	<!-- Placa / Cápsula Elevada Obsidian Glass -->
+	<rect x="0" y="0" width="186" height="106" rx="34" ry="34"
+		fill="url(#aiCapsuleBgDark)"
+		stroke="url(#aiCapsuleBorderDark)"
+		stroke-width="2.5"
+		filter="url(#aiCapsuleShadowDark)" />
+
+	<!-- Resplandor Especular Interno -->
+	<path d="M 32 4 Q 93 6 154 4" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.6"/>
+
+	<!-- Tipografía AI en Relieve Luminoso -->
+	<text x="76" y="74"
+		font-family="system-ui, -apple-system, 'Inter', 'Segoe UI', sans-serif"
+		font-weight="900"
+		font-style="italic"
+		font-size="64"
+		letter-spacing="2"
+		text-anchor="middle"
+		fill="url(#aiTextGradDark)"
+		filter="url(#aiTextShadowDark)">AI</text>
+
+	<!-- Destello Neural (Neural Sparkle Icon) -->
+	<path d="M 148 26 Q 148 37 159 37 Q 148 37 148 48 Q 148 37 137 37 Q 148 37 148 26 Z"
+		fill="url(#aiSparkGradDark)"
+		filter="url(#aiTextShadowDark)" />
+	<circle cx="148" cy="37" r="2.5" fill="#ffffff" />
+</g>
+</svg>

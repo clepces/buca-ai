@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="buca-wordmark-dark" xmlns="http://www.w3.org/2000/svg" viewBox="-16 -12 500 141" xml:space="preserve">
+<defs>
+	<linearGradient id="bucaWordmarkGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
+		<stop offset="0%" stop-color="#60a5fa"/>
+		<stop offset="50%" stop-color="#a78bfa"/>
+		<stop offset="100%" stop-color="#f472b6"/>
+	</linearGradient>
+	<filter id="wordmarkGlowDark" x="-15%" y="-15%" width="130%" height="130%">
+		<feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#818cf8" flood-opacity="0.45"/>
+		<feDropShadow dx="0" dy="3" stdDeviation="8" flood-color="#000000" flood-opacity="0.6"/>
+	</filter>
+</defs>
+<path fill="url(#bucaWordmarkGradDark)" filter="url(#wordmarkGlowDark)" fill-rule="evenodd" d="bucaWordmarkGrad"/>
+</svg>

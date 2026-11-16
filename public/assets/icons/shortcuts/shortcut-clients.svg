@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="shortcut-clients" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" xml:space="preserve">
+<defs>
+	<linearGradient id="bucaIconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+		<stop offset="0%" stop-color="#38bdf8"/>
+		<stop offset="50%" stop-color="#2563eb"/>
+		<stop offset="100%" stop-color="#7c3aed"/>
+	</linearGradient>
+	<linearGradient id="bucaIconBg" x1="0%" y1="0%" x2="100%" y2="100%">
+		<stop offset="0%" stop-color="#0f172a"/>
+		<stop offset="100%" stop-color="#1e1b4b"/>
+	</linearGradient>
+	<filter id="iconGlow" x="-20%" y="-20%" width="140%" height="140%">
+		<feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#2563eb" flood-opacity="0.35"/>
+	</filter>
+</defs>
+<!-- Fondo Squircle Neumórfico -->
+<rect x="6" y="6" width="84" height="84" rx="24" fill="url(#bucaIconBg)" stroke="url(#bucaIconGrad)" stroke-width="2.5" filter="url(#iconGlow)"/>
+<g fill="none" stroke="url(#bucaIconGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+
+	<circle cx="48" cy="38" r="12" fill="rgba(56, 189, 248, 0.15)" />
+	<path d="M 26 72 C 26 60 36 56 48 56 C 60 56 70 60 70 72" fill="rgba(99, 102, 241, 0.15)" />
+	<circle cx="48" cy="38" r="4" fill="#ffffff" stroke="none" />
+	<path d="M 66 38 A 8 8 0 0 1 74 50" stroke-width="2" stroke-dasharray="2 2" />
+	<path d="M 30 38 A 8 8 0 0 0 22 50" stroke-width="2" stroke-dasharray="2 2" />
+
+</g>
+</svg>
