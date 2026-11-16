@@ -12,7 +12,11 @@ out/
 # Environment Variables (Secrets & Credentials)
 .env
 .env.*
+.env.local
 !.env.example
+firebase-applet-config.json
+*-firebase-adminsdk-*.json
+firebase-adminsdk-*.json
 
 # Logs & Debugging
 logs/
