@@ -1,32 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<svg version="1.1" id="shortcut-finance" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" xml:space="preserve">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96">
 <defs>
-	<linearGradient id="bucaIconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+	<linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
 		<stop offset="0%" stop-color="#38bdf8"/>
 		<stop offset="50%" stop-color="#2563eb"/>
 		<stop offset="100%" stop-color="#7c3aed"/>
 	</linearGradient>
-	<linearGradient id="bucaIconBg" x1="0%" y1="0%" x2="100%" y2="100%">
+	<linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
 		<stop offset="0%" stop-color="#0f172a"/>
 		<stop offset="100%" stop-color="#1e1b4b"/>
 	</linearGradient>
-	<filter id="iconGlow" x="-20%" y="-20%" width="140%" height="140%">
-		<feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#2563eb" flood-opacity="0.35"/>
-	</filter>
 </defs>
-<!-- Fondo Squircle Neumórfico -->
-<rect x="6" y="6" width="84" height="84" rx="24" fill="url(#bucaIconBg)" stroke="url(#bucaIconGrad)" stroke-width="2.5" filter="url(#iconGlow)"/>
-<g fill="none" stroke="url(#bucaIconGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+<rect x="4" y="4" width="88" height="88" rx="22" fill="url(#bg)" stroke="url(#g)" stroke-width="2"/>
 
-	<circle cx="48" cy="48" r="22" fill="rgba(56, 189, 248, 0.1)" />
-	<!-- Flechas circulares de cambio y signo divisa -->
-	<path d="M 38 34 A 16 16 0 0 1 62 38" />
-	<polyline points="60 30 63 38 55 40" fill="url(#bucaIconGrad)" stroke-width="1.5" />
-	<path d="M 58 62 A 16 16 0 0 1 34 58" />
-	<polyline points="36 66 33 58 41 56" fill="url(#bucaIconGrad)" stroke-width="1.5" />
-	<!-- Símbolo dólar central -->
-	<path d="M 48 39 L 48 57" stroke="#ffffff" stroke-width="2.5" />
-	<path d="M 52 43 C 52 41 45 40 45 45 C 45 50 51 47 51 52 C 51 56 44 55 44 53" stroke="#ffffff" stroke-width="2.5" />
-
+<g fill="url(#g)">
+	<circle cx="48" cy="48" r="22" fill-opacity="0.1"/>
+	<path d="M36 36a17 17 0 0126 2l-6 2 8-1-1-8-4 5A20 20 0 0034 34z"/>
+	<path d="M60 60a17 17 0 01-26-2l6-2-8 1 1 8 4-5a20 20 0 0025 2z"/>
+	<path d="M48 38v20" stroke="#ffffff" stroke-width="3" stroke-linecap="round" fill="none"/>
+	<path d="M44 44c0-4 8-5 8-2s-8 1-8 4 8 5 8 2" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" fill="none"/>
 </g>
 </svg>

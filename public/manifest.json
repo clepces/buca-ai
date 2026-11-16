@@ -15,16 +15,10 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/assets/icons/logo-light-ai.svg",
+      "src": "/assets/icons/logo-light.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/assets/icons/logo-dark-ai.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/assets/icons/android/android-launchericon-48-48.png",

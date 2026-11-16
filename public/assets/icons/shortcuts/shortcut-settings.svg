@@ -1,29 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<svg version="1.1" id="shortcut-settings" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" xml:space="preserve">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96">
 <defs>
-	<linearGradient id="bucaIconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+	<linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
 		<stop offset="0%" stop-color="#38bdf8"/>
 		<stop offset="50%" stop-color="#2563eb"/>
 		<stop offset="100%" stop-color="#7c3aed"/>
 	</linearGradient>
-	<linearGradient id="bucaIconBg" x1="0%" y1="0%" x2="100%" y2="100%">
+	<linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
 		<stop offset="0%" stop-color="#0f172a"/>
 		<stop offset="100%" stop-color="#1e1b4b"/>
 	</linearGradient>
-	<filter id="iconGlow" x="-20%" y="-20%" width="140%" height="140%">
-		<feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#2563eb" flood-opacity="0.35"/>
-	</filter>
 </defs>
-<!-- Fondo Squircle Neumórfico -->
-<rect x="6" y="6" width="84" height="84" rx="24" fill="url(#bucaIconBg)" stroke="url(#bucaIconGrad)" stroke-width="2.5" filter="url(#iconGlow)"/>
-<g fill="none" stroke="url(#bucaIconGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+<rect x="4" y="4" width="88" height="88" rx="22" fill="url(#bg)" stroke="url(#g)" stroke-width="2"/>
 
-	<!-- Engranaje -->
-	<circle cx="48" cy="48" r="14" fill="rgba(124, 58, 237, 0.2)" />
-	<path d="M 48 22 L 48 28 M 48 68 L 48 74 M 22 48 L 28 48 M 68 48 L 74 48 M 29 29 L 34 34 M 62 62 L 67 67 M 29 67 L 34 62 M 62 34 L 67 29" stroke-width="3.5" />
-	<!-- Chip neural central con chispa de IA -->
-	<circle cx="48" cy="48" r="5" fill="#38bdf8" stroke="none" />
-	<path d="M 58 28 Q 58 34 64 34 Q 58 34 58 40 Q 58 34 52 34 Q 58 34 58 28 Z" fill="#c084fc" stroke="none" />
-
+<g fill="url(#g)">
+	<path d="M48 30a18 18 0 110 36 18 18 0 010-36z" fill-opacity="0.1"/>
+	<circle cx="48" cy="48" r="7" fill-opacity="0.3"/>
+	<circle cx="48" cy="48" r="7" fill="none" stroke="url(#g)" stroke-width="2.5"/>
+	<g fill="none" stroke="url(#g)" stroke-width="3" stroke-linecap="round">
+		<path d="M48 24v6M48 66v6"/>
+		<path d="M31 31l4.2 4.2M60.8 60.8l4.2 4.2"/>
+		<path d="M24 48h6M66 48h6"/>
+		<path d="M31 65l4.2-4.2M60.8 35.2l4.2-4.2"/>
+	</g>
+	<path d="M42 42l4 8 8-4" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
 </g>
 </svg>
