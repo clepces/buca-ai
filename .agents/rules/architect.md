@@ -33,7 +33,7 @@ Este archivo define los estándares de ingeniería de software, organización es
 ## 💻 Stack Tecnológico
 * **Frontend:** ES6+ Vanilla JS, SASS (SCSS) modular.
 * **Herramienta de Construcción:** Vite (Configuración en `vite.config.js`).
-* **Backend & Auth:** Supabase (PostgreSQL + Auth + MFA TOTP + Row Level Security).
+* **Backend & Auth:** Supabase (PostgreSQL 15+ con Auth + MFA TOTP + Row Level Security).
 * **Librerías Permitidas:** Supabase JS Client (`@supabase/supabase-js`), Zod v4, D3.js v7, Lucide Icons, Bootstrap 5 (SCSS modular), Bootstrap Icons.
 * **Tipo de Aplicación:** SPA con History API y capacidades PWA.
 
@@ -49,6 +49,7 @@ Cada dominio debe mantener la siguiente anatomía:
   ├── styles/           # Archivos SCSS locales
   ├── services/         # Servicios de persistencia / Supabase / APIs
   └── constants/        # Constantes y enumeradores locales
+```
 
 ## 🔄 Comunicación y Estado
 * **EventBus Central:** Comunicación transversal y desacoplada mediante `src/core/eventBus/index.js` siguiendo `docs/events.md`.

@@ -70,6 +70,6 @@ Usuario: Daisy (owner_id: usr_001)
 * Al conmutar hacia un negocio externo, el Kernel descarga las credenciales y claims asociados exclusivamente a ese `business_id`.
 * Se ocultan automáticamente todas las tarjetas de métricas globales, balances bancarios y carruseles de negocios propios.
 * El enrutador SPA restringe el acceso mediante `guards.js`: cualquier intento de acceder manualmente por URL a rutas no autorizadas (como `/roles` o `/finances`) redirige de inmediato a la vista de error `Error403 (Acceso Denegado)`.
-* Las consultas a Firestore inyectan obligatoriamente el filtro de seguridad:
-  `collection('businesses').doc(currentBusinessId)`
-  impidiendo la lectura cruzada de datos entre inquilinos.
+* Las consultas a la base de datos aplican el aislamiento estricto de Supabase:
+  `from('businesses').select('*').eq('id', currentBusinessId)`
+  reforzado por las políticas de Row Level Security (RLS) en PostgreSQL, impidiendo la lectura cruzada de datos entre inquilinos.

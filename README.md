@@ -1,209 +1,234 @@
-# B.U.C.A. AI — Manuscrito de Arquitectura, Diagnóstico Comparativo y Hoja de Ruta Maestra
+<p align="center">
+  <img src="public/assets/logo-light.png" alt="B.U.C.A. AI Logo" width="160" height="160" />
+</p>
 
-> **Documento:** Informe Técnico de Ingeniería de Software, Auditoría Comparativa y Plan de Armonización  
-> **Autor:** Equipo de Ingeniería de Software (Core Platform & Architecture)  
-> **Versión del Sistema:** 1.1.0 (Master de Producción)  
-> **Estado de la Plataforma:** En Estabilización y Transición Híbrida Live  
-> **Enfoque Tecnológico:** Vanilla JavaScript Puro (ES6+), SASS Modular, HTML5 Semántico, Firebase Firestore & Auth, EmailJS  
-> **Regla de Integridad:** **CERO FRAMEWORKS** | **PRESUPUESTO $0.00 USD (Spark Plan)** | **AISLAMIENTO MULTI-TENANT**
+<h1 align="center">B.U.C.A. AI</h1>
+<h3 align="center">Business Under Control Access — Enterprise Anti-Crisis Modular ERP</h3>
 
----
+<p align="center">
+  Plataforma empresarial de alto rendimiento diseñada con arquitectura <strong>Clean Core en Vanilla JavaScript modular (ES6+)</strong>, motor gráfico adaptativo <strong>Buca Neural Engine (BNE)</strong> y persistencia relacional aislada multi-inquilino sobre <strong>Supabase (PostgreSQL)</strong>.
+</p>
 
-## 1. Resumen Ejecutivo y Estado Actual del Proyecto
-
-El sistema **B.U.C.A. AI (Business Under Control Access)** es una Single Page Application (SPA) modular progresiva diseñada para operar como una plataforma empresarial anti-crisis. Su propósito central es garantizar la continuidad de negocio, la exactitud contable bi-monetaria (USD / Bolívares) y la soberanía operativa de pequeños y medianos comercios, protegiéndolos de la devaluación acelerada, los cortes de conectividad y la pérdida de control de inventarios.
-
-### 1.1. Arquitectura Base del Proyecto Real
-A diferencia de aplicaciones monolíticas convencionales o basadas en frameworks pesados (React, Angular o Vue), el repositorio actual de B.U.C.A. AI opera sobre un **núcleo puro en Vanilla JS modular**, organizado estrictamente bajo el principio de separación de responsabilidades en tres capas:
-
-1. **`src/core/` (El Motor del Sistema):**
-   * **`kernel.js`**: Orquestador maestro del ciclo de vida de la aplicación y arranque procedural.
-   * **`ModuleLoader.js`**: Cargador dinámico asíncrono para code-splitting bajo demanda.
-   * **`config/`**: Configuración centralizada de variables de aplicación (`config.js`), entorno (`environment.js`) y servicios en la nube (`firebase.js`).
-   * **`router/`**: Enrutador SPA nativo basado en la History API con guardias de seguridad (`guards.js`) y ciclo de desmontaje limpio.
-   * **`eventBus/`**: Despachador reactivo desacoplado (`src/core/eventBus/index.js`), estructurado sobre `Map` y `Set`, con soporte nativo de comodines (`*`), middlewares globales (`use()`), desuscripción en $O(1)$ y telemetría de rendimiento para 60 FPS.
-   * **`state/`**: Almacén reactivo de estado global (`session.js`, `global.js`, `ui.js`, `store.js`) con sincronización rAF.
-   * **`storage/`**: Adaptador polimórfico de persistencia local (`StorageAdapter.js`) con soporte cifrado para `localStorage` e `IndexedDB`.
-   * **`engine/`**: **Buca Neural Engine (BNE)**, motor de optimización gráfica que monitorea FPS y latencia, conmutando dinámicamente entre perfiles L0 (Eco), L1 (Balanced), L2 (Pro) y L3 (Ultra).
-
-2. **`src/modules/` (Dominios de Negocio Aislados):**
-   * **`auth/`**: Módulo de autenticación (Login, Registro, Recuperación, Verificación de 2FA y perfiles de sesión).
-   * **`workspace/`**: Espacio de trabajo corporativo (Dashboard, vitrina de negocios `BusinessHub`, telemetría operativa y vistas procedimentales para sub-módulos).
-
-3. **`src/shared/` (Recursos Transversales Compartidos):**
-   * **`ui/`**: Componentes reutilizables (`TopBar`, `DockableNavbar`, layouts de pantalla).
-   * **`overlays/`**: Modales del sistema (`RateModal`, `PerformanceModal`, `EmulatorModal`, `ModalService`).
-   * **`styles/`**: Sistema de diseño "Corporate Hybrid Glass" estructurado en SASS modular.
+<p align="center">
+  <a href="https://github.com"><img src="https://img.shields.io/badge/version-1.1.8--alpha-blue.svg?style=for-the-badge&logo=git" alt="Version 1.1.8-alpha" /></a>
+  <a href="https://developer.mozilla.org/es/docs/Web/JavaScript"><img src="https://img.shields.io/badge/Vanilla_JS-ES6%2B-F7DF1E.svg?style=for-the-badge&logo=javascript&logoColor=black" alt="Vanilla JS ES6+" /></a>
+  <a href="https://vitejs.dev"><img src="https://img.shields.io/badge/Vite-8.x-646CFF.svg?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" /></a>
+  <a href="https://supabase.com"><img src="https://img.shields.io/badge/Supabase-PostgreSQL_RLS-3ECF8E.svg?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" /></a>
+  <a href="https://sass-lang.com"><img src="https://img.shields.io/badge/SASS-Embedded-CC6699.svg?style=for-the-badge&logo=sass&logoColor=white" alt="SASS" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Proprietary_Enterprise-0A2540.svg?style=for-the-badge" alt="Enterprise License" /></a>
+</p>
 
 ---
 
-## 2. Configuración de Entornos y Desactivación de Cuenta Demo
+## 📌 Visión y Propósito
 
-En cumplimiento directo de las directrices del usuario, se ha implementado la gestión centralizada de entornos y la encapsulación defensiva de las funciones de prueba.
+**B.U.C.A. AI** es una Single Page Application (SPA) modular y progresiva concebida para operaciones de comercio, inventario y finanzas en contextos económicos volátiles y de alta exigencia de hardware. Combina una interfaz gráfica de última generación (*Corporate Hybrid Glass*) con una política estricta de **cero dependencias de frameworks externos (React, Vue, Angular o JSX)**, garantizando tiempos de carga casi instantáneos, bajo consumo de memoria RAM y ejecución a 60 FPS estables incluso en dispositivos con recursos limitados.
 
-### 2.1. Propiedad Agregada en `src/core/config/config.js`
-Se incorporó el bloque `ENV` dentro de la constante maestra `CONFIG`, centralizando los flags de desarrollo y producción:
+---
 
-```javascript
-export const CONFIG = {
-    APP: { ... },
+## 🚀 Capacidades y Características Principales
 
-    /**
-     * Variables de Entorno y Control de Despliegue
-     * - IS_PRODUCTION: false (desarrollo activo) | true (producción - desactiva cuentas demo y accesos temporales)
-     * - IS_DEVELOPMENT: true cuando se trabaja localmente o en entornos de prueba
-     * - SHOW_DEMO_ACCOUNTS: true muestra el selector de cuentas demo en login; se desactiva automáticamente en producción
-     * - USE_EMULATOR: true para desviar tráfico a emuladores locales de Firebase
-     */
-    ENV: {
-        MODE: 'development', // 'development' | 'production'
-        IS_DEVELOPMENT: true,
-        IS_PRODUCTION: false,
-        SHOW_DEMO_ACCOUNTS: true,
-        USE_EMULATOR: false
-    },
+### 1. Clean Core Architecture (3-Tier Layered Design)
+- **Capa Kernel (`src/core/`)**: Orquestación procedural de arranque, despachador de eventos pub/sub reactivo, enrutador SPA nativo basado en History API, guardias de seguridad, detección de hardware y gestión de temas.
+- **Capa de Módulos Autónomos (`src/modules/`)**: Dominios desacoplados que operan bajo demanda (`auth`, `workspace`, `business`, `finance`, `profile`).
+- **Capa de Recursos Compartidos (`src/shared/`)**: Layouts estructurales (`MainLayout`, `AuthLayout`), modales globales, componentes de cabecera flotante, diseño modular en SASS y utilidades transversales.
 
-    DATABASE: {
-        COLLECTIONS: {
-            GLOBAL_CONFIG: 'global_config',
-            USERS: 'users',
-            BUSINESSES: 'businesses',
-            ACTIVITY_LOG: 'activity_log',
-            NOTIFICATIONS: 'notifications',
-            USER_WORKSPACES: 'workspaces',
-            STAFF: 'staff',
-            ROLES: 'roles',
-            CATEGORIES: 'categories',
-            WAREHOUSES: 'warehouses',
-            PRODUCTS: 'products',
-            INVENTORY_LOTS: 'inventory_lots',
-            SALES: 'sales',
-            CASH_SHIFTS: 'cash_shifts',
-            PURCHASES: 'purchases',
-            CUSTOMERS: 'customers',
-            SUPPLIERS: 'suppliers',
-            EXPENSES: 'expenses',
-            SEQUENCES: 'sequences',
-            CREDIT_NOTES: 'credit_notes'
-        }
-    },
-    ...
-};
+### 2. BUCA Neural Engine (BNE v5.3.0)
+- Motor de adaptación gráfica en tiempo real que previene el estrangulamiento de GPU (*layout thrashing* y *GPU throttling*).
+- **Monitores Continuos**: Telemetría de FPS, termalismo (`ThermalGuard`) y consumo de memoria (`MemoryGuard`).
+- **Perfiles Dinámicos de Degradación**:
+  - `L0 Eco`: Desactiva desenfoques (`backdrop-filter`) y sombras, aplicando fondos sólidos optimizados para hardware integrado y ahorro de batería.
+  - `L1 Balanced`: Desenfoques suaves, animaciones estándar y optimización de renderizado.
+  - `L2 Pro`: Estética completa *Corporate Hybrid Glass*, efectos bloom moderados y transiciones fluidas.
+  - `L3 Ultra`: Efectos visuales máximos, reflejos dinámicos, partículas y trazabilidad de alta densidad.
+
+### 3. Control Financiero Multi-Moneda y Snapshot Pattern
+- Gestión de cotizaciones en tiempo real e interoperabilidad multi-divisa: **USD, VES (BCV y Paralelo), EUR y USDT**.
+- **Cálculo Automático de Brecha Cambiaria**: Supervisión porcentual del diferencial cambiario para proteger márgenes comerciales contra devaluaciones imprevistas.
+- **Patrón Snapshot Inmutable**: Las transacciones y cotizaciones históricas se anclan en el tiempo; ninguna orden consulta cotizaciones volátiles en tiempo real.
+
+### 4. Seguridad Perimetral, RBAC y Aislamiento Multi-Tenant
+- **PostgreSQL Row Level Security (RLS)**: Cada consulta a la base de datos es evaluada a nivel de fila por políticas `InitPlan O(1)` utilizando `(SELECT auth.uid())` y `owner_id`.
+- **Control de Acceso Basado en Roles (RBAC)**: Matriz dual que distingue entre roles de plataforma (`super_admin`, `admin`, `user`) y roles de negocio dentro del comercio (`owner`, `manager`, `worker`).
+- **Autenticación Multifactorial (MFA / TOTP RFC 6238)**: Integración segura con desafío AAL2, renderizado QR en Canvas 2D nativo sin librerías externas y generación de 8 claves de recuperación de emergencia formateadas (`BUCA-XXXX-XXXX`).
+
+### 5. Drive Pattern (Persistencia Polimórfica Resiliente)
+- Abstracción transparente de almacenamiento a través de `StorageAdapter.js`:
+  - **Memory Driver**: Operaciones volátiles ultra-rápidas en memoria RAM.
+  - **Local Driver**: Claves cifradas en `localStorage` para preferencias cosméticas.
+  - **IndexedDB Driver**: Almacenamiento local persistente con soporte para operaciones offline y TTL estructurado.
+  - **Supabase Driver**: Sincronización remota en la nube bajo la tabla particionada `app_storage` y `idempotency_keys`.
+
+---
+
+## 🏛️ Diagrama de Arquitectura del Sistema
+
+El siguiente diagrama ilustra el flujo de comunicación, el ciclo de vida y la interacción entre el núcleo del sistema, los canales de eventos reactivos, los módulos funcionales y el backend remoto:
+
+```mermaid
+flowchart TD
+    subgraph ClientApp["🌐 CLIENT APPLICATION (Vanilla JS ES6+)"]
+        direction TB
+
+        subgraph CoreTier["Core Kernel Layer (src/core/)"]
+            Kernel["⚙️ Kernel (kernel.js)"]
+            Router["🧭 SPA Router & Guards"]
+            EventBus["⚡ EventBus (Pub/Sub & OfflineQueue)"]
+            StateStore["🧠 State Store (Reactive State)"]
+            BNE["🎨 BUCA Neural Engine (L0 - L3)"]
+            StorageAdapter["💾 StorageAdapter (Polymorphic Drivers)"]
+        end
+
+        subgraph ModuleTier["Autonomous Modules Layer (src/modules/)"]
+            direction LR
+            ModAuth["🔐 auth<br/>(Login, MFA, PIN)"]
+            ModWorkspace["📊 workspace<br/>(Thin Shell & Telemetry)"]
+            ModBusiness["🏢 business<br/>(BusinessHub & Hubs)"]
+            ModFinance["💵 finance<br/>(Rates & Snapshots)"]
+            ModProfile["👤 profile<br/>(User & Worker Modal)"]
+        end
+
+        subgraph SharedTier["Shared UI & Utilities Layer (src/shared/)"]
+            Layouts["📐 MainLayout / AuthLayout"]
+            Modals["🪟 ModalService & Overlays"]
+            Styles["🎨 SASS Corporate Hybrid Glass"]
+            Utils["🛠️ Utils (Formatters, Security, Logger)"]
+        end
+    end
+
+    subgraph BackendTier["☁️ SUPABASE CLOUD BACKEND (PostgreSQL 15+)"]
+        direction TB
+        AuthEngine["🔒 Supabase Auth (JWT & MFA AAL2)"]
+        PostgresDB[("🐘 PostgreSQL Relational DB (3NF)")]
+        subgraph Tables["Tablas con RLS Obligatorio"]
+            T_profiles["profiles (InitPlan O(1))"]
+            T_businesses["businesses (owner_id)"]
+            T_staff["staff (tenant_id)"]
+            T_rates["finance_rates (public read / admin write)"]
+            T_notifs["notifications (RPC read_by)"]
+            T_logs["activity_log (inmutable)"]
+            T_storage["app_storage & idempotency_keys"]
+        end
+        RPCs["⚙️ Stored Procedures & RPCs (mark_notification_read)"]
+    end
+
+    %% Flujos de Conexión
+    Kernel --> Router
+    Kernel --> EventBus
+    Kernel --> StateStore
+    Kernel --> BNE
+    Kernel --> StorageAdapter
+
+    Router --> ModAuth
+    Router --> ModWorkspace
+
+    ModWorkspace -.-> ModBusiness
+    ModWorkspace -.-> ModFinance
+    ModProfile -.-> ModAuth
+
+    ModAuth --> EventBus
+    ModFinance --> EventBus
+    ModBusiness --> EventBus
+
+    EventBus --> StateStore
+    StorageAdapter --> PostgresDB
+    ModAuth --> AuthEngine
+    PostgresDB --- Tables
+    PostgresDB --- RPCs
+    SharedTier -.-> ModuleTier
 ```
 
-### 2.2. Encapsulación de la Cuenta Demo en `LoginForm.js`
-* **Cero Eliminación de Código HTML:** No se eliminó el marcado de cuentas demo; fue encapsulado reactivamente mediante condicionales de plantilla ES6:
-  ```javascript
-  const isProd = CONFIG?.ENV?.IS_PRODUCTION || CONFIG?.ENV?.MODE === 'production';
-  const showDemoAccounts = !isProd && Boolean(CONFIG?.ENV?.SHOW_DEMO_ACCOUNTS);
-  ```
-* **Comportamiento en Producción (`IS_PRODUCTION: true` o `SHOW_DEMO_ACCOUNTS: false`):**
-  1. El contenedor del selector de cuentas demo (`#demo-accounts-wrapper`) **no se renderiza en el DOM**.
-  2. Los campos de texto de correo y contraseña se inicializan vacíos (`value=""`) con placeholders genéricos (`usuario@empresa.com`).
-  3. En `init()`, los listeners de clics se salvaguardan verificando si existen botones demo antes de vincular eventos, eliminando cualquier error en consola.
-  4. En `AuthService.js`, se desactiva automáticamente el bypass de credenciales demo, exigiendo autenticación estricta contra Firebase Authentication en la nube.
+---
 
-### 2.3. Configuración para Firebase App & Cloud Firestore
-Cuando la aplicación conmuta entre producción y desarrollo:
-* **En Producción (`IS_PRODUCTION: true`):**
-  * `src/core/config/firebase.js` bloquea cualquier conexión hacia emuladores locales (`localhost:9099`, `localhost:8080`, `localhost:5001`).
-  * Se enlaza directamente a la base de datos Firestore viva del proyecto `buca-scdbs` (`firestoreDatabaseId: "(default)"`) utilizando el SDK oficial v9+ modular (`firebase/firestore`, `firebase/auth`).
-  * Se activa el `persistentLocalCache` con `persistentMultipleTabManager` para mantener la sesión y caché local sincronizados entre múltiples pestañas del navegador sin generar lecturas duplicadas.
-* **En Desarrollo (`IS_DEVELOPMENT: true` / producción desactivada):**
-  * La aplicación sigue conectada a Firestore de forma segura, pero permite opcionalmente habilitar emuladores si se declara `USE_EMULATOR: true`.
+## 💻 Requisitos del Entorno
+
+- **Node.js**: `>= 20.0.0` (LTS recomendado).
+- **Gestor de Paquetes**: `npm` `>= 10.0.0`.
+- **Navegadores Soportados**: Chrome 110+, Edge 110+, Firefox 115+, Safari 16.4+ (requiere soporte nativo para ES Modules, Web Crypto API y CSS Custom Properties).
 
 ---
 
-## 3. Especificación de API REST, Cloud Functions y Servicios Externos (`docs/api.md`)
+## ⚡ Instalación y Puesta en Marcha (Quick Start)
 
-Uno de los puntos clave a aclarar en este manuscrito es cómo se interpreta y ejecuta la arquitectura de red descrita en `docs/api.md`:
-
-### 3.1. ¿Por qué NO necesitamos un Servidor REST Tradicional (Express/Node)?
-En arquitecturas web convencionales, el frontend hace peticiones `fetch('/api/v1/products')` a un servidor Node.js/Express, el cual consulta una base de datos SQL/NoSQL y responde. 
-* **El Problema:** Requiere mantener un servidor encendido 24/7, lo cual **rompe la regla de costo $0.00 USD** (costes de hosting, CPU y memoria).
-* **La Solución Serverless en B.U.C.A. AI:** Nuestra SPA en Vanilla JS se conecta **directamente** a Firebase Firestore y Firebase Auth mediante el SDK cliente oficial. 
-  * Las lecturas y escrituras se validan en el borde (*at the edge*) mediante las reglas de seguridad `firestore.rules`.
-  * La latencia es casi instantánea gracias al `persistentLocalCache` de Firestore en el navegador.
-
-### 3.2. ¿Qué Rol Cumple el Sobre Canónico (Envelope) de `docs/api.md`?
-Aunque consultemos Firestore directamente en cliente, nuestros servicios modulares (`src/modules/*/services/`) y adaptadores HTTP (`src/core/api/BaseClient.js`) deben devolver los datos envueltos en el sobre canónico estandarizado:
-```json
-{
-  "success": true,
-  "data": { ... },
-  "meta": { "total": 45, "cursor": "doc_id_99" },
-  "timestamp": "2026-10-31T21:00:00.000Z"
-}
+### 1. Clonar el Repositorio
+```bash
+git clone https://github.com/tu-organizacion/buca-ai.git
+cd buca-ai
 ```
-Y para errores:
-```json
-{
-  "success": false,
-  "error": "No posee autorización para modificar el inventario.",
-  "code": "permission-denied"
-}
+
+### 2. Instalar Dependencias
+```bash
+npm install
 ```
-**Ventaja:** Si en el futuro se añade un microservicio externo o Cloud Function, la interfaz de usuario no cambia en lo absoluto. Todo el frontend consume el mismo contrato de respuesta predecible y seguro (Cero Stack Traces).
 
-### 3.3. ¿Para Qué Sí Se Utilizan Cloud Functions?
-Las Cloud Functions se reservan estrictamente para tareas que un cliente en el navegador no debe o no puede ejecutar por seguridad o límites del entorno:
-1. **Cron Job de Tasas Oficiales (BCV):** Tarea programada cada 4 horas que consulta el portal del Banco Central de Venezuela y actualiza el documento `/global_config/main` en Firestore.
-2. **Consecutivos Fiscales Estrictos (`/sequences/`):** Si dos cajas cobran en el mismo milisegundo, una transacción en Cloud Function garantiza que jamás se duplique un número de factura (`FAC-000100`).
-3. **Manejo Seguro de Claims Administrativos:** Asignar o revocar roles de `super_admin` o `admin`.
+### 3. Configuración de Variables de Entorno
+Crea un archivo local `.env.local` basado en la plantilla de ejemplo `.env.example`:
 
-### 3.4. Servicios Externos: EmailJS API a Costo $0.00 USD
-Para evitar desplegar y pagar servidores SMTP dedicados (SendGrid, Mailgun, Postmark):
-* La aplicación se conecta vía HTTPS REST a EmailJS (`https://api.emailjs.com/api/v1.0/email/send`).
-* Utiliza tres plantillas transaccionales seguras:
-  1. `template_auth_2fa`: Envío de código OTP de 6 dígitos con expiración de 10 minutos para autorizar nuevos dispositivos.
-  2. `template_stock_alert`: Notificación al Owner cuando un producto alcanza su umbral mínimo de stock.
-  3. `template_hire_notice`: Notificación a un colaborador cuando es dado de alta en la nómina de un negocio.
+```bash
+cp .env.example .env.local
+```
 
----
+Configura las variables maestras de Supabase:
+```env
+VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+VITE_SUPABASE_ANON_KEY=tu-anon-key-de-supabase
+```
 
-## 4. Base de Datos Firestore v4.1.0: Reingenierías Críticas y Hoja de Ruta
+### 4. Ejecución en Modo Desarrollo
+Inicia el servidor local de Vite con Hot Module Replacement (HMR):
+```bash
+npm run dev
+```
+La aplicación estará disponible de inmediato en `http://localhost:3000`.
 
-La base de datos es el corazón de B.U.C.A. AI. Como se especificó en la directriz del usuario, no se puede improvisar; debe implementarse de forma precisa y ordenada.
+### 5. Validación de Calidad y Pruebas
+Ejecuta la suite de pruebas unitarias y de integración del sistema:
+```bash
+# Ejecutar tests de seguridad, RLS, MFA y sincronización offline
+npm test
 
-### 4.1. Resumen de las 6 Reingenierías Maestras a Implementar:
-1. **Subcolección `users/{uid}/workspaces/{bizId}` y `display_cache`:**
-   * Evita sobrecargar el documento raíz del usuario y elimina el problema de lecturas $N+1$.
-   * El carrusel de negocios en el dashboard se dibuja en **0 ms** leyendo solo la subcolección de workspaces del usuario.
-2. **Cuenta Híbrida Dual (`profile` vs `worker_profile`):**
-   * En `profile`: datos personales y modo visual activo (`owner` o `worker`).
-   * En `worker_profile`: habilidades (`skills`), biografía, disponibilidad y turnos completados. Es **100% gratuita de por vida**. La suscripción de pago solo aplica al Owner para crear empresas propias.
-3. **Anclaje de Cuenta Corriente ("Fiado") en USD (`balance_usd`):**
-   * En `customers/{id}/credit_account`, el saldo adeudado se registra congelado en dólares ($ USD).
-   * Al pagar o abonar, se multiplica por la tasa oficial BCV del día del cobro, preservando íntegro el capital de trabajo del comercio frente a la inflación.
-4. **Inmutabilidad Fiscal en `sales`:**
-   * Cada comprobante de venta almacena una copia estática e inmutable de los productos vendidos con precio histórico, costo de reposición del lote en ese instante, tasa de cambio y desglose de IVA e IGTF.
-5. **Numeración Fiscal Atómica (`sequences`):**
-   * Contadores atómicos con prefijos estandarizados: `"FAC-"` (Factura Fiscal), `"NC-"` (Nota de Crédito) y `"TKT-"` (Ticket de Mostrador), con 6 dígitos de relleno.
-6. **Trazabilidad FIFO por Lotes (`inventory_lots`):**
-   * Subcolección en `/products/{id}/inventory_lots/{lotId}` que controla la fecha de vencimiento (`expiration_date`) y costo real de adquisición, asegurando que el Punto de Venta descargue contablemente la mercancía más antigua primero.
+# Verificación de sintaxis y código limpio
+npm run lint
 
----
+# Verificación de tipado estricto
+npm run type-check
+```
 
-## 5. EventBus Central: El Potencial de Nuestra Implementación (`src/core/eventBus/index.js`)
-
-Se ha aclarado documentalmente que **no se requiere ninguna migración externa**, ya que nuestro archivo `src/core/eventBus/index.js` **es exactamente la versión optimizada con `Map`, `Set`, comodines y middlewares**:
-
-* **Rendimiento $O(1)$:** Desuscripción instantánea sin escaneos de arreglos.
-* **Comodines Dinámicos (`*`):** Permite a los layouts y servicios escuchar familias enteras de eventos (`kernel:*`, `ui:*`, `router:*`).
-* **Middlewares (`use()`):** Capacidad de interceptar, validar o registrar en auditoría (`activity_log`) cualquier evento emitido antes de que llegue a los suscriptores.
-* **Telemetría para 60 FPS:** Monitorea suscriptores lentos (> 16 ms) para evitar tirones en las animaciones de la interfaz.
+### 6. Compilación para Producción
+Genera el paquete optimizado de distribución en la carpeta `/dist`:
+```bash
+npm run build
+```
 
 ---
 
-## 6. Plan de Acción y Consulta Previa antes de Editar Código
+## 📚 Documentación Técnica Detallada
 
-Siguiendo la instrucción preventiva del usuario (*"no podemos simplemente ir y editar código. Si vas a hacer algo, primero pregunta"*), se definen los siguientes pasos a coordinar:
+Para consultar las especificaciones técnicas completas de arquitectura, modelos de base de datos y motores internos, consulta el índice maestro en la carpeta `docs/`:
 
-1. **Fase 1 (Sincronización Completada):** Documentación unificada (`structure.md`, `migration-roadmap.md`, `events.md`, `components.md`, `database.md`), variables de entorno configuradas (`CONFIG.ENV`) y selector demo encapsulado.
-2. **Fase 2 (Próximo Paso Sugerido para Aprobación):**
-   * Crear los adaptadores de datos limpios en `src/modules/workspace/services/` para empezar a leer las unidades de negocio reales desde Firestore (`businesses` y `workspaces`) bajo la capa gratuita Spark.
-   * Diseñar las interfaces operativas del Punto de Venta (`/pos`) e Inventario (`/inventory`) conectadas a las colecciones canónicas.
+- [📑 Índice Maestro de Documentación](docs/README.md)
+- [🏗️ Arquitectura de Software y Ciclo de Vida](docs/architecture.md)
+- [🐘 Especificación de Base de Datos PostgreSQL y RLS](docs/database.md)
+- [🎨 Motor Gráfico BUCA Neural Engine (BNE)](docs/engine.md)
+- [🧩 Guía de Desarrollo de Módulos Plug-and-Play](docs/modules-guide.md)
+- [📖 Glosario Corporativo y Conceptual](docs/glossary.md)
 
 ---
 
-> **Conclusión:** El sistema se encuentra en estado óptimo de compilación y arquitectura. Toda la documentación está perfectamente alineada con el código real y lista para iniciar la conexión operativa con Firestore bajo confirmación del usuario.
+## 🤝 Contribución y Gobernanza
+
+Este repositorio sigue directivas de arquitectura no negociables: **cero frameworks externos**, convención de nomenclatura `kebab-case`, límite estricto de **300 líneas de código por archivo** y flujo de trabajo mediante ramas en "Y".
+
+Antes de enviar cualquier cambio o abrir un Pull Request, lee atentamente el archivo [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
+## 🛡️ Seguridad y Divulgación Responsable
+
+La seguridad de las transacciones y los datos multi-inquilino es una prioridad crítica. Si identificas una vulnerabilidad potencial, por favor sigue el protocolo establecido en [SECURITY.md](SECURITY.md).
+
+---
+
+## 📄 Licencia
+
+Este proyecto está protegido bajo una licencia corporativa propietaria para el ecosistema **B.U.C.A. AI**. Todos los derechos reservados.

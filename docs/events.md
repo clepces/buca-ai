@@ -68,7 +68,7 @@ El EventBus en producción implementa las siguientes capacidades de ingeniería:
 | :--- | :--- | :--- | :--- | :--- |
 | `auth:login-success` | `AuthService` | `{ user: object }` | SessionState, Router | Acceso autorizado; actualiza perfil y redirige al Workspace. |
 | `auth:login-failed` | `AuthService` | `{ error: object }` | `LoginForm` | Credenciales incorrectas o fallo de red; actualiza feedback visual. |
-| `auth:register-success` | `AuthService` | `{ user: object }` | `RegisterPage`, Router | Registro exitoso de nuevo usuario en Firebase Auth. |
+| `auth:register-success` | `AuthService` | `{ user: object }` | `RegisterPage`, Router | Registro exitoso de nuevo usuario en Supabase Auth. |
 | `auth:register-failed` | `AuthService` | `{ error: object }` | `RegisterPage` | Notifica error de registro (ej. email en uso). |
 | `auth:logout-success` | `AuthService` | `{}` | SessionState, Router | Cierre de sesión confirmado; purga tokens y storage local. |
 
@@ -149,10 +149,10 @@ El EventBus en producción implementa las siguientes capacidades de ingeniería:
 | Canal | Emisor | Payload | Receptor | Descripción |
 | :--- | :--- | :--- | :--- | :--- |
 | `buca:rate_change` | `RateModal`, Cloud Function | `{ rate: number, source: string, timestamp: number }` | TopBar, POS, Widgets | Notifica la actualización de la tasa oficial BCV a todos los componentes bi-monetarios. |
-| `notifications:push` | Modales, Servicios, API | `{ title: string, message: string, type: string }` | `NotificationService` | Dispara el flujo Dual-Dispatch (Toast HUD + Persistencia Firestore). |
+| `notifications:push` | Modales, Servicios, API | `{ title: string, message: string, type: string }` | `NotificationService` | Dispara el flujo Dual-Dispatch (Toast HUD + Persistencia Supabase). |
 | `ui:notification_hud` | `NotificationService` | `{ title: string, message: string, type: string }` | `HUDFeedbackManager` | Despliega alerta visual toast efímera de 4s en pantalla. |
 | `notifications:updated` | `NotificationService` | `items: array` | TopBar, `NotificationTray` | Actualiza en tiempo real las notificaciones y badges del shell. |
-| `notifications:mark_as_read` | Elemento bandeja / Botón | `{ id: string }` | `NotificationService` | Registra el UID actual en el arreglo read_by de Firestore. |
+| `notifications:mark_as_read` | Elemento bandeja / Botón | `{ id: string }` | `NotificationService` | Registra el UID actual en el arreglo read_by en Supabase vía RPC. |
 | `ui:clear_notifications` | Botón bandeja | `{}` | `NotificationService` | Marca masivamente como leídas todas las alertas pendientes del usuario. |
 | `tray:filter_tab` | Tabs de bandeja | `{ tab: string }` | `NotificationTray`, TopBar | Filtra la vista entre Todas, No leídas y Sistema. |
 
@@ -165,7 +165,7 @@ El EventBus en producción implementa las siguientes capacidades de ingeniería:
 
 Para continuar robusteciendo el bus de eventos en las próximas fases del proyecto:
 
-- [ ] **EB.1. Registro de Auditoría Inmutable:** Crear un middleware nativo que intercepte todos los eventos `auth:*`, `buca:rate_change` y `workspace:*` para grabarlos en la colección `/activity_log` de Firestore.
-- [ ] **EB.2. Cola de Eventos Offline (Replay Queue):** Si el navegador pierde la conexión a internet, encolar los eventos transaccionales en `IndexedDB` y retransmitirlos automáticamente cuando retorne la red.
+- [x] **EB.1. Registro de Auditoría Inmutable:** Interceptación y registro de eventos críticos en la tabla `public.activity_log` de Supabase.
+- [x] **EB.2. Cola de Eventos Offline (OfflineReplayQueue):** Encolamiento resiliente en memoria / IndexedDB y retransmisión idempotente mediante la tabla `public.idempotency_keys`.
 - [ ] **EB.3. Time-Travel Debugging en Desarrollo:** Almacenar los últimos 100 eventos emitidos en un buffer circular en memoria para depuración desde la consola de desarrollador mediante `window.__BUCA_EVENT_HISTORY__`.
 - [ ] **EB.4. Throttling Declarativo por Evento:** Permitir configurar opcionalmente un debounce o throttle nativo al suscribirse: `eventBus.on('window:resize', handler, { throttle: 150 })`.

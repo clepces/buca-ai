@@ -1,13 +1,31 @@
-# B.U.C.A. AI - Agent Directives & Rules Index
+# 🤖 Directivas y Reglas para Agentes de IA — B.U.C.A. AI
 
-Esta carpeta contiene el conjunto de reglas y directivas operativas para agentes autónomos y desarrolladores de **B.U.C.A. AI**:
+Este directorio contiene el conjunto de reglas inmutables de ingeniería, arquitectura y gobernanza para agentes autónomos (Google AI Studio, Antigravity, GitHub Copilot, Cursor, Windsurf, Claude Code) y desarrolladores de **B.U.C.A. AI**.
 
-## Índice de Reglas en `.agents/rules/`:
+---
 
-1. [`architect.md`](./rules/architect.md): Gobernanza de arquitectura, Clean Core de tres capas, límites de 300 líneas, convención de nombres y Cero Frameworks.
-2. [`designer.md`](./rules/designer.md): Sistema de diseño "Corporate Hybrid Glass", Buca Neural Engine (BNE-RULE-001), variante L0 Eco, densidad ERP y z-index.
-3. [`database-rules.md`](./rules/database-rules.md): Reglas de Firestore v4.1.0, multi-inquilino, Snapshot Pattern, transacciones atómicas y límites de consulta Spark.
-4. [`cost-guard.md`](./rules/cost-guard.md): Políticas para mantener un costo operativo de $0.00 USD (Spark Plan), caching en IndexedDB y emuladores.
+## 📑 Índice de Reglas en `.agents/rules/`:
 
+1. **[`architect.md`](rules/architect.md)**  
+   *Gobernanza Arquitectónica, Clean Core (3 Capas) y Cero Frameworks.*  
+   Restricciones estrictas de Vanilla JS modular (ES6+), límite de 300 líneas por archivo, nomenclatura `kebab-case` y anatomía canónica de 8 partes por módulo.
 
-Todos los agentes de IA (Google AI Studio, Antigravity, GitHub Copilot) deben respetar estrictamente estas directivas.
+2. **[`database-rules.md`](rules/database-rules.md)**  
+   *Ingeniería de Base de Datos Relacional (PostgreSQL en Supabase) y Seguridad RLS.*  
+   Modelado en Tercera Forma Normal (3NF), aislamiento multi-inquilino por `owner_id`, consultas escalares $O(1)$ con `(SELECT auth.uid())`, procedimientos almacenados `SECURITY DEFINER` y deduplicación con `idempotency_keys`.
+
+3. **[`designer.md`](rules/designer.md)**  
+   *Diseño UI/UX Corporate Hybrid Glass y Motor Gráfico BUCA Neural Engine (BNE).*  
+   Tokens dinámicos obligatorios, regla de oro `BNE-RULE-001` (variante L0 Eco sólida sin blur), densidad visual ERP, jerarquía de Z-Index y prevención de *Layout Thrashing*.
+
+4. **[`cost-guard.md`](rules/cost-guard.md)**  
+   *Guardián de Presupuesto ($0.00 USD Cost Guard).*  
+   Políticas de optimización de cuotas en la capa gratuita de Supabase: paginación obligatoria con `.range()`, caché local en `IndexedDB` con TTL y preferencia de microservicios open-source.
+
+5. **[`git-workflow.md`](rules/git-workflow.md)**  
+   *Protocolo Universal de Git, SemVer y Autocorrección de IA.*  
+   Estrategia de ramas en "Y" (`feature/` y `fix/`), prohibición de commits directos en `main`, convención estándar de *Conventional Commits* y gestión semántica de versiones (`MAJOR.MINOR.PATCH-PHASE`).
+
+---
+
+Todos los agentes de IA deben leer y aplicar estas directivas de manera prioritaria antes de emitir cualquier modificación de código.

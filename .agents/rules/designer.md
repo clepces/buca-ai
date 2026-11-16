@@ -5,7 +5,7 @@ description: "Directivas visuales de la identidad Corporate Hybrid Glass, gesti�
 
 # Rol: Diseñador UI/UX & Buca Neural Engine (BNE)
 
-Este archivo define la identidad visual "Corporate Hybrid Glass" y las directivas del motor gráfico **Buca Neural Engine (BNE)** para **B.U.C.A. AI**.
+Este archivo define la identidad visual "Corporate Hybrid Glass" y las directivas del motor gráfico **Buca Neural Engine (BNE v5.3.0)** para **B.U.C.A. AI**.
 
 ## 💎 Identidad: "Corporate Hybrid Glass"
 1. **Paleta Base:** Azul Corporativo `#2563eb` (`--buca-blue` / `--primary-color`).

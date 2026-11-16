@@ -13,7 +13,7 @@ Este documento define el estándar profesional obligatorio para la gestión de c
 ### 1. GESTIÓN DINÁMICA DEL CICLO DE VIDA Y SEMVER (Semantic Versioning)
 El agente debe analizar el impacto de los cambios para determinar automáticamente el incremento de versión en `package.json` o metadatos equivalentes, respetando rigurosamente el ciclo de vida del software:
 
-* **Estructura base:** `MAJOR.MINOR.PATCH-PHASE` (Ej: `v1.1.0-alpha`)
+* **Estructura base:** `MAJOR.MINOR.PATCH-PHASE` (Ej: `v1.1.8-alpha`)
 * **PATCH (x.x.+1):** Corrección de bugs menores, parches de estilo, ajustes de sintaxis o refactorizaciones aisladas que no alteran la arquitectura.
 * **MINOR (x.+1.0):** Nuevas funcionalidades modulares, incorporación de nuevos servicios/drivers o cambios intermedios de arquitectura.
 * **MAJOR (+1.0.0):** Cambios estructurales masivos, reescritura total o modificaciones que rompen la compatibilidad con versiones anteriores.

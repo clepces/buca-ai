@@ -68,13 +68,13 @@
 
 ### 2.8. `SystemHealthMonitor` (Monitor de Salud y Estado de Servicios)
 * **Ubicación:** `src/modules/workspace/components/SystemHealthMonitor.js`
-* **Propósito:** Indicador de estado de sincronización con Firestore, latencia de red y cuotas Spark.
+* **Propósito:** Indicador de estado de sincronización con Supabase, latencia de red y disponibilidad de servicios.
 
 ---
 
 ## 3. Componentes de Negocios y Finanzas (`src/modules/business/` & `src/modules/finance/`)
 
-### 3.1. `BusinessHub` (Carrusel de Negocios)
+### 3.1. `BusinessHub` (Carrusel y Vitrina de Negocios)
 * **Ubicación:** `src/modules/business/components/BusinessHub.js`
 * **Propósito:** Vitrina principal para visualizar las unidades de negocio del usuario (Modo Owner) o empresas afiliadas (Modo Worker).
 * **Interacciones:**
@@ -84,7 +84,7 @@
 
 ### 3.2. `BusinessWizardModal` (Asistente de Creación de Negocios)
 * **Ubicación:** `src/modules/business/components/BusinessWizardModal.js`
-* **Propósito:** Flujo asistido paso a paso para dar de alta nuevas sucursales o empresas en Firestore.
+* **Propósito:** Flujo asistido paso a paso para dar de alta nuevas sucursales o empresas en Supabase (`public.businesses`).
 
 ### 3.3. `RateManagementModal` (Gestor de Tasa de Cambio Bi-Monetaria)
 * **Ubicación:** `src/modules/finance/components/RateManagementModal.js`
