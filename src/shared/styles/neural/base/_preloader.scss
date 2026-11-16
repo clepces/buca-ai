@@ -285,6 +285,7 @@ html[data-theme="dark"] {
     display: flex;
     flex-direction: column;
     pointer-events: none;
+    -webkit-user-select: none;
     user-select: none;
     background: var(--bg-surface, #f8fafc);
 }

@@ -210,6 +210,7 @@ Para consultar las especificaciones técnicas completas de arquitectura, modelos
 - [🏗️ Arquitectura de Software y Ciclo de Vida](docs/architecture.md)
 - [🐘 Especificación de Base de Datos PostgreSQL y RLS](docs/database.md)
 - [🎨 Motor Gráfico BUCA Neural Engine (BNE)](docs/engine.md)
+- [🧠 Motor Neuronal BENE (Balanced Effect Neural Engine v5.3 / v6.0)](docs/bene/README.md)
 - [🧩 Guía de Desarrollo de Módulos Plug-and-Play](docs/modules-guide.md)
 - [📖 Glosario Corporativo y Conceptual](docs/glossary.md)
 

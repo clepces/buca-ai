@@ -67,10 +67,35 @@ export const initSupabase = async () => {
     }
 };
 
+const safeAuth = {
+    getSession: async () => ({ data: { session: null }, error: null }),
+    getUser: async () => ({ data: { user: null }, error: null }),
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+    signInWithPassword: async () => ({ data: {}, error: new Error('Supabase no inicializado') }),
+    signUp: async () => ({ data: {}, error: new Error('Supabase no inicializado') }),
+    signOut: async () => ({ error: null })
+};
+
 export const supabase = {
-    get from() { return (...args) => (getSupabase() || {}).from?.(...args); },
-    get auth() { return (getSupabase() || {}).auth; },
-    get rpc() { return (...args) => (getSupabase() || {}).rpc?.(...args); },
-    get storage() { return (getSupabase() || {}).storage; }
+    get from() {
+        const c = getSupabase();
+        return c ? c.from.bind(c) : () => ({
+            select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }),
+            upsert: async () => ({ error: null }),
+            delete: () => ({ eq: async () => ({ error: null }) })
+        });
+    },
+    get auth() {
+        const c = getSupabase();
+        return (c && c.auth) ? c.auth : safeAuth;
+    },
+    get rpc() {
+        const c = getSupabase();
+        return c ? c.rpc.bind(c) : async () => ({ data: null, error: null });
+    },
+    get storage() {
+        const c = getSupabase();
+        return (c && c.storage) ? c.storage : null;
+    }
 };
 export default supabase;

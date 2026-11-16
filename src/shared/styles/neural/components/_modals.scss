@@ -66,6 +66,7 @@ body.buca-modal-open {
     .app-header,
     .dock-container {
         pointer-events: none !important;
+        -webkit-user-select: none !important;
         user-select: none !important;
     }
 

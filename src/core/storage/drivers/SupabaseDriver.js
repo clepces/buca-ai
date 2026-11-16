@@ -23,6 +23,7 @@ export class SupabaseDriver {
     async _getCurrentUserId() {
         try {
             const client = this._getClient();
+            if (!client || !client.auth) return null;
             const session = (await client.auth.getSession())?.data?.session;
             return session?.user?.id || null;
         } catch {
@@ -39,6 +40,10 @@ export class SupabaseDriver {
     async set(key, value) {
         try {
             const client = this._getClient();
+            if (!client || typeof client.from !== 'function') {
+                console.warn(`[SupabaseDriver] Cliente no disponible. Omitiendo guardado remoto de "${key}".`);
+                return false;
+            }
             const payload = {
                 key,
                 value,
@@ -76,6 +81,7 @@ export class SupabaseDriver {
     async get(key) {
         try {
             const client = this._getClient();
+            if (!client || typeof client.from !== 'function') return null;
             const userId = await this._getCurrentUserId();
             let query = client
                 .from(this.tableName)
@@ -109,6 +115,7 @@ export class SupabaseDriver {
     async remove(key) {
         try {
             const client = this._getClient();
+            if (!client || typeof client.from !== 'function') return false;
             const userId = await this._getCurrentUserId();
             let query = client
                 .from(this.tableName)
@@ -141,6 +148,7 @@ export class SupabaseDriver {
     async list(prefix = '') {
         try {
             const client = this._getClient();
+            if (!client || typeof client.from !== 'function') return [];
             const userId = await this._getCurrentUserId();
             let query = client.from(this.tableName).select('key, value');
 

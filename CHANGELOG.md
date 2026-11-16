@@ -9,6 +9,9 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 ## [1.1.8-alpha] - 2026-11-15
 
 ### Añadido
+- **Identidad B.U.C.A. AI y Branding Vectorial**: Logotipos vectoriales con distintivo AI neumórfico (`logo-light-ai.svg`, `logo-dark-ai.svg`) y wordmarks tipográficos (`buca-wordmark*.svg`) con degradados corporativos.
+- **PWA Manifest Expandido**: Atajos de acceso directo de 96x96 para Workspace, POS, Tasas, Inventario, Clientes y Ajustes.
+- **Hoja de Ruta BENE v6.0.0 (Balanced Effect Neural Engine)**: Especificación técnica y arquitectura de efectos agnósticos en `docs/bene/`.
 - **MFA Enrollment & TOTP Service**: Flujo completo de autenticación de dos factores conforme a RFC 6238 y nivel AAL2.
 - **Canvas QR Renderer**: Renderizado de códigos QR nativo sobre elemento `<canvas>` 2D en memoria sin dependencias externas.
 - **Backup Key Recovery**: Generación de 8 códigos de emergencia formateados (`BUCA-XXXX-XXXX`) mediante Web Crypto API (`src/core/security/BackupKeyService.js`).

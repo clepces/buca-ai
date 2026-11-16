@@ -21,6 +21,9 @@ Bienvenido al repositorio documental de ingeniería de **B.U.C.A. AI**. Esta car
 * **[🎨 Motor Gráfico BUCA Neural Engine (`engine.md`)](engine.md)**  
   Especificación de BNE v5.3.0: monitores en tiempo real (`FPSMonitor`, `ThermalGuard`, `MemoryGuard`), perfiles adaptativos (`L0 Eco` a `L3 Ultra`), barreras de seguridad del DOM (`ReflowGuard`, `GhostSanitizer`, `AutoSleepGuard`) y cumplimiento estricto de la regla `BNE-RULE-001`.
 
+* **[🧠 Motor Neuronal BENE (Balanced Effect Neural Engine) (`bene/README.md`)](bene/README.md)**  
+  Documentación versionada de BENE: especificación activa v5.3.0 y plan arquitectónico de evolución hacia v6.0.0 (orquestador agnóstico de efectos multimodelo).
+
 * **[🧩 Guía de Desarrollo de Módulos Plug-and-Play (`modules-guide.md`)](modules-guide.md)**  
   Manual de construcción modular estándar. Anatomía canónica de 8 partes (`index.js`, `routes.js`, `components/`, `logic/`, `pages/`, `styles/`, `services/`, `constants/`), paso a paso para dar de alta nuevos dominios de negocio y contratos con el `EventBus`.
 
@@ -34,7 +37,7 @@ Bienvenido al repositorio documental de ingeniería de **B.U.C.A. AI**. Esta car
 * **[⚡ Bus de Eventos y Cola de Retransmisión Offline (`events.md`)](events.md)**  
   Protocolo de comunicación reactivo pub/sub, soporte de comodines (`*`), despacho transaccional (`emitTransactional`) y drenaje resiliente offline con `OfflineReplayQueue.js`.
 
-* **[🔔 Arquitectura del Sistema de Notificaciones Dual-Dispatch (`notificaciones_system_arch.md`)](notificaciones_system_arch.md)**  
+* **[🔔 Arquitectura del Sistema de Notificaciones Dual-Dispatch (`notificaciones.md`)](notificaciones.md)**  
   Despacho dual simultáneo hacia HUD visual de usuario y bandeja persistente de base de datos (`public.notifications`) con control multiusuario (`read_by: uuid[]`).
 
 * **[📐 Estructura de Directorios y Organización del Workspace (`structure.md`)](structure.md)**  

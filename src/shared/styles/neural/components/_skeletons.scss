@@ -113,6 +113,7 @@ html[data-theme="dark"] {
     flex-direction: column;
     padding-bottom: 90px;
     pointer-events: none;
+    -webkit-user-select: none;
     user-select: none;
 }
 
