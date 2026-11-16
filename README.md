@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/assets/logo-light.png" alt="B.U.C.A. AI Logo" width="160" height="160" />
+  <img src="public/assets/icons/logo-light.svg" alt="B.U.C.A. AI Logo" width="160" height="160" />
 </p>
 
 <h1 align="center">B.U.C.A. AI</h1>
