@@ -10,18 +10,18 @@ export const BusinessWizardController = {
     currentStep: 1,
 
     init() {
-        console.log('[BusinessWizardController] Initializing wizard controller...');
         this.currentStep = 1;
+        this.goToStep(1);
         this.bindEvents();
     },
 
     bindEvents() {
         // Tab navigation
-        const tabs = document.querySelectorAll('.wizard-step-tab');
+        const tabs = document.querySelectorAll('#wizard-steps-tabs .modal-nav-tab');
         tabs.forEach(tab => {
             tab.addEventListener('click', (e) => {
                 const stepNum = parseInt(e.currentTarget.getAttribute('data-step'), 10);
-                this.goToStep(stepNum);
+                if (stepNum) this.goToStep(stepNum);
             });
         });
 
@@ -59,11 +59,12 @@ export const BusinessWizardController = {
         const prev3 = document.getElementById('wizard-prev-3');
         if (prev3) prev3.onclick = () => this.goToStep(2);
 
-        // Submit button in Modal footer
+        // Submit buttons (both Step 3 finish button and Modal footer button)
+        const finishBtn = document.getElementById('wizard-finish-step3');
+        if (finishBtn) finishBtn.onclick = () => this.handleSubmit();
+
         const submitBtn = document.getElementById('btn-submit-business-wizard');
-        if (submitBtn) {
-            submitBtn.onclick = () => this.handleSubmit();
-        }
+        if (submitBtn) submitBtn.onclick = () => this.handleSubmit();
     },
 
     goToStep(stepNum) {
@@ -73,23 +74,15 @@ export const BusinessWizardController = {
         [1, 2, 3].forEach(n => {
             const pane = document.getElementById(`wizard-step-${n}-pane`);
             if (pane) {
-                if (n === stepNum) pane.classList.remove('hidden');
-                else pane.classList.add('hidden');
+                pane.classList.toggle('active', n === stepNum);
             }
         });
 
         // Tabs
-        const tabs = document.querySelectorAll('.wizard-step-tab');
+        const tabs = document.querySelectorAll('#wizard-steps-tabs .modal-nav-tab');
         tabs.forEach(tab => {
             const s = parseInt(tab.getAttribute('data-step'), 10);
-            const spanNum = tab.querySelector('span:first-child');
-            if (s === stepNum) {
-                tab.className = 'wizard-step-tab flex items-center gap-2 text-xs font-bold text-cyan-400 pb-2 border-b-2 border-cyan-400 transition-all';
-                if (spanNum) spanNum.className = 'w-6 h-6 rounded-full bg-cyan-950 border border-cyan-700 flex items-center justify-center text-cyan-300';
-            } else {
-                tab.className = 'wizard-step-tab flex items-center gap-2 text-xs font-semibold text-slate-400 pb-2 border-b-2 border-transparent transition-all';
-                if (spanNum) spanNum.className = 'w-6 h-6 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300';
-            }
+            tab.classList.toggle('active', s === stepNum);
         });
     },
 
@@ -97,22 +90,25 @@ export const BusinessWizardController = {
         const fb = document.getElementById('wizard-biz-feedback');
         if (!fb) return;
         fb.textContent = msg;
-        fb.classList.remove('hidden', 'bg-emerald-950', 'text-emerald-300', 'border-emerald-800', 'bg-red-950', 'text-red-300', 'border-red-800');
-        if (type === 'error') {
-            fb.classList.add('bg-red-950', 'text-red-300', 'border-red-800');
-        } else {
-            fb.classList.add('bg-emerald-950', 'text-emerald-300', 'border-emerald-800');
-        }
+        fb.className = `alert ${type === 'error' ? 'alert-danger' : 'alert-success'} py-2 px-3 small rounded-3 mb-3`;
+        fb.classList.remove('d-none');
     },
 
     async handleSubmit() {
+        const name = document.getElementById('wizard-biz-name')?.value?.trim();
+        const rifNum = document.getElementById('wizard-biz-rif-num')?.value?.trim();
+        if (!name || !rifNum) {
+            this.goToStep(1);
+            this.showFeedback('La Razón Social y el RIF son obligatorios.', 'error');
+            return;
+        }
+
         const session = sessionState.get();
         const uid = session?.user?.uid || 'guest_user';
-
         const prefix = document.getElementById('wizard-biz-rif-prefix')?.value || 'J-';
-        const rifNum = document.getElementById('wizard-biz-rif-num')?.value?.trim() || '';
+
         const data = {
-            name: document.getElementById('wizard-biz-name')?.value?.trim() || 'Comercio BUSA',
+            name: name || 'Comercio BUSA',
             rif: prefix + rifNum,
             commercialName: document.getElementById('wizard-biz-commercial-name')?.value?.trim() || '',
             category: document.getElementById('wizard-biz-category')?.value || 'Retail',
@@ -130,9 +126,16 @@ export const BusinessWizardController = {
         };
 
         const submitBtn = document.getElementById('btn-submit-business-wizard');
+        const finishBtn = document.getElementById('wizard-finish-step3');
+        const spinner = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando...';
+
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<div class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full inline-block mr-2"></div> Registrando...`;
+            submitBtn.innerHTML = spinner;
+        }
+        if (finishBtn) {
+            finishBtn.disabled = true;
+            finishBtn.innerHTML = spinner;
         }
 
         try {
@@ -155,7 +158,7 @@ export const BusinessWizardController = {
                 } else if (modalEl) {
                     modalEl.classList.remove('show');
                     modalEl.style.display = 'none';
-                    document.body.classList.remove('modal-open');
+                    document.body.classList.remove('modal-open', 'buca-modal-open');
                 }
             }, 1200);
 
@@ -165,6 +168,10 @@ export const BusinessWizardController = {
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Registrar Comercio';
+            }
+            if (finishBtn) {
+                finishBtn.disabled = false;
+                finishBtn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Registrar Comercio';
             }
         }
     }
