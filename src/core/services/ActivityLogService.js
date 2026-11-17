@@ -5,13 +5,13 @@
  * garantizando trazabilidad por usuario y tenant sin exponer datos sensibles.
  * =========================================================================
  */
-import { getSupabase } from '../config/supabase.js';
+import { getSupabase, supabase } from '../config/supabase.js';
 import { sessionState } from '../state/session.js';
 import { eventBus } from '../eventBus/index.js';
 
 export const ActivityLogService = {
     _getClient() {
-        return getSupabase();
+        return getSupabase() || supabase;
     },
 
     init() {

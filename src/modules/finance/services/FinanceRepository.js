@@ -5,11 +5,11 @@
  * en la tabla 'finance_rates' de Supabase con RLS optimizado.
  * =========================================================================
  */
-import { getSupabase } from '../../../core/config/supabase.js';
+import { getSupabase, supabase } from '../../../core/config/supabase.js';
 
 export const FinanceRepository = {
     _getClient() {
-        return getSupabase();
+        return getSupabase() || supabase;
     },
 
     /**

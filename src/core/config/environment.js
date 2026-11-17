@@ -8,10 +8,8 @@
 
 const viteEnv = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {};
 
-// Validación Fail-Fast de Entorno (.env)
-if (!viteEnv.VITE_SUPABASE_URL || !viteEnv.VITE_SUPABASE_ANON_KEY) {
-    console.warn('[Environment] ADVERTENCIA: VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY no están definidas en .env.');
-}
+const DEFAULT_SUPABASE_URL = 'https://rdvezglzxjjcfbodpfzo.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkdmV6Z2x6eGpqY2Zib2RwZnpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyNjQxMTYsImV4cCI6MjEwOTg0MDExNn0.t9AS029XtzB5qQTBEi5hRhqvUs02gUcftzCdWes3RsA';
 
 export const ENV = {
     MODE: viteEnv.MODE || 'development',
@@ -19,14 +17,14 @@ export const ENV = {
     IS_PROD: viteEnv.PROD || (viteEnv.MODE === 'production'),
 
     SUPABASE: {
-        URL: viteEnv.VITE_SUPABASE_URL || '',
-        ANON_KEY: viteEnv.VITE_SUPABASE_ANON_KEY || ''
+        URL: viteEnv.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL,
+        ANON_KEY: viteEnv.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY
     },
 
     DOLAR_VZLA: {
-        KEY: viteEnv.VITE_DOLAR_VZLA_KEY || '',
-        CDN: viteEnv.VITE_DOLAR_VZLA_CDN || '',
-        API: viteEnv.VITE_DOLAR_VZLA_API || ''
+        KEY: viteEnv.VITE_DOLAR_VZLA_KEY || '1943db913d1267586395dcc855969e4ebcf32ded3b3a3ed150a01a1a7ab02236',
+        CDN: viteEnv.VITE_DOLAR_VZLA_CDN || 'https://rates.dolarvzla.com',
+        API: viteEnv.VITE_DOLAR_VZLA_API || 'https://api.dolarvzla.com'
     }
 };
 

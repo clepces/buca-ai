@@ -7,15 +7,20 @@
 const CACHE_NAME = 'buca-cache-v1';
 const ASSETS_TO_CACHE = [
     '/',
-    '/index.html',
-    '/src/main.js'
+    '/index.html'
 ];
 
-// Instalación: Cachear activos estáticos
+// Instalación: Cachear activos estáticos con tolerancia a fallos
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS_TO_CACHE);
+        caches.open(CACHE_NAME).then(async (cache) => {
+            for (const asset of ASSETS_TO_CACHE) {
+                try {
+                    await cache.add(asset);
+                } catch (e) {
+                    // Silently ignore individual caching failures
+                }
+            }
         })
     );
     self.skipWaiting();

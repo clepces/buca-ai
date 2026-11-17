@@ -56,14 +56,14 @@
   "screenshots": [
     {
       "src": "/assets/screenshots/screenshot-desktop.jpg",
-      "sizes": "1280x720",
+      "sizes": "1024x1024",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "BNE Workspace Dashboard (Desktop)"
     },
     {
       "src": "/assets/screenshots/screenshot-mobile.jpg",
-      "sizes": "720x1280",
+      "sizes": "1024x1024",
       "type": "image/jpeg",
       "form_factor": "narrow",
       "label": "BNE Workspace Dashboard (Mobile)"
@@ -78,7 +78,7 @@
       "icons": [
         {
           "src": "/assets/icons/shortcuts/shortcut-workspace.svg",
-          "sizes": "96x96",
+          "sizes": "any",
           "type": "image/svg+xml"
         }
       ]
@@ -91,7 +91,7 @@
       "icons": [
         {
           "src": "/assets/icons/shortcuts/shortcut-pos.svg",
-          "sizes": "96x96",
+          "sizes": "any",
           "type": "image/svg+xml"
         }
       ]
@@ -104,7 +104,7 @@
       "icons": [
         {
           "src": "/assets/icons/shortcuts/shortcut-finance.svg",
-          "sizes": "96x96",
+          "sizes": "any",
           "type": "image/svg+xml"
         }
       ]
@@ -117,7 +117,7 @@
       "icons": [
         {
           "src": "/assets/icons/shortcuts/shortcut-inventory.svg",
-          "sizes": "96x96",
+          "sizes": "any",
           "type": "image/svg+xml"
         }
       ]
@@ -130,7 +130,7 @@
       "icons": [
         {
           "src": "/assets/icons/shortcuts/shortcut-clients.svg",
-          "sizes": "96x96",
+          "sizes": "any",
           "type": "image/svg+xml"
         }
       ]
@@ -143,7 +143,7 @@
       "icons": [
         {
           "src": "/assets/icons/shortcuts/shortcut-settings.svg",
-          "sizes": "96x96",
+          "sizes": "any",
           "type": "image/svg+xml"
         }
       ]

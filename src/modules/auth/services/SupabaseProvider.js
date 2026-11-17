@@ -5,11 +5,11 @@
  * Soporta autenticación nativa, sesiones automáticas y TOTP MFA en capa gratuita.
  * =========================================================================
  */
-import { getSupabase } from '@/core/config/supabase.js';
+import { getSupabase, supabase } from '@/core/config/supabase.js';
 
 export const SupabaseProvider = {
     _getClient() {
-        return getSupabase();
+        return getSupabase() || supabase;
     },
 
     /**
@@ -88,8 +88,11 @@ export const SupabaseProvider = {
      */
     onAuthStateChange(callback) {
         const client = this._getClient();
-        const { data: { subscription } } = client.auth.onAuthStateChange(callback);
-        return subscription;
+        if (!client || !client.auth || typeof client.auth.onAuthStateChange !== 'function') {
+            return { unsubscribe: () => {} };
+        }
+        const res = client.auth.onAuthStateChange(callback);
+        return res?.data?.subscription || res?.subscription || { unsubscribe: () => {} };
     },
 
     async getSession() {

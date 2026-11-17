@@ -9,7 +9,7 @@ import { BaseClient } from '../api/BaseClient.js';
 import { ENDPOINTS } from '../api/endpoint.js';
 import { sessionState } from '../state/session.js';
 import { eventBus } from '../eventBus/index.js';
-import { getSupabase } from '../config/supabase.js';
+import { getSupabase, supabase } from '../config/supabase.js';
 
 const viteEnv = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {};
 
@@ -25,7 +25,7 @@ export const NotificationService = {
     _notifications: [],
 
     _getClient() {
-        return getSupabase();
+        return getSupabase() || supabase;
     },
 
     init() {
