@@ -56,6 +56,8 @@ flowchart TD
 | **04. Integración Kernel y CSS** | [kernel-integration-css.md](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/bene/6.0.0/kernel-integration-css.md) | Secuencia de arranque `BucaKernel`, `ModuleLoader` lazy y la suite "Solid Physical Glass". |
 | **05. Pánico y Diagnóstico** | [panic-switch-diagnostics.md](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/bene/6.0.0/panic-switch-diagnostics.md) | Protocolo del Panic Switch (Modo Cero), HUD feedback adaptativo y modo debug visual `bne-debug`. |
 | **06. Matriz de Efectos Agnósticos** | [agnostic-effects-matrix.md](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/bene/6.0.0/agnostic-effects-matrix.md) | Soporte multiefecto (`bne-effect`), ambientación circadiana y extensiones `(new)`. |
+| **07. Telemetría `bne-sensor`** | [bne-sensor-telemetry.md](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/bene/6.0.0/bne-sensor-telemetry.md) | `(new)` Microcomponentes de métricas embebidas: FPS, DOM, Memory con estados cromáticos y `BeneSensorEngineBridge.js`. |
+| **08. Performance Modal UI** | [performance-modal-ui.md](file:///c:/wamp64/www/Clepces/projects/buca-ai/docs/bene/6.0.0/performance-modal-ui.md) | `(new)` Modal full-screen de control del motor gráfico con configuración por componente, export/import de presets y persistencia local. |
 
 ---
 

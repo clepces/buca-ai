@@ -25,7 +25,12 @@ flowchart LR
 | Versión | Denominación | Estado | Documentación |
 |---|---|:---:|---|
 | **v5.3.0** | **BNE Legacy (Production Core)** | 🟢 Activa en `/src/core/engine` | [Documentación v5.3.0](./5.3.0/README.md) |
+| **v5.5.0** | **BNE Legacy (Última `data-*` exclusiva)** | 📋 Planificada | — |
+| **v5.5.1 — v5.9.9** | **BNE Transición (`bne-*` + `data-*` dual)** | 🔄 Transición | [Tabla de Migración](./attribute-migration.md) |
 | **v6.0.0** | **BENE Next-Gen (Agnostic Orchestrator)** | 🧪 Etapa de Investigación | [Documentación v6.0.0](./6.0.0/README.md) |
+
+> [!NOTE]
+> Para el mapeo detallado de atributos legacy (`data-buca-perf`, `data-theme`) al nuevo namespace (`bne-perf`, `bne-theme`), consulte la [Tabla de Migración de Atributos](./attribute-migration.md).
 
 ---
 

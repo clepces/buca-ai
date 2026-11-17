@@ -15,7 +15,7 @@ Este archivo define la identidad visual "Corporate Hybrid Glass" y las directiva
 3. **Tokens Dinámicos Obligatorios:** Prohibido usar valores hardcoded (hex fijos como `#fff`, píxeles fijos en fuentes o filtros de desenfoque fijos en selectores). Usar variables de `src/shared/styles/neural/abstracts/_variables.scss` (`var(--surface-glass)`, `var(--border-glass)`, `var(--blur-intensity)`).
 
 ## 🛡️ Regla de Oro del Motor Gráfico (BNE-RULE-001)
-4. **Variante de Rendimiento L0 Eco Obligatoria:** Todo contenedor que utilice `backdrop-filter: blur(...)` **DEBE** contar con una variante para `[data-buca-perf="L0"]` que desactive el desenfoque y aplique un fondo sólido opaco (`background: var(--surface-solid)`).
+4. **Variante de Rendimiento L0 Eco Obligatoria:** Todo contenedor que utilice `backdrop-filter: blur(...)` **DEBE** contar con una variante para `[bne-perf="L0"]` (legacy: `[data-buca-perf="L0"]`) que desactive el desenfoque y aplique un fondo sólido opaco (`background: var(--surface-solid)`).
    * Esto previene el estrangulamiento de GPU en hardware integrado y asegura 60 FPS estables.
 5. **Optimización de Activos:** Imágenes optimizadas en WebP/AVIF. Iconos mediante SVG inline o sprites de Lucide / Bootstrap Icons.
 6. **Cero Reflow Thrashing:** Prohibido forzar lecturas y escrituras consecutivas al DOM (`layout thrashing`). Respetar `ReflowGuard` y `GhostSanitizer`.

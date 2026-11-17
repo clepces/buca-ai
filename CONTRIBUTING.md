@@ -23,7 +23,7 @@ Agradecemos tu interés en colaborar con **B.U.C.A. AI**. Este proyecto opera ba
 * **Clases y Constructores:** `PascalCase` (ej. `BusinessRepository`, `RateController`).
 * **Métodos y Variables:** `camelCase` (ej. `calculateGap`, `syncGlobalRate`).
 * **Acciones en el DOM:** Atributos de datos con prefijo de dominio `data-action="modulo:accion"` (ej. `data-action="workspace:scroll_carousel"`).
-* **Nivel de Rendimiento:** Atributo unificado `data-buca-perf="L0|L1|L2|L3"`.
+* **Nivel de Rendimiento:** Atributo unificado `bne-perf="L0|L1|L2|L3"` (legacy: `data-buca-perf`, deprecado en v5.5.1+).
 
 ### 1.4. Arquitectura Clean Core de Tres Capas
 Toda nueva funcionalidad debe ubicarse en la capa correspondiente:
@@ -81,7 +81,7 @@ El incremento de versión en `package.json` responde a la siguiente jerarquía:
    background: rgba(255, 255, 255, 0.7);
    backdrop-filter: blur(12px);
    ```
-2. **Variante L0 Eco Obligatoria:** Todo componente que utilice desenfoque (`backdrop-filter`) **debe incluir obligatoriamente** la variante para `[data-buca-perf="L0"]` con fondo sólido opaco (`background: var(--surface-solid)`).
+2. **Variante L0 Eco Obligatoria:** Todo componente que utilice desenfoque (`backdrop-filter`) **debe incluir obligatoriamente** la variante para `[bne-perf="L0"]` con fondo sólido opaco (`background: var(--surface-solid)`). Atributo legacy `data-buca-perf` se mantiene hasta v5.9.9.
 3. **Cero Layout Thrashing:** Agrupar lecturas del DOM antes de escrituras; apoyarse en `ReflowGuard` y `GhostSanitizer` del Kernel.
 
 ---

@@ -30,7 +30,7 @@
 4. **BUCA NEURAL ENGINE & GRAPHICS INTEGRITY (BNE-RULE-001):**
    - No hardcoded hex colors, font sizes, or blur filters.
    - Always use dynamic CSS variables (`var(--border-glass)`, `var(--surface-glass)`, `var(--blur-intensity)`).
-   - Any surface using `backdrop-filter: blur(...)` **MUST** provide a solid fallback for `[data-buca-perf="L0"]` using `var(--surface-solid)` for constrained GPUs.
+   - Any surface using `backdrop-filter: blur(...)` **MUST** provide a solid fallback for `[bne-perf="L0"]` (legacy: `[data-buca-perf="L0"]`) using `var(--surface-solid)` for constrained GPUs.
 
 5. **DATABASE & MULTI-TENANCY (Supabase PostgreSQL / RLS):**
    - Tables must always be plural and lowercase in `snake_case` (e.g. `businesses`, `profiles`, `finance_rates`, `notifications`).

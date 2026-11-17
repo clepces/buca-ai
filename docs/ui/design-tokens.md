@@ -60,7 +60,6 @@ flowchart TD
     backdrop-filter: blur(var(--blur-intensity, 12px));
     -webkit-backdrop-filter: blur(var(--blur-intensity, 12px));
 
-    [data-buca-perf="L0"] &,
     [bne-perf="L0"] & {
         background: var(--surface-solid) !important;
         backdrop-filter: none !important;

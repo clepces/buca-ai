@@ -104,7 +104,7 @@ El lenguaje visual deja de ser estático y se convierte en un sistema paramétri
 }
 
 /* Modo Oscuro / Obsidian Glass */
-[data-theme="dark"] [bne-effect="glassmorphic"] {
+[bne-theme="dark"] [bne-effect="glassmorphic"] {
   background: rgba(15, 23, 42, calc(0.65 * var(--bne-blur-factor, 1)));
   border-color: rgba(255, 255, 255, calc(0.08 * var(--bne-glow-factor, 1)));
 }
@@ -117,7 +117,7 @@ El lenguaje visual deja de ser estático y se convierte en un sistema paramétri
   border-color: var(--border-solid, #e2e8f0) !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
 }
-[data-theme="dark"][bne-perf="L0"] [bne-effect="glassmorphic"] {
+[bne-theme="dark"][bne-perf="L0"] [bne-effect="glassmorphic"] {
   background: var(--surface-solid-dark, #0f172a) !important;
   border-color: var(--border-solid-dark, #1e293b) !important;
 }

@@ -28,7 +28,7 @@ flowchart TD
 
 1. **La Base Estructural (Forma el Bloque):** CSS/SCSS limpio, plano y sólido. Provee la estructura geométrica, espaciados y tipografía sin filtros costosos (`backdrop-filter: none`).
 2. **La Capa de Efectos BENE (Aporta Realismo):** Se superpone declarativamente (`bne-effect="glassmorphic"`). Si el dispositivo carece de GPU o entra en pánico térmico, se apaga de golpe sin romper la interfaz.
-3. **La Capa de Adaptabilidad Cromática (Adapta el Ambiente):** Define la relación de luminancia y contraste mediante `data-theme="light | dark"` o `bne-theme="oled"` para protección ocular y eficiencia energética.
+3. **La Capa de Adaptabilidad Cromática (Adapta el Ambiente):** Define la relación de luminancia y contraste mediante `bne-theme="light | dark | oled"` para protección ocular y eficiencia energética.
 
 ---
 

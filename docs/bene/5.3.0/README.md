@@ -24,7 +24,7 @@ flowchart TD
         Panic["PanicModeManager.js"]
     end
 
-    subgraph Perfiles["🎛️ Perfiles de Rendimiento (data-buca-perf)"]
+    subgraph Perfiles["🎛️ Perfiles de Rendimiento (bne-perf / legacy: data-buca-perf)"]
         L0["L0: Eco (Sólido / 0px Blur)"]
         L1["L1: Balanced (Recomendado ERP / 6-8px Blur)"]
         L2["L2: Pro (Hybrid Glass / 12-16px Blur)"]
@@ -63,10 +63,13 @@ flowchart TD
 
 | Perfil | Atributo DOM | Blur | Fondo | FPS Objetivo |
 |---|---|:---:|---|:---:|
-| **L0 Eco** | `data-buca-perf="L0"` | **0px** | `var(--surface-solid)` | 30 / 60 |
-| **L1 Balanced** | `data-buca-perf="L1"` | 6-8px | `var(--surface-glass)` | 60 |
-| **L2 Pro** | `data-buca-perf="L2"` | 12-16px | `var(--surface-glass)` | 60 |
-| **L3 Ultra** | `data-buca-perf="L3"` | 20px+ | `var(--surface-glass-ultra)` | 120 / Nativo |
+| **L0 Eco** | `bne-perf="L0"` | **0px** | `var(--surface-solid)` | 30 / 60 |
+| **L1 Balanced** | `bne-perf="L1"` | 6-8px | `var(--surface-glass)` | 60 |
+| **L2 Pro** | `bne-perf="L2"` | 12-16px | `var(--surface-glass)` | 60 |
+| **L3 Ultra** | `bne-perf="L3"` | 20px+ | `var(--surface-glass-ultra)` | 120 / Nativo |
+
+> [!WARNING]
+> **Deprecación:** En la versión v5.3.0 de producción el atributo DOM es `data-buca-perf`. A partir de v5.5.1 el namespace se unifica a `bne-perf`. El atributo legacy se mantiene hasta v5.9.9 (EOL).
 
 > [!NOTE]
-> Para la especificación completa de tokens y directivas SCSS, consulte [docs/engine.md](../../engine.md).
+> Para la especificación completa de tokens y directivas SCSS, consulte [Tokens SCSS v5.3.0](./scss-tokens.md).

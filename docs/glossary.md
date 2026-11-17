@@ -27,7 +27,7 @@ Evolución de nueva generación (v6.0.0) del motor gráfico. Orquestador de efec
 Motor gráfico procedural del sistema (`src/core/engine/`) encargado de calibrar la tasa de cuadros por segundo (FPS), la latencia de renderizado y el consumo térmico/memoria, conmutando la interfaz entre perfiles de calidad gráfica `L0`, `L1`, `L2` y `L3`.
 
 #### BNE-RULE-001
-Regla de oro de la ingeniería gráfica de B.U.C.A. AI que estipula que cualquier selector o componente que utilice efectos de desenfoque (`backdrop-filter: blur(...)`) debe obligatoriamente contar con una variante para `[data-buca-perf="L0"]` que aplique un fondo sólido opaco (`var(--surface-solid)`).
+Regla de oro de la ingeniería gráfica de B.U.C.A. AI que estipula que cualquier selector o componente que utilice efectos de desenfoque (`backdrop-filter: blur(...)`) debe obligatoriamente contar con una variante para `[bne-perf="L0"]` que aplique un fondo sólido opaco (`var(--surface-solid)`). En el motor legacy v5.3.0 el atributo era `data-buca-perf`; a partir de v5.5.1+ se unifica bajo el namespace `bne-*`.
 
 #### Brecha Cambiaria (Exchange Rate Gap %)
 Diferencial porcentual entre la tasa oficial regulada (ej. BCV en Venezuela) y la tasa de mercado alternativo o criptoactivo (USDT / Paralelo). Se calcula automáticamente mediante la fórmula:

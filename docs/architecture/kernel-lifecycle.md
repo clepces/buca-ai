@@ -24,7 +24,7 @@ sequenceDiagram
     Kernel->>DOM: 1. Renderizar MainLayout y levantar Preloader
     Kernel->>Engine: 2. Calibración gráfica GraphicsEngine.init()
     Engine-->>Kernel: Perfil resuelto (L0 - L3)
-    Kernel->>DOM: 3. Inyectar data-buca-perf / bne-perf
+    Kernel->>DOM: 3. Inyectar bne-perf (perfil de rendimiento)
     Kernel->>Auth: 4. Validar sesión Supabase y contexto de inquilino
     Kernel->>Router: 5. Inicializar SPA Router y evaluar guardias
     Kernel->>DOM: 6. hideSplash() con transición suave

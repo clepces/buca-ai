@@ -23,7 +23,7 @@ Este archivo define los estándares de ingeniería de software, organización es
    * Clases y Constructores: `PascalCase` (ej. `BusinessRepository`, `RateController`).
    * Variables y Métodos: `camelCase`.
    * Atributos de Datos para Acciones: `data-action="modulo:accion"` (ej. `data-action="workspace:scroll_carousel"`).
-   * Atributos de Rendimiento: `data-buca-perf="L0|L1|L2|L3"`.
+   * Atributos de Rendimiento: `bne-perf="L0|L1|L2|L3"` (legacy: `data-buca-perf`, vigente hasta v5.9.9).
 
 4. **Arquitectura Clean Core de Tres Capas:**
    * **`Core` (`src/core/`):** Kernel orquestador, router SPA nativo, eventBus pub/sub, lifecycle, api clients, state store, engine gráfico (BNE), seguridad (fingerprint, totp) y almacenamiento local/IndexedDB/Supabase. Prohibido ubicar vistas directas de negocio aquí.

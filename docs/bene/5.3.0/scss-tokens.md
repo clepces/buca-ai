@@ -17,7 +17,8 @@
     -webkit-backdrop-filter: blur(var(--blur-intensity));
 
     // Degradación obligatoria L0 para hardware modesto
-    [data-buca-perf="L0"] & {
+    // Legacy: [data-buca-perf="L0"] — Nuevo: [bne-perf="L0"]
+    [bne-perf="L0"] & {
         background: var(--surface-solid) !important;
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;

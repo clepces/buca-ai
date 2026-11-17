@@ -46,8 +46,8 @@ flowchart LR
     end
 
     subgraph Capa3["3. Adaptación Cromática"]
-        T1["data-theme='light'"]
-        T2["data-theme='dark'"]
+        T1["bne-theme='light'"]
+        T2["bne-theme='dark'"]
         T3["bne-theme='oled'"]
     end
 
@@ -67,8 +67,8 @@ flowchart LR
 
 ### Capa 3: Adaptación Cromática y Ambiental (Adapta al Entorno)
 * **Propósito:** Sintoniza la paleta cromática con el contexto del usuario:
-  - **Modo Claro (`data-theme="light"`):** Fondos claros de alta reflectancia para oficinas y luz diurna.
-  - **Modo Oscuro (`data-theme="dark"`):** Superficies gris pizarra (`#0f172a`) con bordes luminiscentes sutiles para reducir la fatiga visual.
+  - **Modo Claro (`bne-theme="light"`):** Fondos claros de alta reflectancia para oficinas y luz diurna.
+  - **Modo Oscuro (`bne-theme="dark"`):** Superficies gris pizarra (`#0f172a`) con bordes luminiscentes sutiles para reducir la fatiga visual.
   - **Modo OLED (`bne-theme="oled"`):** Negros puros (`#000000`) para apagar físicamente los píxeles de pantallas AMOLED.
 
 ---
