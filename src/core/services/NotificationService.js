@@ -10,13 +10,12 @@ import { ENDPOINTS } from '../api/endpoint.js';
 import { sessionState } from '../state/session.js';
 import { eventBus } from '../eventBus/index.js';
 import { getSupabase, supabase } from '../config/supabase.js';
-
-const viteEnv = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {};
+import { ENV } from '../config/environment.js';
 
 const EMAIL_CONFIG = {
-    SERVICE_ID: viteEnv.VITE_EMAILJS_SERVICE_ID || 'service_7tp426h', 
-    TEMPLATE_ID: viteEnv.VITE_EMAILJS_TEMPLATE_ID || 'template_uf6oc8e', 
-    PUBLIC_KEY: viteEnv.VITE_EMAILJS_PUBLIC_KEY || 'zsNADkNE3WBrYJdw1',   
+    SERVICE_ID: ENV.EMAILJS.SERVICE_ID,
+    TEMPLATE_ID: ENV.EMAILJS.TEMPLATE_ID,
+    PUBLIC_KEY: ENV.EMAILJS.PUBLIC_KEY
 };
 
 const emailClient = new BaseClient(ENDPOINTS.SERVICES.NOTIFICATIONS.EMAILJS);

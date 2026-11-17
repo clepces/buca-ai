@@ -41,11 +41,15 @@ jobs:
         run: npm run build
         env:
           VITE_APP_ENV: production
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://rdvezglzxjjcfbodpfzo.supabase.co' }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkdmV6Z2x6eGpqY2Zib2RwZnpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyNjQxMTYsImV4cCI6MjEwOTg0MDExNn0.t9AS029XtzB5qQTBEi5hRhqvUs02gUcftzCdWes3RsA' }}
-          VITE_DOLAR_VZLA_KEY: ${{ secrets.VITE_DOLAR_VZLA_KEY || '1943db913d1267586395dcc855969e4ebcf32ded3b3a3ed150a01a1a7ab02236' }}
-          VITE_DOLAR_VZLA_CDN: 'https://rates.dolarvzla.com'
-          VITE_DOLAR_VZLA_API: 'https://api.dolarvzla.com'
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
+          VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
+          VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
+          VITE_DOLAR_API_BASE: ${{ secrets.VITE_DOLAR_API_BASE }}
+          VITE_DOLAR_VZLA_KEY: ${{ secrets.VITE_DOLAR_VZLA_KEY }}
+          VITE_DOLAR_VZLA_CDN: ${{ secrets.VITE_DOLAR_VZLA_CDN }}
+          VITE_DOLAR_VZLA_API: ${{ secrets.VITE_DOLAR_VZLA_API }}
 
       - name: Verify Distribution Directory
         run: |
