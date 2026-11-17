@@ -50,6 +50,8 @@ jobs:
           VITE_DOLAR_VZLA_KEY: ${{ secrets.VITE_DOLAR_VZLA_KEY }}
           VITE_DOLAR_VZLA_CDN: ${{ secrets.VITE_DOLAR_VZLA_CDN }}
           VITE_DOLAR_VZLA_API: ${{ secrets.VITE_DOLAR_VZLA_API }}
+          VITE_MONTOS_VE_KEY: ${{ secrets.VITE_MONTOS_VE_KEY }}
+          VITE_MONTOS_VE_API: ${{ secrets.VITE_MONTOS_VE_API }}
 
       - name: Verify Distribution Directory
         run: |

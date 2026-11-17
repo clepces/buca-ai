@@ -11,7 +11,7 @@ export const DOLAR_VZLA_KEY = ENV.FOREX?.DOLAR_VZLA?.KEY || '';
 export const CDN_BASE = ENV.FOREX?.DOLAR_VZLA?.CDN || 'https://rates.dolarvzla.com';
 export const API_BASE = ENV.FOREX?.DOLAR_VZLA?.API || 'https://api.dolarvzla.com';
 export const MONTOS_VE_KEY = ENV.FOREX?.MONTOS_VE?.KEY || '';
-export const MONTOS_VE_API = ENV.FOREX?.MONTOS_VE?.API || 'https://montosve.com/v1';
+export const MONTOS_VE_API = ENV.FOREX?.MONTOS_VE?.API || 'https://api.montosve.com/v1';
 
 /**
  * Redondeo exacto a 2 decimales sin desbordamiento de coma flotante.

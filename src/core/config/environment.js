@@ -44,7 +44,7 @@ export const ENV = {
         },
         MONTOS_VE: {
             KEY: viteEnv.VITE_MONTOS_VE_KEY || '',
-            API: viteEnv.VITE_MONTOS_VE_API || 'https://montosve.com/v1'
+            API: viteEnv.VITE_MONTOS_VE_API || 'https://api.montosve.com/v1'
         }
     }
 };

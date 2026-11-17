@@ -40,10 +40,10 @@ export class ForexManager {
         this._initialized = true;
 
         this.registerAdapter(new DolarApiAdapter(DOLAR_API_BASE, 1));
-        this.registerAdapter(new DolarVzlaAdapter({ cdnBase: CDN_BASE, apiBase: API_BASE, apiKey: DOLAR_VZLA_KEY }, 2));
         if (MONTOS_VE_KEY) {
-            this.registerAdapter(new MontosVeAdapter({ apiBase: MONTOS_VE_API, apiKey: MONTOS_VE_KEY }, 3));
+            this.registerAdapter(new MontosVeAdapter({ apiBase: MONTOS_VE_API, apiKey: MONTOS_VE_KEY }, 2));
         }
+        this.registerAdapter(new DolarVzlaAdapter({ cdnBase: CDN_BASE, apiBase: API_BASE, apiKey: DOLAR_VZLA_KEY }, 3));
         this.registerAdapter(new FallbackAdapter(99));
     }
 
