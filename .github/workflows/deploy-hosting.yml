@@ -37,21 +37,17 @@ jobs:
       - name: Validate Tests Before Deployment
         run: npm test
 
+      - name: Inject Secrets into .env.production if defined
+        shell: bash
+        run: |
+          [ -n "${{ secrets.VITE_SUPABASE_URL }}" ] && echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> .env.production
+          [ -n "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ] && echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> .env.production
+          [ -n "${{ secrets.VITE_MONTOS_VE_KEY }}" ] && echo "VITE_MONTOS_VE_KEY=${{ secrets.VITE_MONTOS_VE_KEY }}" >> .env.production
+          [ -n "${{ secrets.VITE_DOLAR_VZLA_KEY }}" ] && echo "VITE_DOLAR_VZLA_KEY=${{ secrets.VITE_DOLAR_VZLA_KEY }}" >> .env.production
+          exit 0
+
       - name: Production Build (Vite)
         run: npm run build
-        env:
-          VITE_APP_ENV: production
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
-          VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
-          VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
-          VITE_DOLAR_API_BASE: ${{ secrets.VITE_DOLAR_API_BASE }}
-          VITE_DOLAR_VZLA_KEY: ${{ secrets.VITE_DOLAR_VZLA_KEY }}
-          VITE_DOLAR_VZLA_CDN: ${{ secrets.VITE_DOLAR_VZLA_CDN }}
-          VITE_DOLAR_VZLA_API: ${{ secrets.VITE_DOLAR_VZLA_API }}
-          VITE_MONTOS_VE_KEY: ${{ secrets.VITE_MONTOS_VE_KEY }}
-          VITE_MONTOS_VE_API: ${{ secrets.VITE_MONTOS_VE_API }}
 
       - name: Verify Distribution Directory
         run: |

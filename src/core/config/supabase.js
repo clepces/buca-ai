@@ -76,14 +76,28 @@ const safeAuth = {
     signOut: async () => ({ error: null })
 };
 
+const createSafeQueryBuilder = () => {
+    let isSingle = false;
+    const handler = {
+        get(target, prop) {
+            if (prop === 'then') {
+                return (resolve) => resolve({ data: isSingle ? null : [], error: null, count: 0 });
+            }
+            if (prop === 'single' || prop === 'maybeSingle') {
+                isSingle = true;
+                return () => new Proxy({}, handler);
+            }
+            if (typeof prop === 'symbol') return undefined;
+            return () => new Proxy({}, handler);
+        }
+    };
+    return new Proxy({}, handler);
+};
+
 export const supabase = {
     get from() {
         const c = getSupabase();
-        return c ? c.from.bind(c) : () => ({
-            select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }),
-            upsert: async () => ({ error: null }),
-            delete: () => ({ eq: async () => ({ error: null }) })
-        });
+        return c ? c.from.bind(c) : () => createSafeQueryBuilder();
     },
     get auth() {
         const c = getSupabase();

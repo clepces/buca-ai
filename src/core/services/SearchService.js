@@ -1,7 +1,7 @@
 import { eventBus } from '@/core/eventBus/index.js';
 
 /**
- * SearchService - Orquestador de búsqueda global en BUCA OS
+ * SearchService - Orquestador de búsqueda global en BUCA AI
  */
 export const SearchService = {
     _registry: [],
@@ -24,7 +24,7 @@ export const SearchService = {
         if (!term || term.length < 3) return;
 
         console.log(`[SearchService] Buscando: ${term}`);
-        
+
         const results = [];
         for (const provider of this._registry) {
             try {
