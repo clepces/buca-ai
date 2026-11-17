@@ -5,40 +5,51 @@
 @use "@/shared/styles/neural/abstracts" as *;
 
 .business-wizard-modal {
-  background-color: rgb(15 23 42); // slate-900
-  color: rgb(241 245 249); // slate-100
+  color: var(--text-main);
 
-  .wizard-step-pane {
-    display: none;
-    &.active {
-      display: block;
-      animation: fadeIn 0.3s ease-in-out;
-    }
+  .wizard-info-card {
+    background: var(--hover-glass);
+    border: 1px solid var(--border-glass);
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
   }
 
-  .glass-input {
-    background-color: rgb(30 41 59) !important; // slate-800
-    border-color: rgb(51 65 85) !important; // slate-700
-    color: white !important;
-    
+  .form-control,
+  .form-select {
+    background-color: var(--surface-glass, rgba(255, 255, 255, 0.6));
+    border: 1px solid var(--border-glass, rgba(0, 0, 0, 0.12));
+    color: var(--text-main);
+    border-radius: 12px;
+    padding: 9px 13px;
+    font-size: 0.875rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    [data-theme="dark"] & {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
     &:focus {
-      border-color: rgb(6 182 212) !important; // cyan-500
-      box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
+      border-color: var(--buca-blue, #2563eb);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
   }
 
-  .form-check-input {
-    background-color: rgb(30 41 59);
-    border-color: rgb(51 65 85);
-    
-    &:checked {
-      background-color: rgb(16 185 129);
-      border-color: rgb(16 185 129);
+  .form-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+  }
+
+  .bg-surface-glass {
+    background: var(--surface-glass, rgba(255, 255, 255, 0.45));
+    [data-theme="dark"] & {
+      background: rgba(30, 41, 59, 0.5);
     }
   }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
 }

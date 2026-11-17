@@ -4,7 +4,7 @@
  * Estrategia: Stale-While-Revalidate para activos, Network-First para API.
  * =========================================================================
  */
-const CACHE_NAME = 'buca-cache-v1';
+const CACHE_NAME = 'buca-cache-v1.1.14';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html'

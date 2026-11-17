@@ -14,6 +14,21 @@ export const initTouchGestures = (onClose) => {
     let isDragging = false;
     let activePanel = null;
     let touchStartedInScrollable = false;
+    let isMoveListenerAttached = false;
+
+    const attachMoveListener = () => {
+        if (!isMoveListenerAttached) {
+            document.addEventListener('touchmove', onTouchMove, { passive: false });
+            isMoveListenerAttached = true;
+        }
+    };
+
+    const detachMoveListener = () => {
+        if (isMoveListenerAttached) {
+            document.removeEventListener('touchmove', onTouchMove);
+            isMoveListenerAttached = false;
+        }
+    };
 
     const onTouchStart = (e) => {
         if (window.innerWidth > 767) return;
@@ -40,6 +55,8 @@ export const initTouchGestures = (onClose) => {
         isDragging = false;
         touchStartedInScrollable = Boolean(touchInsideScrollArea);
         activePanel = panel;
+
+        attachMoveListener();
     };
 
     const onTouchMove = (e) => {
@@ -58,6 +75,7 @@ export const initTouchGestures = (onClose) => {
                 }
                 activePanel = null;
                 isDragging = false;
+                detachMoveListener();
                 return;
             }
         }
@@ -79,6 +97,7 @@ export const initTouchGestures = (onClose) => {
     };
 
     const onTouchEnd = () => {
+        detachMoveListener();
         if (!activePanel) return;
 
         if (!isDragging) {
@@ -115,6 +134,7 @@ export const initTouchGestures = (onClose) => {
     };
 
     const onTouchCancel = () => {
+        detachMoveListener();
         if (activePanel) {
             activePanel.style.transition = '';
             activePanel.style.transform = 'translateY(0)';
@@ -124,13 +144,12 @@ export const initTouchGestures = (onClose) => {
     };
 
     document.addEventListener('touchstart', onTouchStart, { passive: true });
-    document.addEventListener('touchmove', onTouchMove, { passive: false });
     document.addEventListener('touchend', onTouchEnd, { passive: true });
     document.addEventListener('touchcancel', onTouchCancel, { passive: true });
 
     return () => {
+        detachMoveListener();
         document.removeEventListener('touchstart', onTouchStart);
-        document.removeEventListener('touchmove', onTouchMove);
         document.removeEventListener('touchend', onTouchEnd);
         document.removeEventListener('touchcancel', onTouchCancel);
     };
