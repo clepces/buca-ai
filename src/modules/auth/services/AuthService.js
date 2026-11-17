@@ -12,6 +12,50 @@ import { sessionState } from '@/core/state/session.js';
 
 export const AuthService = {
     /**
+     * Valida de forma temprana si existe una sesión activa persistida en Supabase.
+     * @returns {Promise<{ isAuthenticated: boolean, user?: object, mfaPending?: boolean }>}
+     */
+    async checkSession() {
+        try {
+            const session = await SupabaseProvider.getSession();
+            if (!session || !session.user) {
+                sessionState.set({ isAuthenticated: false, mfaPending: false, user: null, currentRole: 'guest' });
+                return { isAuthenticated: false };
+            }
+
+            const user = session.user;
+            try {
+                const aal = await SupabaseProvider.getAssuranceLevel();
+                if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+                    sessionState.set({ isAuthenticated: false, mfaPending: true, user: null, currentRole: 'guest' });
+                    return { isAuthenticated: false, mfaPending: true };
+                }
+            } catch {
+                sessionState.set({ isAuthenticated: false, mfaPending: true, user: null, currentRole: 'guest' });
+                return { isAuthenticated: false, mfaPending: true };
+            }
+
+            const profile = await this._loadOrCreateProfile(user);
+            const role = profile?.platform_role || 'user';
+            sessionState.set({
+                isAuthenticated: true,
+                mfaPending: false,
+                user: {
+                    uid: user.id,
+                    email: user.email,
+                    displayName: profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : (user.user_metadata?.displayName || user.email.split('@')[0]),
+                    role
+                },
+                currentRole: role
+            });
+            return { isAuthenticated: true, user };
+        } catch {
+            sessionState.set({ isAuthenticated: false, mfaPending: false, user: null, currentRole: 'guest' });
+            return { isAuthenticated: false };
+        }
+    },
+
+    /**
      * Intenta iniciar sesión con email y contraseña.
      * @param {string} email 
      * @param {string} password 

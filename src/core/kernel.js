@@ -46,13 +46,9 @@ class BucaKernel {
         };
 
         try {
-            updateStatus(10, 'Inicializando Motor de Interfaz & Esqueleto SPA...');
+            updateStatus(10, 'Calibrando Motor Gráfico & Rendimiento BNE...');
 
-            // 1. Base UI
-            await this._renderMainLayout();
-            updateStatus(25, 'Calibrando Motor Gráfico & Grados de Rendimiento...');
-
-            // 2. Engines
+            // 1. Engines & Local Storage
             let engineResponse;
             try {
                 engineResponse = await GraphicsEngine.init();
@@ -62,68 +58,91 @@ class BucaKernel {
             }
             storage.init(engineResponse?.tier || 'L2');
             GraphicsEngine.scan();
-            updateStatus(45, 'Estableciendo Conexión con la Base de Datos (Segundo Plano)...');
 
-            // 3. Cloud & Services (Non-blocking background sync)
+            updateStatus(30, 'Estableciendo Conexión con Supabase Cloud...');
+
+            // 2. Cloud & Services
             try { initSupabase(); } catch (e) {
                 Logger.warn('[Kernel] Supabase initialization deferred:', e.message);
             }
-            updateStatus(60, 'Cargando Preferencias de Usuario & Tema...');
 
-            // 4. Preferences & UI Init
+            // 3. Preferencias & Servicios Base
             await ThemeManager.init();
             NotificationService.init();
             ActivityLogService.init();
-            const isAuthRoute = window.location.pathname.startsWith('/auth');
-            
-            if (!isAuthRoute) {
+
+            updateStatus(50, 'Verificando Credenciales & Estado de Sesión...');
+
+            // 4. Auth-First Gate: Validar sesión de Supabase ANTES de pintar cualquier Layout
+            await ModuleLoader.load('auth');
+            const { AuthService } = await import('@/modules/auth/services/AuthService.js');
+            const sessionCheck = await AuthService.checkSession();
+            const isAuthenticated = Boolean(sessionCheck?.isAuthenticated);
+
+            let initialPath = window.location.pathname;
+            const isExplicitAuthPath = initialPath.startsWith('/auth');
+
+            // Gate Estricto: Si la ruta requiere autenticación y no hay sesión activa, redirigir a /auth/login
+            if (!isAuthenticated && !isExplicitAuthPath) {
+                initialPath = '/auth/login';
+                window.history.replaceState({}, '', '/auth/login');
+            }
+
+            updateStatus(70, 'Construyendo Estructura de Interfaz Autorizada...');
+
+            // 5. Renderizar ÚNICAMENTE el Layout que corresponde al estado de sesión verificado
+            await this._renderMainLayout(initialPath);
+
+            if (isAuthenticated && !initialPath.startsWith('/auth')) {
                 Header.init('topbar-slot');
                 Dock.init('dock-slot');
             }
-            
-            document.body.setAttribute('data-layout-mode', isAuthRoute ? 'auth' : 'workspace');
-            updateStatus(80, 'Cargando Módulos del Sistema & Enrutador...');
 
-            // 5. Modules
-            const modulesToLoad = isAuthRoute ? ['auth'] : ['auth', 'workspace', 'finance', 'business', 'profile'];
-            await Promise.allSettled(modulesToLoad.map(m => ModuleLoader.load(m)));
+            updateStatus(85, 'Cargando Módulos del Sistema & Enrutador...');
 
-            // 6. Navigation & Logic
+            // 6. Carga de módulos según el contexto de sesión
+            const modulesToLoad = isAuthenticated 
+                ? ['workspace', 'finance', 'business', 'profile']
+                : [];
+            if (modulesToLoad.length > 0) {
+                await Promise.allSettled(modulesToLoad.map(m => ModuleLoader.load(m)));
+            }
+
+            // 7. Navegación y Lógica
             ModalService.init();
             ActionDispatcher.init();
             SearchService.init();
 
-            // Background live rate sync (Prioritize Anchored Rate from Finance Module)
-            const syncGlobalRate = async () => {
-                try {
-                    const tenantId = sessionState.get().tenantId || 'default';
-                    const anchoredData = await FinanceRepository.getTenantRate(tenantId);
-                    
-                    if (anchoredData && anchoredData.rate) {
-                        console.log('[Kernel] Using Anchored ERP Rate:', anchoredData.rate);
-                        eventBus.emit('buca:rate_change', { rate: anchoredData.rate, isAnchored: true });
-                        return;
+            // Sincronización de tasas de fondo
+            if (isAuthenticated) {
+                const syncGlobalRate = async () => {
+                    try {
+                        const tenantId = sessionState.get().tenantId || 'default';
+                        const anchoredData = await FinanceRepository.getTenantRate(tenantId);
+                        if (anchoredData?.rate) {
+                            eventBus.emit('buca:rate_change', { rate: anchoredData.rate, isAnchored: true });
+                            return;
+                        }
+                        const data = await ForexManager.getBCVCurrent();
+                        if (data?.current?.usd) {
+                            eventBus.emit('buca:rate_change', { rate: data.current.usd, isAnchored: false });
+                        }
+                    } catch (e) {
+                        Logger.warn('[Kernel] Live rate sync fallback:', e?.message || e);
                     }
-
-                    // Fallback to API if no anchored rate
-                    const data = await ForexManager.getBCVCurrent();
-                    if (data?.current?.usd) {
-                        eventBus.emit('buca:rate_change', { rate: data.current.usd, isAnchored: false });
-                    }
-                } catch (e) {
-                    Logger.warn('[Kernel] Live rate sync fallback:', e?.message || e);
-                }
-            };
-            syncGlobalRate();
+                };
+                syncGlobalRate();
+            }
 
             eventBus.on('ui:toggle_theme', () => ThemeManager.toggle());
             eventBus.on('engine:recalibrate', () => GraphicsEngine.calibrate());
-            
             eventBus.on('router:layout-sync-required', async ({ path }) => {
                 await this.handleLayoutSync(path);
             });
 
-            updateStatus(95, 'Sincronizando Rutas & Destino Final...');
+            updateStatus(95, 'Montando Vista Final & Componente de Ruta...');
+
+            // 8. Inicializar Router (Monta el componente en el slot correspondiente)
             await router.init(routes);
             this.startTelemetry();
 
@@ -134,6 +153,7 @@ class BucaKernel {
             Logger.error('[Kernel] FATAL BOOT:', err);
         } finally {
             clearTimeout(bootTimeout);
+            // El Splash Screen se oculta SOLO tras haber montado completamente la vista en el router
             this._finalizeBoot();
         }
     }
