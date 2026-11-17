@@ -4,7 +4,8 @@
  * Modularización para respetar el límite de 300 líneas por archivo.
  * =========================================================================
  */
-import { DolarVzlaService, DOLAR_VZLA_KEY, CDN_BASE, API_BASE } from '@/core/services/DolarVzlaService.js';
+import { ForexManager } from '@/core/services/forex/forex-manager.js';
+import { DOLAR_VZLA_KEY, CDN_BASE, API_BASE } from '@/core/services/forex/forex-types.js';
 import { eventBus } from '@/core/eventBus/index.js';
 
 export const RateTabsBinder = {
@@ -88,7 +89,7 @@ export const RateTabsBinder = {
                 const keyEl = document.getElementById('cfg-api-key');
                 if (keyEl) controller.apiConfig.apiKey = keyEl.value.trim();
 
-                DolarVzlaService.updateConfig({
+                ForexManager.updateConfig({
                     apiKey: controller.apiConfig.apiKey,
                     cdnBase: controller.apiConfig.cdnBase,
                     apiBase: controller.apiConfig.apiBase,
@@ -108,7 +109,7 @@ export const RateTabsBinder = {
         if (btnTestApi) {
             btnTestApi.onclick = async () => {
                 try {
-                    const testData = await DolarVzlaService.getBCVCurrent();
+                    const testData = await ForexManager.getBCVCurrent();
                     if (testData?.current?.usd) {
                         eventBus.emit('notifications:push', {
                             title: 'Conexión Exitosa',
@@ -136,7 +137,7 @@ export const RateTabsBinder = {
                     autoSyncMinutes: 30,
                     showKey: false
                 };
-                DolarVzlaService.updateConfig(controller.apiConfig);
+                ForexManager.updateConfig(controller.apiConfig);
                 controller._loadAndPopulateData();
             };
         }

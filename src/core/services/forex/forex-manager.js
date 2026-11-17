@@ -70,6 +70,22 @@ export class ForexManager {
     }
 
     /**
+     * Actualiza la configuración de adaptadores en caliente (p.ej. desde el modal de ajustes).
+     * @param {Object} cfg
+     */
+    static updateConfig(cfg = {}) {
+        this.init();
+        if (cfg.apiKey || cfg.cdnBase || cfg.apiBase) {
+            this.registerAdapter(new DolarVzlaAdapter({
+                cdnBase: cfg.cdnBase || CDN_BASE,
+                apiBase: cfg.apiBase || API_BASE,
+                apiKey: cfg.apiKey || DOLAR_VZLA_KEY
+            }, 3));
+        }
+        this.clearCache();
+    }
+
+    /**
      * Obtiene la tasa oficial BCV actual (USD y EUR).
      * @returns {Promise<Readonly<Object>>}
      */

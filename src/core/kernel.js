@@ -21,7 +21,7 @@ import { routes } from '@/core/router/routes.js';
 import { storage } from '@/core/storage/StorageAdapter.js';
 import ModalService from '@/shared/ui/overlays/ModalService.js';
 import { PerformanceStorage } from '@/core/storage/PerformanceStorage.js';
-import { DolarVzlaService } from './services/DolarVzlaService.js';
+import { ForexManager } from './services/forex/forex-manager.js';
 import { FinanceRepository } from '@/modules/finance/services/FinanceRepository.js';
 import { sessionState } from '@/core/state/session.js';
 import { SearchService } from '@/core/services/SearchService.js';
@@ -106,7 +106,7 @@ class BucaKernel {
                     }
 
                     // Fallback to API if no anchored rate
-                    const data = await DolarVzlaService.getBCVCurrent();
+                    const data = await ForexManager.getBCVCurrent();
                     if (data?.current?.usd) {
                         eventBus.emit('buca:rate_change', { rate: data.current.usd, isAnchored: false });
                     }

@@ -4,7 +4,6 @@ import { ForexManager } from '../src/core/services/forex/forex-manager.js';
 import { BaseForexAdapter } from '../src/core/services/forex/adapters/base-forex-adapter.js';
 import { FallbackAdapter } from '../src/core/services/forex/adapters/fallback-adapter.js';
 import { DolarApiAdapter } from '../src/core/services/forex/adapters/dolar-api-adapter.js';
-import { DolarVzlaService } from '../src/core/services/DolarVzlaService.js';
 import { MontosVeAdapter } from '../src/core/services/forex/adapters/montos-ve-adapter.js';
 import { safeRound2, safeRound4 } from '../src/core/services/forex/forex-types.js';
 
@@ -110,8 +109,8 @@ describe('Forex Multi-Adapter Architecture Suite', () => {
         assert.equal(found.priority, 5);
     });
 
-    it('ForexManager y DolarVzlaService fachada deben resolver cotizaciones consolidadas', async () => {
-        const allData = await DolarVzlaService.loadAllFinancialData();
+    it('ForexManager debe resolver cotizaciones consolidadas en carga global', async () => {
+        const allData = await ForexManager.loadAllFinancialData();
         assert.ok(allData);
         assert.ok(allData.bcv);
         assert.ok(allData.bcv.current.usd > 0);

@@ -10,7 +10,8 @@ import { Validators as Validator } from '@/shared/utils/validators.js';
 import ModalService from '@/shared/ui/overlays/ModalService.js';
 import { ModalTemplates } from '@/shared/ui/templates/ModalTemplates.js';
 import { rateManagementTemplate } from '../components/RateManagementModal.js';
-import { DolarVzlaService, DOLAR_VZLA_KEY, CDN_BASE, API_BASE, safeRound2 } from '@/core/services/DolarVzlaService.js';
+import { ForexManager } from '@/core/services/forex/forex-manager.js';
+import { DOLAR_VZLA_KEY, CDN_BASE, API_BASE, safeRound2 } from '@/core/services/forex/forex-types.js';
 import { FinanceRepository } from '../services/FinanceRepository.js';
 import { sessionState } from '@/core/state/session.js';
 import { RateCalculatorHelper } from './RateCalculatorHelper.js';
@@ -142,7 +143,7 @@ export const RateController = {
         if (spinner) spinner.classList.remove('d-none');
 
         try {
-            const data = await DolarVzlaService.loadAllFinancialData();
+            const data = await ForexManager.loadAllFinancialData();
             this.financialData = data;
 
             if (data.bcv?.current?.usd) {
