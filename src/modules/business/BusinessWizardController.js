@@ -1,10 +1,23 @@
 /**
  * BusinessWizardController - Controlador del Asistente de Negocios & Unidades BUSA-I
  * =========================================================================
+ * Refactorizado con utilidades DOM nativas seguras (Cero innerHTML / Cero .style)
+ * =========================================================================
  */
 import { BusinessRepository } from './services/BusinessRepository.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { sessionState } from '@/core/state/session.js';
+import {
+    $id,
+    $val,
+    $checked,
+    $show,
+    $hide,
+    $$,
+    $on,
+    setButtonLoading,
+    setButtonContent
+} from '@/shared/utils/dom.js';
 
 export const BusinessWizardController = {
     currentStep: 1,
@@ -17,86 +30,72 @@ export const BusinessWizardController = {
 
     bindEvents() {
         // Tab navigation
-        const tabs = document.querySelectorAll('#wizard-steps-tabs .modal-nav-tab');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', (e) => {
+        $$('#wizard-steps-tabs .modal-nav-tab').forEach(tab => {
+            $on(tab, 'click', (e) => {
                 const stepNum = parseInt(e.currentTarget.getAttribute('data-step'), 10);
                 if (stepNum) this.goToStep(stepNum);
             });
         });
 
         // Next buttons
-        const next1 = document.getElementById('wizard-next-1');
-        if (next1) {
-            next1.onclick = () => {
-                const name = document.getElementById('wizard-biz-name')?.value?.trim();
-                const rif = document.getElementById('wizard-biz-rif-num')?.value?.trim();
-                if (!name || !rif) {
-                    this.showFeedback('Por favor complete la Razón Social y el RIF antes de continuar.', 'error');
-                    return;
-                }
-                this.goToStep(2);
-            };
-        }
+        $on('wizard-next-1', 'click', () => {
+            const name = $val('wizard-biz-name');
+            const rif = $val('wizard-biz-rif-num');
+            if (!name || !rif) {
+                this.showFeedback('Por favor complete la Razón Social y el RIF antes de continuar.', 'error');
+                return;
+            }
+            this.goToStep(2);
+        });
 
-        const next2 = document.getElementById('wizard-next-2');
-        if (next2) {
-            next2.onclick = () => {
-                const line1 = document.getElementById('wizard-biz-line1')?.value?.trim();
-                const city = document.getElementById('wizard-biz-city')?.value?.trim();
-                if (!line1 || !city) {
-                    this.showFeedback('Por favor indique la dirección de sede y la ciudad.', 'error');
-                    return;
-                }
-                this.goToStep(3);
-            };
-        }
+        $on('wizard-next-2', 'click', () => {
+            const line1 = $val('wizard-biz-line1');
+            const city = $val('wizard-biz-city');
+            if (!line1 || !city) {
+                this.showFeedback('Por favor indique la dirección de sede y la ciudad.', 'error');
+                return;
+            }
+            this.goToStep(3);
+        });
 
         // Prev buttons
-        const prev2 = document.getElementById('wizard-prev-2');
-        if (prev2) prev2.onclick = () => this.goToStep(1);
+        $on('wizard-prev-2', 'click', () => this.goToStep(1));
+        $on('wizard-prev-3', 'click', () => this.goToStep(2));
 
-        const prev3 = document.getElementById('wizard-prev-3');
-        if (prev3) prev3.onclick = () => this.goToStep(2);
-
-        // Submit buttons (both Step 3 finish button and Modal footer button)
-        const finishBtn = document.getElementById('wizard-finish-step3');
-        if (finishBtn) finishBtn.onclick = () => this.handleSubmit();
-
-        const submitBtn = document.getElementById('btn-submit-business-wizard');
-        if (submitBtn) submitBtn.onclick = () => this.handleSubmit();
+        // Submit buttons
+        $on('wizard-finish-step3', 'click', () => this.handleSubmit());
+        $on('btn-submit-business-wizard', 'click', () => this.handleSubmit());
     },
 
     goToStep(stepNum) {
         this.currentStep = stepNum;
-        
+
         // Panes
         [1, 2, 3].forEach(n => {
-            const pane = document.getElementById(`wizard-step-${n}-pane`);
+            const pane = $id(`wizard-step-${n}-pane`);
             if (pane) {
                 pane.classList.toggle('active', n === stepNum);
             }
         });
 
         // Tabs
-        const tabs = document.querySelectorAll('#wizard-steps-tabs .modal-nav-tab');
-        tabs.forEach(tab => {
+        $$('#wizard-steps-tabs .modal-nav-tab').forEach(tab => {
             const s = parseInt(tab.getAttribute('data-step'), 10);
             tab.classList.toggle('active', s === stepNum);
         });
     },
 
     showFeedback(msg, type = 'success') {
-        const fb = document.getElementById('wizard-biz-feedback');
+        const fb = $id('wizard-biz-feedback');
         if (!fb) return;
         fb.textContent = msg;
         fb.className = `alert ${type === 'error' ? 'alert-danger' : 'alert-success'} py-2 px-3 small rounded-3 mb-3`;
-        fb.classList.remove('d-none');
+        $show(fb);
     },
 
     async handleSubmit() {
-        const name = document.getElementById('wizard-biz-name')?.value?.trim();
-        const rifNum = document.getElementById('wizard-biz-rif-num')?.value?.trim();
+        const name = $val('wizard-biz-name');
+        const rifNum = $val('wizard-biz-rif-num');
         if (!name || !rifNum) {
             this.goToStep(1);
             this.showFeedback('La Razón Social y el RIF son obligatorios.', 'error');
@@ -105,43 +104,36 @@ export const BusinessWizardController = {
 
         const session = sessionState.get();
         const uid = session?.user?.uid || 'guest_user';
-        const prefix = document.getElementById('wizard-biz-rif-prefix')?.value || 'J-';
+        const prefix = $val('wizard-biz-rif-prefix', 'J-');
 
         const data = {
             name: name || 'Comercio BUSA',
             rif: prefix + rifNum,
-            commercialName: document.getElementById('wizard-biz-commercial-name')?.value?.trim() || '',
-            category: document.getElementById('wizard-biz-category')?.value || 'Retail',
-            description: document.getElementById('wizard-biz-description')?.value?.trim() || '',
-            state: document.getElementById('wizard-biz-state')?.value || 'Carabobo',
-            city: document.getElementById('wizard-biz-city')?.value || 'Valencia',
-            address: document.getElementById('wizard-biz-line1')?.value?.trim() || '',
-            reference: document.getElementById('wizard-biz-reference')?.value?.trim() || '',
-            zip: document.getElementById('wizard-biz-zip')?.value || '2001',
-            phone: document.getElementById('wizard-biz-phone')?.value?.trim() || '',
-            email: document.getElementById('wizard-biz-email')?.value?.trim() || '',
-            ivaApply: document.getElementById('wizard-biz-iva-apply')?.checked ?? true,
-            igtfApply: document.getElementById('wizard-biz-igtf-apply')?.checked ?? true,
-            igtfAbsorb: document.getElementById('wizard-biz-igtf-absorb')?.checked ?? false
+            commercialName: $val('wizard-biz-commercial-name'),
+            category: $val('wizard-biz-category', 'Retail'),
+            description: $val('wizard-biz-description'),
+            state: $val('wizard-biz-state', 'Carabobo'),
+            city: $val('wizard-biz-city', 'Valencia'),
+            address: $val('wizard-biz-line1'),
+            reference: $val('wizard-biz-reference'),
+            zip: $val('wizard-biz-zip', '2001'),
+            phone: $val('wizard-biz-phone'),
+            email: $val('wizard-biz-email'),
+            ivaApply: $checked('wizard-biz-iva-apply', true),
+            igtfApply: $checked('wizard-biz-igtf-apply', true),
+            igtfAbsorb: $checked('wizard-biz-igtf-absorb', false)
         };
 
-        const submitBtn = document.getElementById('btn-submit-business-wizard');
-        const finishBtn = document.getElementById('wizard-finish-step3');
-        const spinner = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registrando...';
+        const submitBtn = $id('btn-submit-business-wizard');
+        const finishBtn = $id('wizard-finish-step3');
 
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = spinner;
-        }
-        if (finishBtn) {
-            finishBtn.disabled = true;
-            finishBtn.innerHTML = spinner;
-        }
+        setButtonLoading(submitBtn, true, 'Registrando...');
+        setButtonLoading(finishBtn, true, 'Registrando...');
 
         try {
             const created = await BusinessRepository.registerBusiness(uid, data);
             this.showFeedback('¡Negocio registrado y sincronizado exitosamente con Supabase!', 'success');
-            
+
             eventBus.emit('notifications:push', {
                 title: 'Comercio Registrado',
                 message: `La unidad "${created.name}" fue creada correctamente.`,
@@ -151,13 +143,13 @@ export const BusinessWizardController = {
             eventBus.emit('business:registered', created);
 
             setTimeout(() => {
-                const modalEl = document.getElementById('buca-global-modal');
+                const modalEl = $id('buca-global-modal');
                 if (modalEl && window.bootstrap?.Modal) {
                     const bsModal = window.bootstrap.Modal.getInstance(modalEl);
                     if (bsModal) bsModal.hide();
                 } else if (modalEl) {
                     modalEl.classList.remove('show');
-                    modalEl.style.display = 'none';
+                    $hide(modalEl);
                     document.body.classList.remove('modal-open', 'buca-modal-open');
                 }
             }, 1200);
@@ -165,14 +157,12 @@ export const BusinessWizardController = {
         } catch (err) {
             console.error('[BusinessWizardController] Registration error:', err);
             this.showFeedback('Error al registrar el negocio en Supabase. Verifique su conexión.', 'error');
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Registrar Comercio';
-            }
-            if (finishBtn) {
-                finishBtn.disabled = false;
-                finishBtn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Registrar Comercio';
-            }
+
+            setButtonLoading(submitBtn, false);
+            setButtonContent(submitBtn, 'Registrar Comercio');
+
+            setButtonLoading(finishBtn, false);
+            setButtonContent(finishBtn, 'Registrar Comercio', 'bi bi-check-circle-fill');
         }
     }
 };

@@ -1,6 +1,6 @@
 {
   "name": "buca-ai",
-  "version": "1.1.14-alpha",
+  "version": "1.1.15-alpha",
   "description": "B.U.C.A. AI (Business Under Control Access) - Modular Vanilla JS ERP Platform",
   "engines": {
     "node": ">=20.0.0"
