@@ -30,19 +30,47 @@ export const FinanceModule = {
 
     async syncRates() {
         try {
-            const tenantId = sessionState.get().tenantId || 'default';
-            const anchoredData = await FinanceRepository.getTenantRate(tenantId);
-            if (anchoredData?.rate) {
-                Logger.info('FinanceModule', `Usando tasa anclada ERP: ${anchoredData.rate}`);
-                eventBus.emit('buca:rate_change', { rate: anchoredData.rate, isAnchored: true });
-                return;
+            const tenantId = sessionState.get().tenantId;
+            // Solo si hay una unidad comercial seleccionada con anclaje manual explícito
+            if (tenantId && tenantId !== 'default') {
+                const anchoredData = await FinanceRepository.getTenantRate(tenantId);
+                if (anchoredData?.rate) {
+                    Logger.info('FinanceModule', `Usando tasa anclada de unidad comercial: Bs. ${anchoredData.rate}`);
+                    eventBus.emit('buca:rate_change', { 
+                        rate: anchoredData.rate, 
+                        isAnchored: true, 
+                        date: anchoredData.created_at || new Date().toISOString() 
+                    });
+                    return;
+                }
             }
+
+            // Consultar siempre la tasa oficial en vivo de los adaptadores
             const data = await ForexManager.getBCVCurrent();
             if (data?.current?.usd) {
-                eventBus.emit('buca:rate_change', { rate: data.current.usd, isAnchored: false });
+                Logger.info('FinanceModule', `Tasa oficial en vivo obtenida: Bs. ${data.current.usd} (${data.date || 'Hoy'})`);
+                eventBus.emit('buca:rate_change', { 
+                    rate: data.current.usd, 
+                    eur: data.current.eur,
+                    isAnchored: false, 
+                    date: data.date || new Date().toISOString() 
+                });
+                return;
+            }
+
+            // Fallback: Si no hay internet o falló el feed, consultar último snapshot histórico
+            const fallbackSnapshot = await FinanceRepository.getTenantRate('default');
+            if (fallbackSnapshot?.rate) {
+                Logger.warn('FinanceModule', `Modo Contingencia: Usando última tasa registrada: Bs. ${fallbackSnapshot.rate}`);
+                eventBus.emit('buca:rate_change', { 
+                    rate: fallbackSnapshot.rate, 
+                    isAnchored: true, 
+                    isFallback: true,
+                    date: fallbackSnapshot.created_at 
+                });
             }
         } catch (e) {
-            Logger.warn('FinanceModule', 'Fallo en sincronización de tasa en vivo:', e?.message || e);
+            Logger.warn('FinanceModule', 'Fallo en sincronización de tasa:', e?.message || e);
         }
     },
 

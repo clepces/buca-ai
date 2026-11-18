@@ -17,12 +17,16 @@ export const ThemeManager = {
     async toggle() {
         const current = $attr(document.documentElement, 'data-theme') || 'light';
         const next = current === 'dark' ? 'light' : 'dark';
+        return this.setTheme(next);
+    },
 
-        $attr(document.documentElement, 'data-theme', next);
-        await storage.set('theme', next);
-        uiState.update({ theme: next });
-        this.updateThemeUI(next);
-        return next;
+    async setTheme(targetTheme) {
+        if (!['light', 'dark'].includes(targetTheme)) return;
+        $attr(document.documentElement, 'data-theme', targetTheme);
+        await storage.set('theme', targetTheme);
+        uiState.update({ theme: targetTheme });
+        this.updateThemeUI(targetTheme);
+        return targetTheme;
     },
 
     updateThemeUI(theme) {

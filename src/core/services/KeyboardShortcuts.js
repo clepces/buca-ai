@@ -16,10 +16,10 @@ export const KeyboardShortcuts = {
                 eventBus.emit('ui:close_modal');
             }
 
-            // Ctrl/Cmd + K: Buscador
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            // Ctrl/Cmd + K: Buscador / Command Palette
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
                 e.preventDefault();
-                eventBus.emit('workspace:toggle_search', { active: true });
+                eventBus.emit('ui:open_search_palette');
             }
 
             // Ejecutar atajos registrados

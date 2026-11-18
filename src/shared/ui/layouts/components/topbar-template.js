@@ -1,106 +1,112 @@
 /**
- * @fileoverview TopBar HTML Template — Separated for line-limit compliance.
+ * @fileoverview topbar-template - Plantilla HTML del Header Corporativo BUCA AI (Estilo Supabase Studio)
  * @module shared/ui/layouts/components/topbar-template
  */
-import { uiState } from '@/core/state/ui.js';
 import { sessionState } from '@/core/state/session.js';
-import { NotificationTray } from '@/shared/ui/components/notifications/NotificationTray.js';
+import { FeedbackPanel } from '@/shared/ui/components/header/feedback-panel.js';
+import { HelpPanel } from '@/shared/ui/components/header/help-panel.js';
+import { AdvisorPanel } from '@/shared/ui/components/header/advisor-panel.js';
 import { ProfilePanel } from '@/shared/ui/components/header/ProfilePanel.js';
+import { escapeHTML } from '@/shared/utils/security.js';
 
-/**
- * Genera el HTML completo del TopBar/Header corporativo.
- * @returns {string} Template literal del header.
- */
 export function renderTopBar() {
-    const state = uiState.get();
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
     const logoSrc = `/assets/icons/logo-${currentTheme === 'dark' ? 'light' : 'dark'}.svg`;
-    const tierCode = state.graphics?.tier?.toUpperCase() || 'L1';
     const user = sessionState.get().user || {};
-    const displayName = user.displayName || user.username || (user.email ? user.email.split('@')[0] : 'U');
+    const tenantId = sessionState.get().tenantId;
+    const displayName = user.displayName || user.username || (user.email ? user.email.split('@')[0] : 'Usuario');
     const initials = displayName.split(/[\s._-]+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'U';
 
+    const hasTenant = Boolean(tenantId && tenantId !== 'default');
+    const bizLabel = hasTenant ? String(tenantId).replace(/^biz_/, 'Unidad ') : 'Ecosistema ERP';
+
     return `
-        <header class="app-header header--glass">
-            <div class="container-fluid">
-                <!-- Left Zone: Logo & Brand -->
+        <header class="app-header header--solid shadow-2xs">
+            <div class="container-fluid px-3">
+                <!-- Left Zone: Logo, Versión & Negocio Activo -->
                 <div class="header-left-identity d-flex align-items-center gap-2">
                     <a href="/" class="navbar-brand-premium d-flex align-items-center gap-2 m-0 text-decoration-none">
-                        <div class="logo-neural-container position-relative d-flex align-items-center justify-content-center p-2 rounded-4">
-                            <img id="app-logo" src="${logoSrc}" alt="Logo BUCA" class="logo-img-premium">
-                            <div class="logo-aura"></div>
+                        <div class="logo-neural-container d-flex align-items-center justify-content-center p-1.5 rounded-3 bg-subtle border">
+                            <img id="app-logo" src="${logoSrc}" alt="Logo BUCA" class="logo-img-premium" width="22" height="22">
                         </div>
-                        <div class="brand-typography d-flex flex-column">
-                            <div class="d-flex align-items-center gap-1.5">
-                                <h1 class="brand-name-main mb-0">BUCA <span class="text-gradient-ai">AI</span></h1>
-                                <span class="badge bg-primary-subtle text-primary d-none d-sm-inline-block brand-badge-version">v5.4</span>
-                            </div>
-                            <span class="brand-tagline d-none d-lg-inline-block">ECOSISTEMA INTELIGENTE</span>
+                        <div class="d-flex align-items-center gap-1.5">
+                            <span class="brand-name-main fw-bold text-main">BUCA <span class="text-primary">AI</span></span>
+                            <span class="badge bg-secondary-subtle text-muted rounded-pill px-2 py-0.5 x-small font-monospace">v1.1.20</span>
                         </div>
                     </a>
-                </div>
 
-                <!-- Center Zone: Global Search Capsule -->
-                <div class="header-center-zone d-flex align-items-center justify-content-center">
-                    <div class="ws-search-capsule d-none d-md-flex align-items-center" id="ws-search-box">
-                        <div class="search-inner-wrapper d-flex align-items-center px-3 py-1 rounded-pill">
-                            <i class="bi bi-search search-icon-neural me-2"></i>
-                            <input type="search" id="ws-global-search" class="search-input-field border-0 bg-transparent" placeholder="Buscar en BUCA AI..." autocomplete="off">
-                            <div class="search-kbd-hint d-none d-lg-flex align-items-center gap-1 ms-2">
-                                <span class="kbd-key">Ctrl</span><span class="kbd-key">K</span>
-                            </div>
-                        </div>
+                    <!-- Separador y Breadcrumb de Organización / Negocio -->
+                    <span class="text-muted opacity-40 d-none d-md-inline">/</span>
+                    <div class="d-none d-md-flex align-items-center gap-1.5">
+                        <span class="fw-semibold text-main small text-truncate max-w-160" title="${escapeHTML(bizLabel)}">${escapeHTML(bizLabel)}</span>
+                        <span class="badge ${hasTenant ? 'bg-success-subtle text-success' : 'bg-primary-subtle text-primary'} rounded-pill px-1.5 py-0.2 x-small font-monospace">
+                            ${hasTenant ? 'PRODUCCIÓN' : 'STANDALONE'}
+                        </span>
                     </div>
                 </div>
 
-                <!-- Right Zone: Action Controls & User Profile -->
-                <div class="header-right d-flex align-items-center gap-2">
-                    <div class="header-actions-capsule d-flex align-items-center">
-                        <!-- Theme Toggle Button -->
-                        <button type="button" class="action-capsule-btn btn-theme-toggle" data-action="ui:toggle_theme" title="Cambiar Tema Visual">
-                            <i class="bi ${currentTheme === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill'}"></i>
-                        </button>
-                        
-                        <!-- Notifications Button -->
-                        <div class="dropdown-wrapper position-relative" id="dw-panel-notifications">
-                            <button type="button" class="action-capsule-btn btn-notif-toggle position-relative" data-action="header:toggle_panel" data-target="panel-notifications" title="Bandeja de Notificaciones">
-                                <i class="bi bi-bell-fill"></i>
-                                <span class="notif-glow-dot"></span>
-                            </button>
-                            ${NotificationTray.render()}
-                        </div>
+                <!-- Center Zone: Vacío / Espaciador Limpio -->
+                <div class="header-center-zone flex-grow-1"></div>
 
-                        <!-- Test Area Button -->
-                        <button type="button" class="action-capsule-btn btn-test-sandbox" data-action="ui:open_test_sandbox" title="Módulo de Pruebas">
-                            <i class="bi bi-bug"></i>
+                <!-- Right Zone: Controls & Dropdowns (Supabase Inspired) -->
+                <div class="header-right d-flex align-items-center gap-1.5">
+                    <!-- 1. Botón Feedback -->
+                    <div class="dropdown-wrapper position-relative" id="dw-panel-feedback">
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 d-flex align-items-center gap-1.5 fw-semibold x-small header-btn-feedback" data-action="header:toggle_panel" data-target="panel-feedback" title="Compartir Feedback">
+                            <i class="bi bi-chat-square-text"></i>
+                            <span class="d-none d-sm-inline">Feedback</span>
                         </button>
-
-                        <!-- Network Status Badge -->
-                        <div id="connection-status-badge" class="action-capsule-btn btn-status-toggle online" title="Estado de Red">
-                            <i class="bi bi-wifi status-icon-dot"></i>
-                        </div>
+                        ${FeedbackPanel.render()}
                     </div>
 
-                    <!-- User Profile Capsule -->
-                    <div class="dropdown-wrapper" id="dw-panel-profile">
-                        <div class="d-flex align-items-center clickable user-profile-trigger px-2 py-1 rounded-pill shadow-sm" 
-                             data-action="header:toggle_panel" 
-                             data-target="panel-profile" 
-                             title="Perfil y Ajustes de Cuenta">
+                    <!-- 2. Botón Buscar (Command Palette) -->
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 d-flex align-items-center gap-2 text-muted x-small header-btn-search" data-action="ui:open_search_palette" title="Buscar o ejecutar comandos (Ctrl + K)">
+                        <i class="bi bi-search"></i>
+                        <span class="d-none d-md-inline">Buscar...</span>
+                        <kbd class="d-none d-lg-inline-block bg-subtle text-muted px-1.5 py-0.2 rounded border x-small">Ctrl K</kbd>
+                    </button>
+
+                    <!-- 3. Botón Ayuda (?) -->
+                    <div class="dropdown-wrapper position-relative" id="dw-panel-help">
+                        <button type="button" class="btn btn-sm btn-icon rounded-circle text-muted p-1.5 header-circle-btn" data-action="header:toggle_panel" data-target="panel-help" title="Centro de Ayuda & Documentación">
+                            <i class="bi bi-question-circle fs-6"></i>
+                        </button>
+                        ${HelpPanel.render()}
+                    </div>
+
+                    <!-- 4. Botón Advisor Center (Bombillo / Campana) -->
+                    <div class="dropdown-wrapper position-relative" id="dw-panel-advisor">
+                        <button type="button" class="btn btn-sm btn-icon rounded-circle text-muted p-1.5 position-relative header-circle-btn" data-action="header:toggle_panel" data-target="panel-advisor" title="Centro de Asesoría y Diagnóstico">
+                            <i class="bi bi-lightbulb fs-6"></i>
+                            <span class="position-absolute top-1 end-1 p-1 bg-warning rounded-circle notif-glow-dot"></span>
+                        </button>
+                        ${AdvisorPanel.render()}
+                    </div>
+
+                    <!-- 5. Botón Consola de Auditoría -->
+                    <button type="button" class="btn btn-sm btn-icon rounded-circle text-muted p-1.5 header-circle-btn d-none d-sm-inline-flex" data-action="ui:open_activity_log" title="Consola & Auditoría de Actividad">
+                        <i class="bi bi-terminal fs-6"></i>
+                    </button>
+
+                    <!-- 6. Botón AI Assistant -->
+                    <button type="button" class="btn btn-sm btn-icon rounded-circle text-primary p-1.5 header-circle-btn header-ai-btn" data-action="ui:open_ai_assistant" title="BUCA AI Assistant">
+                        <i class="bi bi-stars fs-6"></i>
+                    </button>
+
+                    <!-- 7. Avatar & Account Settings -->
+                    <div class="dropdown-wrapper position-relative ms-1" id="dw-panel-profile">
+                        <button type="button" class="btn btn-sm p-0 rounded-circle border-0 header-avatar-trigger" data-action="header:toggle_panel" data-target="panel-profile" title="Ajustes de Cuenta & Perfil">
                             <div class="user-avatar-circle bg-primary text-white d-flex align-items-center justify-content-center rounded-circle position-relative topbar-avatar">
-                                ${initials}
-                                <span class="position-absolute bottom-0 end-0 profile-status-dot bg-success border rounded-circle topbar-status-dot"></span>
+                                <span class="fw-bold x-small">${initials}</span>
+                                <span class="position-absolute bottom-0 end-0 profile-status-dot bg-success border rounded-circle"></span>
                             </div>
-                            <div class="d-none d-sm-flex flex-column text-start ms-1 me-1 lh-sm">
-                                <span class="fw-bold text-main text-truncate topbar-user-name">${displayName}</span>
-                                <span class="text-primary fw-bold topbar-user-role">ADMIN</span>
-                            </div>
-                            <i class="bi bi-chevron-down text-muted d-none d-sm-inline topbar-chevron"></i>
-                        </div>
-                        ${ProfilePanel.render(tierCode)}
+                        </button>
+                        ${ProfilePanel.render()}
                     </div>
                 </div>
             </div>
         </header>
     `;
 }
+
+export default renderTopBar;

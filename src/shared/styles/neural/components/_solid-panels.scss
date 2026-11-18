@@ -1,0 +1,209 @@
+/* =========================================================================
+   COMPONENTS: SOLID PANELS & MODERN TOOLBAR (Separación de Efectos Glass)
+   ========================================================================= */
+
+@use "../abstracts" as *;
+
+/* ── SOLID DROPDOWN PANELS (Zero Blur Thrashing) ─────────────────────── */
+.solid-dropdown-panel {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    z-index: 1050;
+    width: min(92vw, 360px);
+
+    [data-theme="dark"] & {
+        background: #0f172a !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+    }
+}
+
+.feedback-dropdown-panel {
+    width: min(94vw, 380px);
+}
+
+.help-dropdown-panel,
+.advisor-dropdown-panel {
+    width: min(94vw, 390px);
+}
+
+.profile-dropdown-panel {
+    width: min(92vw, 330px);
+}
+
+/* ── TARJETAS DE FEEDBACK ────────────────────────────────────────────── */
+.feedback-card-btn {
+    background: #f8fafc;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+    cursor: pointer;
+
+    [data-theme="dark"] & {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    &:hover {
+        background: rgba(37, 99, 235, 0.05);
+        border-color: var(--primary-color) !important;
+        transform: translateY(-2px);
+    }
+}
+
+/* ── BOTONES DE AYUDA Y ADVISOR ───────────────────────────────────────── */
+.help-item-btn:hover,
+.advisor-card:hover {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(37, 99, 235, 0.3) !important;
+
+    [data-theme="dark"] & {
+        background: rgba(255, 255, 255, 0.04);
+    }
+}
+
+/* ── COMMAND PALETTE (MODAL) ─────────────────────────────────────────── */
+.command-palette-wrapper {
+    input#cmd-palette-input {
+        font-size: 1.15rem;
+        color: var(--text-main);
+
+        &::placeholder {
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+    }
+
+    .cmd-item-row {
+        &:hover {
+            background: rgba(37, 99, 235, 0.06);
+
+            [data-theme="dark"] & {
+                background: rgba(255, 255, 255, 0.06);
+            }
+        }
+    }
+
+    .cmd-item-card {
+        background: #f8fafc;
+
+        [data-theme="dark"] & {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        &:hover {
+            border-color: var(--primary-color) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+    }
+}
+
+/* ── ELEMENTOS EN DESARROLLO (Escala de Grises + Bloqueo Visual) ─────── */
+.disabled-dev-item,
+.cmd-item--in-dev {
+    opacity: 0.55 !important;
+    filter: grayscale(1) !important;
+    cursor: not-allowed !important;
+
+    &:hover {
+        background: transparent !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+}
+
+/* ── NAV OVERFLOW (TOOLBAR & RIBBON) ─────────────────────────────────── */
+.nav-overflow {
+    .btn-nav-pill {
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-main) !important;
+
+            [data-theme="dark"] & {
+                background: rgba(255, 255, 255, 0.06);
+            }
+        }
+
+        &.active {
+            background: var(--primary-color) !important;
+            color: #ffffff !important;
+            border-color: var(--primary-color);
+        }
+    }
+}
+
+.ws-actions-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    z-index: 1050;
+    min-width: 260px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+
+    [data-theme="dark"] & {
+        background: #0f172a;
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.4);
+    }
+}
+
+/* ── HEADER CIRCLE BUTTONS & FEEDBACK ────────────────────────────────── */
+.header-circle-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    transition: all 0.2s ease;
+
+    [data-theme="dark"] & {
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.05);
+        color: var(--text-main) !important;
+
+        [data-theme="dark"] & {
+            background: rgba(255, 255, 255, 0.08);
+        }
+    }
+}
+
+.header-btn-feedback,
+.header-btn-search {
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    height: 32px;
+
+    [data-theme="dark"] & {
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    &:hover {
+        border-color: var(--primary-color) !important;
+        background: rgba(37, 99, 235, 0.05);
+        color: var(--text-main);
+    }
+}
+
+/* ── UTILIDADES AUXILIARES ───────────────────────────────────────────── */
+.max-h-340 { max-height: 340px; }
+.max-h-350 { max-height: 350px; }
+.max-h-420 { max-height: 420px; }
+.max-w-160 { max-width: 160px; }
+.cursor-pointer { cursor: pointer; }
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

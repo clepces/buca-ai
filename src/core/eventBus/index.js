@@ -161,6 +161,10 @@ class EventBus {
         });
     }
 
+    hasListeners(event) {
+        return this._getListeners(event).length > 0;
+    }
+
     /**
      * Emisión estricta de comandos transaccionales.
      * Propaga errores y exige la presencia de handlers.

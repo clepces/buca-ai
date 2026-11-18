@@ -10,7 +10,7 @@ import { renderRateInterventionsTab, renderRateHistoryTab } from './rate-modal/r
 import { renderRateConfigTab } from './rate-modal/rate-config-tab.js';
 
 export const rateManagementTemplate = ({ 
-    currentRate = 889.58, 
+    currentRate = 0, 
     lastUpdate = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
     bcvData = null, 
     usdtData = null, 

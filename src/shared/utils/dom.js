@@ -10,6 +10,8 @@ import { isBrowser } from '../../core/utils/system-helper.js';
 /** Resuelve un elemento a partir de una referencia o de un selector/ID. */
 export const resolveEl = (target, scope = document) => {
     if (!target) return null;
+    if (typeof EventTarget !== 'undefined' && target instanceof EventTarget) return target;
+    if (target === document || target === window) return target;
     if (target instanceof HTMLElement || target instanceof SVGElement) return target;
     if (typeof target === 'string') {
         return scope.getElementById?.(target) || scope.querySelector?.(target) || null;
@@ -169,12 +171,14 @@ export const setButtonLoading = (target, isLoading, loadingText = 'Procesando...
     }
 };
 
-/** Asigna un escuchador de eventos de forma segura utilizando addEventListener. */
+/** Asigna un escuchador de eventos de forma segura utilizando addEventListener y retorna un destructor. */
 export const $on = (target, event, handler, options) => {
     const el = resolveEl(target);
     if (el && typeof el.addEventListener === 'function') {
         el.addEventListener(event, handler, options);
+        return () => el.removeEventListener(event, handler, options);
     }
+    return () => {};
 };
 
 /** Ejecuta una función cuando el DOM esté completamente cargado. */

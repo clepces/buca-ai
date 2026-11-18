@@ -33,7 +33,7 @@ export const QuickActionsControl = {
                     <div class="row g-3 mb-3 flex-grow-1 align-content-start">
                         ${quickActions.map(act => `
                             <div class="col-12 col-sm-6">
-                                <a href="${act.route}" class="glass-surface qa-tile-link p-3 rounded-4 border d-flex flex-column justify-content-between text-decoration-none transition-all h-100 shadow-2xs-hover u-border-translucent-15">
+                                <a href="${act.route}" data-action="router:navigate" data-payload='{"path": "${act.route}"}' class="glass-surface qa-tile-link p-3 rounded-4 border d-flex flex-column justify-content-between text-decoration-none transition-all h-100 shadow-2xs-hover u-border-translucent-15">
                                     <div class="d-flex align-items-center justify-content-between mb-2.5">
                                         <div class="rounded-3 p-2 d-flex align-items-center justify-content-center qa-tile-icon-box qa-tile-icon-box--${act.theme}">
                                             <i class="bi ${act.icon} fs-5"></i>
@@ -65,7 +65,7 @@ export const QuickActionsControl = {
                                 <span class="text-muted d-block qa-summary-sub">Matriz RBAC: Super Admin / Owner</span>
                             </div>
                         </div>
-                        <a href="/roles" class="btn btn-sm btn-link text-decoration-none fw-bold p-0 qa-link-btn text-primary">Configurar <i class="bi bi-arrow-right ms-1"></i></a>
+                        <a href="/roles" data-action="router:navigate" data-payload='{"path": "/roles"}' class="btn btn-sm btn-link text-decoration-none fw-bold p-0 qa-link-btn text-primary">Configurar <i class="bi bi-arrow-right ms-1"></i></a>
                     </div>
                 </div>
             </section>

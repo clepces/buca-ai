@@ -34,12 +34,10 @@ export const AuthModule = {
                     const user = session.user;
                     const currentSession = sessionState.get();
 
-                    // Prevenir sobrecarga de peticiones: Si el usuario ya está autenticado y sólo es renovación de token o foco de ventana
-                    if (currentSession.isAuthenticated && currentSession.user?.uid === user.id) {
-                        if (_event === 'TOKEN_REFRESHED' || _event === 'INITIAL_SESSION') {
-                            Logger.debug('AuthModule', `Sincronización silenciosa [${_event}]: sesión activa para ${user.email}`);
-                            return;
-                        }
+                    // Prevenir sobrecarga de peticiones: Si el usuario ya está plenamente autenticado y con AAL2 verificado
+                    if (currentSession.isAuthenticated && currentSession.user?.uid === user.id && currentSession.isAAL2Verified) {
+                        Logger.debug('AuthModule', `Sincronización silenciosa [${_event}]: sesión activa para ${user.email}`);
+                        return;
                     }
 
                     let role = currentSession.user?.role || 'user';

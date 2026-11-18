@@ -14,6 +14,7 @@ import { $, $$, $on, $addClass, $removeClass } from '@/shared/utils/dom.js';
 import { Logger } from '@/shared/utils/logger.js';
 import { sessionState } from '@/core/state/session.js';
 import { safeReload } from '@/core/utils/system-helper.js';
+import { ThemeManager } from '@/core/services/ThemeManager.js';
 
 export const ActionDispatcher = {
     _initialized: false,
@@ -55,7 +56,32 @@ export const ActionDispatcher = {
                 if (target) payload.target = target;
                 payload.trigger = actionEl;
 
-                Logger.debug('ActionDispatcher', `Dispatching: ${action}`, payload);
+                // Detección de elementos estáticos o en desarrollo
+                const status = actionEl.getAttribute('data-status');
+                if (status === 'in-development' || actionEl.hasAttribute('disabled') || actionEl.classList.contains('disabled-dev-item')) {
+                    e.preventDefault();
+                    eventBus.emit('notifications:push', {
+                        title: 'Función en Desarrollo',
+                        message: `La opción "${action}" está planificada en el roadmap del sistema.`,
+                        type: 'info'
+                    });
+                    Logger.info('ActionDispatcher', `Elemento en desarrollo seleccionado: ${action}`);
+                    return;
+                }
+
+                Logger.info('ActionDispatcher', `Dispatching: ${action}`, payload);
+
+                // Detección de acciones no implementadas o rotas
+                if (!eventBus.hasListeners(action)) {
+                    Logger.warn('ActionDispatcher', `[Unbound Action] Sin suscriptor activo para: "${action}". Elemento:`, actionEl);
+                    eventBus.emit('notifications:push', {
+                        title: 'Función en Desarrollo',
+                        message: `La función "${action}" aún no tiene un módulo conectado.`,
+                        type: 'warning'
+                    });
+                    return;
+                }
+
                 eventBus.emit(action, payload);
             }
         });
@@ -225,6 +251,60 @@ export const ActionDispatcher = {
 
         eventBus.on('ui:close_modal', () => {
             ModalService.hideModal();
+        });
+
+        // Command Palette (Buscador Ctrl + K)
+        eventBus.on('ui:open_search_palette', async () => {
+            const { default: palette } = await import('@/shared/ui/components/header/command-palette-modal.js');
+            palette.show();
+        });
+
+        // Selector Directo de Tema
+        eventBus.on('ui:set_theme', (payload) => {
+            if (payload?.theme) ThemeManager.setTheme(payload.theme);
+        });
+
+        // Copilot / Asistente AI
+        eventBus.on('ui:open_ai_assistant', () => {
+            eventBus.emit('notifications:push', {
+                title: 'BUCA AI Copilot',
+                message: 'El asistente de inteligencia empresarial está en fase de despliegue.',
+                type: 'info'
+            });
+        });
+
+        // Feedback & Ideas
+        eventBus.on('feedback:select_type', (payload) => {
+            eventBus.emit('header:close_all_panels');
+            eventBus.emit('notifications:push', {
+                title: 'Feedback Registrado',
+                message: `Gracias por tu ${payload?.type === 'idea' ? 'sugerencia' : 'reporte'}. Se ha canalizado al backlog.`,
+                type: 'success'
+            });
+        });
+
+        // Alternar vista del BusinessHub
+        eventBus.on('workspace:toggle_view_mode', () => {
+            eventBus.emit('business:toggle_view');
+        });
+
+        // Funciones de la App & Changelog
+        eventBus.on('ui:open_features_modal', () => {
+            ModalService.showModal({
+                size: 'lg',
+                header: { left: '<span class="fw-bold small text-muted text-uppercase"><i class="bi bi-grid-3x3-gap me-1"></i> Ecosistema Modular BUCA AI</span>' },
+                body: '<div class="p-3"><p class="text-muted">Plataforma ERP modular con 5 dominios centrales activos: <strong>Auth</strong> (MFA/TOTP), <strong>Workspace</strong> (Dashboard/Telemetría), <strong>Business</strong> (Multi-Tenant Hub), <strong>Finance</strong> (Forex/BCV Sync) y <strong>Profile</strong> (Talento & Ficha). Próximamente: POS e Inventario.</p></div>',
+                footer: { right: '<button type="button" class="btn btn-sm btn-primary rounded-pill px-3" data-action="ui:close_modal">Cerrar</button>' }
+            });
+        });
+
+        eventBus.on('ui:open_changelog_modal', () => {
+            ModalService.showModal({
+                size: 'md',
+                header: { left: '<span class="fw-bold small text-muted text-uppercase"><i class="bi bi-clock-history me-1"></i> Registro de Cambios (Changelog)</span>' },
+                body: '<div class="p-3"><h6 class="fw-bold text-main">Versión v1.1.20-alpha</h6><ul class="small text-muted mb-0 ps-3"><li>Rediseño de Header y Toolbar estilo Supabase Studio.</li><li>Command Palette global con atajo Ctrl + K.</li><li>Navegación SPA fluida y eliminación del storm de sesión.</li><li>Módulo de Perfil: Pestaña Trabajador con Talento y Ficha CRUD.</li><li>Sincronización en vivo de tasas monetarias sin datos quemados.</li></ul></div>',
+                footer: { right: '<button type="button" class="btn btn-sm btn-primary rounded-pill px-3" data-action="ui:close_modal">Cerrar</button>' }
+            });
         });
     }
 };
