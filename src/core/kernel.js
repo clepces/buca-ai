@@ -1,6 +1,8 @@
 /**
- * @fileoverview Kernel Central del Ecosistema Operativo BUCA (Refactorizado)
+ * @fileoverview Kernel Central del Ecosistema Operativo BUCA
  * @module core/kernel
+ * @description Orquestador central de arranque, estado de sesión, sincronización reactiva
+ * de layouts y ciclo de vida del sistema sin dependencias circulares ni acoplamientos a módulos de negocio.
  */
 
 import { eventBus } from './eventBus/index.js';
@@ -21,10 +23,8 @@ import { routes } from '@/core/router/routes.js';
 import { storage } from '@/core/storage/StorageAdapter.js';
 import ModalService from '@/shared/ui/overlays/ModalService.js';
 import { PerformanceStorage } from '@/core/storage/PerformanceStorage.js';
-import { ForexManager } from './services/forex/forex-manager.js';
-import { FinanceRepository } from '@/modules/finance/services/FinanceRepository.js';
-import { sessionState } from '@/core/state/session.js';
 import { SearchService } from '@/core/services/SearchService.js';
+import { $id, $mount, $attr, $addClass } from '@/shared/utils/dom.js';
 
 class BucaKernel {
     constructor() {
@@ -32,6 +32,10 @@ class BucaKernel {
         this.currentLayoutMode = null;
     }
 
+    /**
+     * Orquesta el arranque integral del Kernel y sus subsistemas.
+     * @returns {Promise<void>}
+     */
     async boot() {
         if (this.isInitialized) return;
 
@@ -41,19 +45,19 @@ class BucaKernel {
 
         const updateStatus = (pct, text) => {
             this.updateSplashProgress(pct);
-            const statusEl = document.getElementById('splash-status');
+            const statusEl = $id('splash-status');
             if (statusEl) statusEl.textContent = text;
         };
 
         try {
             updateStatus(10, 'Calibrando Motor Gráfico & Rendimiento BNE...');
 
-            // 1. Engines & Local Storage
+            // 1. Motores Gráficos y Almacenamiento Local
             let engineResponse;
             try {
                 engineResponse = await GraphicsEngine.init();
             } catch (engineErr) {
-                Logger.warn('[Kernel] GraphicsEngine fallback init:', engineErr);
+                Logger.warn('Kernel', 'GraphicsEngine fallback init:', engineErr);
                 engineResponse = { tier: 'L2', profile: 'balanced' };
             }
             storage.init(engineResponse?.tier || 'L2');
@@ -61,19 +65,18 @@ class BucaKernel {
 
             updateStatus(30, 'Estableciendo Conexión con Supabase Cloud...');
 
-            // 2. Cloud & Services
+            // 2. Conectividad Cloud y Servicios Base
             try { initSupabase(); } catch (e) {
-                Logger.warn('[Kernel] Supabase initialization deferred:', e.message);
+                Logger.warn('Kernel', 'Supabase initialization deferred:', e.message);
             }
 
-            // 3. Preferencias & Servicios Base
             await ThemeManager.init();
             NotificationService.init();
             ActivityLogService.init();
 
             updateStatus(50, 'Verificando Credenciales & Estado de Sesión...');
 
-            // 4. Auth-First Gate: Validar sesión de Supabase ANTES de pintar cualquier Layout
+            // 3. Auth-First Gate: Validar sesión de Supabase ANTES de pintar cualquier Layout
             await ModuleLoader.load('auth');
             const { AuthService } = await import('@/modules/auth/services/AuthService.js');
             const sessionCheck = await AuthService.checkSession();
@@ -82,7 +85,7 @@ class BucaKernel {
             let initialPath = window.location.pathname;
             const isExplicitAuthPath = initialPath.startsWith('/auth');
 
-            // Gate Estricto: Si la ruta requiere autenticación y no hay sesión activa, redirigir a /auth/login
+            // Gate Estricto: Si la ruta requiere autenticación y no hay sesión, forzar /auth/login
             if (!isAuthenticated && !isExplicitAuthPath) {
                 initialPath = '/auth/login';
                 window.history.replaceState({}, '', '/auth/login');
@@ -90,7 +93,7 @@ class BucaKernel {
 
             updateStatus(70, 'Construyendo Estructura de Interfaz Autorizada...');
 
-            // 5. Renderizar ÚNICAMENTE el Layout que corresponde al estado de sesión verificado
+            // 4. Renderizar ÚNICAMENTE el Layout que corresponde al estado de sesión verificado
             await this._renderMainLayout(initialPath);
 
             if (isAuthenticated && !initialPath.startsWith('/auth')) {
@@ -100,7 +103,7 @@ class BucaKernel {
 
             updateStatus(85, 'Cargando Módulos del Sistema & Enrutador...');
 
-            // 6. Carga de módulos según el contexto de sesión
+            // 5. Carga de módulos según el contexto de sesión
             const modulesToLoad = isAuthenticated 
                 ? ['workspace', 'finance', 'business', 'profile']
                 : [];
@@ -108,30 +111,14 @@ class BucaKernel {
                 await Promise.allSettled(modulesToLoad.map(m => ModuleLoader.load(m)));
             }
 
-            // 7. Navegación y Lógica
+            // 6. Servicios de Interfaz y Enrutamiento
             ModalService.init();
             ActionDispatcher.init();
             SearchService.init();
 
-            // Sincronización de tasas de fondo
+            // Sincronización desacoplada de tasas mediante EventBus (cero importación de finance)
             if (isAuthenticated) {
-                const syncGlobalRate = async () => {
-                    try {
-                        const tenantId = sessionState.get().tenantId || 'default';
-                        const anchoredData = await FinanceRepository.getTenantRate(tenantId);
-                        if (anchoredData?.rate) {
-                            eventBus.emit('buca:rate_change', { rate: anchoredData.rate, isAnchored: true });
-                            return;
-                        }
-                        const data = await ForexManager.getBCVCurrent();
-                        if (data?.current?.usd) {
-                            eventBus.emit('buca:rate_change', { rate: data.current.usd, isAnchored: false });
-                        }
-                    } catch (e) {
-                        Logger.warn('[Kernel] Live rate sync fallback:', e?.message || e);
-                    }
-                };
-                syncGlobalRate();
+                eventBus.emit('finance:sync-rates');
             }
 
             eventBus.on('ui:toggle_theme', () => ThemeManager.toggle());
@@ -142,7 +129,7 @@ class BucaKernel {
 
             updateStatus(95, 'Montando Vista Final & Componente de Ruta...');
 
-            // 8. Inicializar Router (Monta el componente en el slot correspondiente)
+            // 7. Inicializar Router (Monta el componente en el slot correspondiente)
             await router.init(routes);
             this.startTelemetry();
 
@@ -150,7 +137,7 @@ class BucaKernel {
             PerformanceStorage.recordLoadTime(performance.now(), GraphicsEngine.profile);
             updateStatus(100, '¡Sistema Operativo Listo!');
         } catch (err) {
-            Logger.error('[Kernel] FATAL BOOT:', err);
+            Logger.critical('Kernel', 'Fallo crítico durante el arranque:', err);
         } finally {
             clearTimeout(bootTimeout);
             // El Splash Screen se oculta SOLO tras haber montado completamente la vista en el router
@@ -158,28 +145,36 @@ class BucaKernel {
         }
     }
 
+    /**
+     * Renderiza de forma segura el layout base sin utilizar innerHTML directo.
+     * @param {string} [targetPath]
+     */
     async _renderMainLayout(targetPath) {
-        const appContainer = document.getElementById('app');
+        const appContainer = $id('app');
         if (!appContainer) return;
 
         const path = targetPath || window.location.pathname;
         const isAuth = path.startsWith('/auth');
         const mode = isAuth ? 'auth' : 'workspace';
 
-        if (this.currentLayoutMode === mode && document.getElementById(isAuth ? 'auth-content-slot' : 'workspace-dynamic-content')) return;
+        if (this.currentLayoutMode === mode && $id(isAuth ? 'auth-content-slot' : 'workspace-dynamic-content')) return;
         this.currentLayoutMode = mode;
-        document.body.setAttribute('data-layout-mode', mode);
+        $attr(document.body, 'data-layout-mode', mode);
 
         if (isAuth) {
             const { AuthLayout } = await import('@/shared/ui/layouts/AuthLayout.js');
-            appContainer.innerHTML = AuthLayout.render();
+            $mount(appContainer, AuthLayout.render());
             if (AuthLayout.init) AuthLayout.init();
         } else {
-            appContainer.innerHTML = MainLayout.render();
+            $mount(appContainer, MainLayout.render());
             if (MainLayout.init) MainLayout.init();
         }
     }
 
+    /**
+     * Sincroniza el layout ante transiciones de ruta que demandan cambio estructural.
+     * @param {string} path 
+     */
     async handleLayoutSync(path) {
         await this._renderMainLayout(path);
         if (this.currentLayoutMode === 'workspace') {
@@ -189,25 +184,27 @@ class BucaKernel {
         eventBus.emit('kernel:layout-ready', { path, mode: this.currentLayoutMode });
     }
 
+    /**
+     * Oculta el Preloader global con animación de disolución y limpieza de DOM.
+     */
     hideSplash() {
-        const preloader = document.getElementById('global-preloader');
+        const preloader = $id('global-preloader');
         if (!preloader || preloader._isExiting) return;
         preloader._isExiting = true;
 
-        preloader.classList.add('preloader--fade-out');
+        $addClass(preloader, 'preloader--fade-out');
 
         const cleanUp = () => {
             if (preloader.parentNode) preloader.remove();
         };
 
         preloader.addEventListener('animationend', cleanUp, { once: true });
-        // Fallback de seguridad en caso de que la animación se cancele o no se dispare
         setTimeout(cleanUp, 550);
     }
 
     _finalizeBoot() {
         requestAnimationFrame(() => {
-            document.body.classList.add('app-ready');
+            $addClass(document.body, 'app-ready');
             this.hideSplash();
             eventBus.emit('kernel:ready', { timestamp: Date.now() });
         });
@@ -225,9 +222,9 @@ class BucaKernel {
     }
 
     updateSplashProgress(percent) {
-        const bar = document.getElementById('splash-progress');
+        const bar = $id('splash-progress');
         if (bar) bar.style.setProperty('--buca-progress', `${percent}%`);
-        const pct = document.getElementById('splash-percentage');
+        const pct = $id('splash-percentage');
         if (pct) pct.textContent = `${percent}%`;
         eventBus.emit('kernel:boot:progress', percent);
     }
@@ -242,7 +239,7 @@ class BucaKernel {
                 router.destroy();
             }
         } catch (e) {
-            Logger.warn('[Kernel] Error during teardown:', e);
+            Logger.warn('Kernel', 'Error during teardown:', e);
         }
     }
 }

@@ -10,6 +10,9 @@ import '@/shared/styles/main.scss';
 
 import kernel from '@/core/kernel.js';
 import '@/shared/ui/utils/ui-helper.js';
+import { Logger } from '@/shared/utils/logger.js';
+import { $id, $mount, $addClass } from '@/shared/utils/dom.js';
+import { $onWindow } from '@/core/utils/system-helper.js';
 
 /**
  * @function bootstrap
@@ -31,14 +34,14 @@ import '@/shared/ui/utils/ui-helper.js';
             try {
                 await kernel.boot();
             } catch (err) {
-                console.error('%c [Critical Boot Error] ', 'background: red; color: white;', err);
-                document.body.classList.add('app-ready');
+                Logger.critical('Bootstrap', 'Fallo crítico durante el arranque:', err);
+                $addClass(document.body, 'app-ready');
                 if (kernel && typeof kernel.hideSplash === 'function') {
                     kernel.hideSplash();
                 }
-                const app = document.getElementById('app');
-                if (app && app.innerHTML.trim() === '') {
-                    app.innerHTML = '<div class="u-center-pad-40"><h2>Error de Inicialización</h2><p>Por favor, recargue la página.</p></div>';
+                const app = $id('app');
+                if (app && app.children.length === 0) {
+                    $mount(app, '<div class="u-center-pad-40"><h2>Error de Inicialización</h2><p>Por favor, recargue la página.</p></div>');
                 }
             }
         };
@@ -50,18 +53,18 @@ import '@/shared/ui/utils/ui-helper.js';
         }
 
         // 3. Limpieza de memoria y ciclo de vida al desmontar la ventana
-        window.addEventListener('beforeunload', () => {
+        $onWindow('beforeunload', () => {
             try {
                 if (kernel && typeof kernel.destroy === 'function') {
                     kernel.destroy();
                 }
             } catch (e) {
-                console.warn('[Bootstrap] Limpieza al cerrar:', e);
+                Logger.warn('Bootstrap', 'Limpieza al cerrar ventana:', e);
             }
         }, { once: true });
 
     } catch (error) {
-        console.error('%c [Critical Error] ', 'background: red; color: white;', error);
+        Logger.critical('Bootstrap', 'Error no controlado en bootstrap:', error);
     }
 })();
 
@@ -71,28 +74,28 @@ import '@/shared/ui/utils/ui-helper.js';
  * @description Gestiona PWA y eventos de red con escuchadores limpios y sin setIntervals huérfanos.
  */
 function _setupNetworkAndPWA() {
-    window.addEventListener('load', () => {
+    $onWindow('load', () => {
         navigator.serviceWorker.register('/sw.js')
             .then(reg => {
-                console.log('[PWA] -> Controlador de servicio activo:', reg.scope);
+                Logger.info('PWA', `Controlador de servicio activo: ${reg.scope}`);
             })
             .catch(err => {
-                console.warn('[PWA] -> El registro del Service Worker falló:', err);
+                Logger.warn('PWA', 'El registro del Service Worker falló:', err);
             });
     }, { once: true });
 
     const handleOnline = async () => {
         const { uiState } = await import('@/core/state/ui.js');
         uiState.set({ isOnline: true });
-        console.log('[Network] -> Online');
+        Logger.info('Network', 'Conectividad reestablecida (Online)');
     };
 
     const handleOffline = async () => {
         const { uiState } = await import('@/core/state/ui.js');
         uiState.set({ isOnline: false });
-        console.log('[Network] -> Offline');
+        Logger.warn('Network', 'Conexión perdida (Offline)');
     };
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    $onWindow('online', handleOnline);
+    $onWindow('offline', handleOffline);
 }
