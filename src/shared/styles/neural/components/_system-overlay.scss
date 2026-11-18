@@ -19,6 +19,13 @@
     padding: 24px;
     box-sizing: border-box;
     transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
+
+    &.preloader--fade-out,
+    &.overlay--fade-out {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        visibility: hidden !important;
+    }
 }
 
 html[data-theme="dark"] .buca-system-overlay {

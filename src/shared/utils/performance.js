@@ -1,36 +1,40 @@
 /**
- * Utilidades de rendimiento para BUCA ES6+ 2026.
+ * @fileoverview Performance & Execution Rate Utilities
+ * @module shared/utils/performance
+ * @description Control de cadencia de eventos (Throttle y Debounce) para optimización del Event Loop.
  */
 
 /**
- * Limita la frecuencia de ejecución de una función.
- * @param {Function} func - Función a ejecutar.
- * @param {number} limit - Tiempo en ms.
+ * Limita la frecuencia de ejecución de una función (Throttle).
+ * @param {Function} func - Función a ejecutar
+ * @param {number} limit - Intervalo mínimo en milisegundos
+ * @returns {Function}
  */
 export const throttle = (func, limit) => {
-    let inThrottle;
-    return function() {
-        const args = arguments;
-        const context = this;
+    let inThrottle = false;
+    return (...args) => {
         if (!inThrottle) {
-            func.apply(context, args);
+            func(...args);
             inThrottle = true;
-            setTimeout(() => inThrottle = false, limit);
-        };
+            setTimeout(() => {
+                inThrottle = false;
+            }, limit);
+        }
     };
 };
 
 /**
- * Retrasa la ejecución de una función hasta que pase un tiempo sin llamadas.
- * @param {Function} func 
- * @param {number} delay 
+ * Retrasa la ejecución de una función hasta que transcurra un tiempo sin invocaciones (Debounce).
+ * @param {Function} func - Función a ejecutar
+ * @param {number} delay - Tiempo de espera en milisegundos
+ * @returns {Function}
  */
-export const debounce = (func, delay) => {
+export const debounce = (func, delay = 300) => {
     let timeoutId;
     return (...args) => {
         if (timeoutId) clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
-            func.apply(null, args);
+            func(...args);
         }, delay);
     };
 };

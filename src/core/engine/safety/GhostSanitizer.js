@@ -2,7 +2,7 @@
  * GhostSanitizer - Limpieza de capas con will-change y opacity: 0
  * Rescatado de Legacy Engine (GraphicsManager.js)
  */
-import { $$, $styleVar } from '@/shared/utils/dom.js';
+import { $$, $hide } from '@/shared/utils/dom.js';
 import { Logger } from '@/shared/utils/logger.js';
 
 export class GhostSanitizer {
@@ -32,13 +32,11 @@ export class GhostSanitizer {
     }
 
     #performSanitize() {
-        const ghosts = $$('.hidden:not([data-bne-ignore])');
+        const ghosts = $$('.hidden:not([data-bne-ignore]), .is-hidden:not([data-bne-ignore])');
         let sanitizedCount = 0;
         ghosts.forEach(el => {
-            if (el.style && el.style.display !== 'none') {
-                $styleVar(el, 'display', 'none');
-                sanitizedCount++;
-            }
+            $hide(el);
+            sanitizedCount++;
         });
         
         if (sanitizedCount > 0) {

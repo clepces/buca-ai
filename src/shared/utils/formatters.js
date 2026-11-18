@@ -1,43 +1,45 @@
 /**
- * TOP - MIGRADO DESDE ERP MODULAR
- * Carpeta Origen: buca-app-modular/src/shared/utils/formatters.js
+ * @fileoverview Number & Currency Formatters (Clean Core ES6+)
+ * @module shared/utils/formatters
+ * @description Formateo numérico y de divisas estandarizado conforme al estándar venezolano (es-VE) y multidivisa.
  */
 
 /**
- * Formats a number with specific options.
- * @param {number} num - The number to format.
- * @param {object} options - Intl.NumberFormat options.
- * @returns {string} The formatted number.
+ * Formatea un número según las opciones regionales especificadas (por defecto es-VE).
+ * @param {number} num - Número a formatear
+ * @param {Intl.NumberFormatOptions} [options={}] - Opciones de Intl.NumberFormat
+ * @returns {string} Número formateado
  */
 export const formatNumber = (num, options = {}) => {
+    const val = typeof num === 'number' ? num : Number(num) || 0;
     return new Intl.NumberFormat('es-VE', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
         ...options
-    }).format(num);
+    }).format(val);
 };
 
 /**
- * Formats a number with abbreviation for large numbers (e.g., 10k, 1M).
- * Falls back to standard formatting for smaller numbers.
- * @param {number} num - The number to format.
- * @returns {string} The formatted number.
+ * Formatea un número en notación abreviada (ej. 10k, 1.5M) para dashboards y widgets compactos.
+ * @param {number} num 
+ * @returns {string}
  */
 export const formatNumberAbbreviated = (num) => {
-    if (num < 10000) {
-        return formatNumber(num);
+    const val = typeof num === 'number' ? num : Number(num) || 0;
+    if (Math.abs(val) < 10000) {
+        return formatNumber(val);
     }
     return new Intl.NumberFormat('es-VE', {
         notation: 'compact',
-        maximumFractionDigits: 2
-    }).format(num);
+        maximumFractionDigits: 1
+    }).format(val);
 };
 
 /**
- * Formats a currency value.
- * @param {number} val - The value to format.
- * @param {string} symbol - The currency symbol to prepend.
- * @returns {string} The formatted currency string.
+ * Formatea un valor en divisa (USD, VES, EUR).
+ * @param {number|string} val - Monto monetario
+ * @param {string} [symbol='$'] - Símbolo monetario
+ * @returns {string} Cadena formateada
  */
 export const formatCurrency = (val, symbol = '$') => {
     const num = typeof val === 'number' ? val : parseFloat(val) || 0;
@@ -45,13 +47,13 @@ export const formatCurrency = (val, symbol = '$') => {
 };
 
 /**
- * Normalizes a value for comparison or display.
- * @param {any} val - The value to normalize.
- * @returns {string|number} The normalized value.
+ * Normaliza valores de entrada para comparaciones o sanitización.
+ * @param {any} val 
+ * @returns {string|number}
  */
 export const normalizeValue = (val) => {
     if (val === null || val === undefined) return '';
     if (typeof val === 'string') return val.trim();
     if (typeof val === 'number') return val;
-    return val;
+    return String(val).trim();
 };

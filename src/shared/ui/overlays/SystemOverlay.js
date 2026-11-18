@@ -6,7 +6,7 @@
  * composición, estructura HTML y estilos CSS con variante glassmorphism.
  */
 
-import { $id, $, $mount, $on, $addClass, $removeClass, $text, $className, $create, $appendTo, $styleVar } from '@/shared/utils/dom.js';
+import { $id, $, $mount, $on, $addClass, $removeClass, $text, $className, $create, $appendTo, $show } from '@/shared/utils/dom.js';
 
 export class SystemOverlay {
     /**
@@ -97,9 +97,8 @@ export class SystemOverlay {
             } else {
                 $className(overlay, `buca-system-overlay ${typeClass}`);
             }
-            $styleVar(overlay, 'display', 'flex');
-            $styleVar(overlay, 'opacity', '1');
-            $styleVar(overlay, 'pointer-events', 'all');
+            $removeClass(overlay, 'preloader--fade-out', 'd-none');
+            $show(overlay);
         }
 
         $mount(overlay, this.renderCard(options));
@@ -162,8 +161,7 @@ export class SystemOverlay {
         const overlay = $id('global-preloader') || $id('buca-system-overlay');
         if (!overlay) return;
 
-        $styleVar(overlay, 'pointer-events', 'none');
-        $styleVar(overlay, 'opacity', '0');
+        $addClass(overlay, 'preloader--fade-out');
         setTimeout(() => {
             if (overlay && overlay.parentNode && overlay.id === 'buca-system-overlay') {
                 overlay.remove();
