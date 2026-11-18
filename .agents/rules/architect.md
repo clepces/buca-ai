@@ -55,3 +55,14 @@ Cada dominio debe mantener la siguiente anatomía:
 * **EventBus Central:** Comunicación transversal y desacoplada mediante `src/core/eventBus/index.js` siguiendo `docs/events/README.md`.
 * **State Store Central:** Reactividad unificada en `src/core/state/store.js`.
 * **Protección del Workspace Compilado:** Prohibido editar `/dist`. Todo desarrollo se hace en `/src`.
+
+## 🛠️ Utilidades del Sistema (Shared vs Core) y Seguridad DOM
+* **`src/shared/utils/` (Capa Visual y Aplicativa):**
+  - **`dom.js`:** Manipulación segura del DOM (`$id`, `$`, `$$`, `$val`, `$checked`, `$show`, `$hide`, `$toggle`, `$on`, `$attr`, `$addClass`, `$removeClass`, `setButtonLoading`, `setButtonContent`).
+  - **Prohibición de `innerHTML` Directo:** Usar `$mount(target, htmlString)` que monta atómicamente mediante `DocumentFragment` y `replaceChildren()`, previniendo vulnerabilidades y memory leaks.
+  - **Prohibición de `.onclick` Obsoleto:** Todo listener debe registrarse mediante `$on(target, 'click', handler)` o `addEventListener`.
+  - **`logger.js`:** Registro profesional estructurado (`Logger.info`, `Logger.warn`, `Logger.error`, `Logger.critical`). Prohibido el uso directo de `console.log` o `console.error` en código de producción.
+* **`src/core/utils/` (Capa de Kernel y Arquitectura):**
+  - **`system-helper.js`:** Abstracciones seguras de `window` (`$onWindow`, `safeReload`, `isBrowser`).
+  - **`async-helper.js`:** Tareas asíncronas no bloqueantes (`sleep`, `runOnIdle`, `withTimeout`).
+  - **Desacoplamiento Estricto:** El Kernel (`src/core/kernel.js`) tiene terminantemente prohibido importar servicios de módulos de negocio (`src/modules/*`). Toda interacción debe orquestarse mediante `eventBus`.

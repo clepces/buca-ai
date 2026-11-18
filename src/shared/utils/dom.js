@@ -44,6 +44,77 @@ export const $ = (selector, scope = document) => scope.querySelector(selector);
 export const $$ = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
 
 /**
+ * Inyecta una plantilla HTML de forma atómica y segura sin invocar asignaciones directas de innerHTML.
+ * Utiliza DocumentFragment y replaceChildren para renderizado sin fugas.
+ * @param {HTMLElement|string} target - Contenedor destino
+ * @param {string} htmlString - Cadena de marcado HTML a renderizar
+ * @returns {HTMLElement|null}
+ */
+export const $mount = (target, htmlString) => {
+    const el = resolveEl(target);
+    if (!el) return null;
+    if (!htmlString) {
+        el.replaceChildren();
+        return el;
+    }
+    const range = document.createRange();
+    const fragment = range.createContextualFragment(htmlString);
+    el.replaceChildren(fragment);
+    return el;
+};
+
+/**
+ * Vacía de forma atómica y segura los hijos de un elemento sin usar innerHTML = ''.
+ * @param {HTMLElement|string} target
+ * @returns {HTMLElement|null}
+ */
+export const $empty = (target) => {
+    const el = resolveEl(target);
+    if (el) el.replaceChildren();
+    return el;
+};
+
+/**
+ * Gestiona atributos del elemento de forma segura y tipada.
+ * @param {HTMLElement|string} target - Elemento destino
+ * @param {string} name - Nombre del atributo
+ * @param {string|number|null} [value] - Valor a asignar (si es null se elimina el atributo; si se omite, se lee)
+ * @returns {string|null|HTMLElement}
+ */
+export const $attr = (target, name, value) => {
+    const el = resolveEl(target);
+    if (!el) return null;
+    if (typeof value === 'undefined') return el.getAttribute(name);
+    if (value === null) el.removeAttribute(name);
+    else el.setAttribute(name, String(value));
+    return el;
+};
+
+/**
+ * Añade una o más clases a un elemento de forma segura.
+ * @param {HTMLElement|string} target
+ * @param {...string} classes
+ * @returns {HTMLElement|null}
+ */
+export const $addClass = (target, ...classes) => {
+    const el = resolveEl(target);
+    if (el) el.classList.add(...classes);
+    return el;
+};
+
+/**
+ * Remueve una o más clases de un elemento de forma segura.
+ * @param {HTMLElement|string} target
+ * @param {...string} classes
+ * @returns {HTMLElement|null}
+ */
+export const $removeClass = (target, ...classes) => {
+    const el = resolveEl(target);
+    if (el) el.classList.remove(...classes);
+    return el;
+};
+
+/**
  * Obtiene el valor recortado de un input, textarea o select de forma segura.
  * @param {HTMLElement|string} target - Elemento o ID
  * @param {string} [fallback=''] - Valor por defecto
@@ -115,7 +186,6 @@ export const setButtonLoading = (target, isLoading, loadingText = 'Procesando...
     btn.disabled = Boolean(isLoading);
 
     if (isLoading) {
-        // Almacenar texto previo si no existe
         if (!btn.dataset.originalText) {
             btn.dataset.originalText = btn.textContent?.trim() || '';
         }
