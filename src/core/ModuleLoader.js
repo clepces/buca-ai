@@ -5,6 +5,8 @@
  * para prevenir fallos de red en el navegador ("Failed to fetch dynamically imported module").
  * =========================================================================
  */
+import { Logger } from '@/shared/utils/logger.js';
+
 const STATIC_REGISTRY = {};
 
 const DYNAMIC_REGISTRY = {
@@ -52,10 +54,10 @@ export class ModuleLoader {
                     if (instance) break;
                 } catch (error) {
                     if (attempt < maxRetries) {
-                        console.warn(`[ModuleLoader] Reintentando carga dinámica de "${moduleName}"...`);
+                        Logger.warn('ModuleLoader', `Reintentando carga dinámica de "${moduleName}"...`);
                         await new Promise(res => setTimeout(res, 300));
                     } else {
-                        console.warn(`[ModuleLoader] Carga dinámica fallida para "${moduleName}", aplicando respaldo estático:`, error);
+                        Logger.warn('ModuleLoader', `Carga dinámica fallida para "${moduleName}", aplicando respaldo estático:`, error);
                     }
                 }
             }
@@ -71,7 +73,7 @@ export class ModuleLoader {
                         await instance.init();
                     }
                 } catch (initErr) {
-                    console.error(`[ModuleLoader] Error en init() del módulo ${moduleName}:`, initErr);
+                    Logger.error('ModuleLoader', `Error en init() del módulo ${moduleName}:`, initErr);
                 }
                 this.loadedModules.set(moduleName, instance);
             }

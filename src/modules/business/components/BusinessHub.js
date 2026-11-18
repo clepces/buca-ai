@@ -216,6 +216,7 @@ export const BusinessHub = {
 
         this._eventUnsubs.push(
             eventBus.on('workspace:business_created', () => { this._isLoading = true; this.loadBusinesses(); }),
+            eventBus.on('business:registered', () => { this._isLoading = true; this.loadBusinesses(); }),
             eventBus.on('workspace:refresh_data', () => { this.loadBusinesses(); }),
             eventBus.on('auth:login-success', () => { businessService.clearCache(); this._isLoading = true; this.loadBusinesses(); }),
             eventBus.on('workspace:filter_context', (payload = {}) => {

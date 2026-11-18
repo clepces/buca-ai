@@ -8,6 +8,8 @@ import { getSupabase } from '@/core/config/supabase.js';
 import { sessionState } from '@/core/state/session.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { validateGeneralProfile, validateWorkerProfile } from '../schemas/userProfileSchema.js';
+import { SupabaseDriver } from '@/core/storage/drivers/SupabaseDriver.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 class UserService {
     _getClient() {
@@ -41,6 +43,17 @@ class UserService {
             const email = sessionUser.email || profileRecord?.email || '';
             const fallbackUsername = email ? email.split('@')[0] : 'usuario';
 
+            let customWorkerProfile = null;
+            try {
+                const driver = new SupabaseDriver();
+                const storedWorker = await driver.get(`worker_profile_${uid}`);
+                if (storedWorker) {
+                    customWorkerProfile = typeof storedWorker === 'string' ? JSON.parse(storedWorker) : storedWorker;
+                }
+            } catch (wErr) {
+                Logger.warn('UserService', 'No se pudo cargar worker_profile remoto:', wErr);
+            }
+
             if (profileRecord && !error) {
                 const userData = {
                     uid,
@@ -60,12 +73,16 @@ class UserService {
                         preferred_currency: profileRecord.preferred_currency || 'VES_BCV',
                         language: 'es_VE'
                     },
-                    worker_profile: {
+                    worker_profile: customWorkerProfile || {
                         job_title: 'Súper Administrador & Arquitecto Principal ERP',
                         department: 'Dirección Ejecutiva de Tecnología',
                         shift_preference: 'Full-Time Rotativo',
-                        skills: ['Super Admin', 'Multi-Moneda BCV/USDT', 'Gestión FIFO'],
-                        bio: 'Administrador de la plataforma BUCA Enterprise.',
+                        skills: [
+                            { name: 'Control de Caja POS', icon: 'bi-calculator-fill', pts: '2,500 Pts' },
+                            { name: 'Inventario Multitenant', icon: 'bi-box-seam-fill', pts: '1,800 Pts' },
+                            { name: 'Multi-Moneda BCV/USDT', icon: 'bi-currency-exchange', pts: '3,200 Pts' }
+                        ],
+                        bio: 'Operador y administrador activo en la plataforma BUCA.',
                         availability_status: 'available',
                         reputation_score: 5.0,
                         total_shifts_completed: 350,
@@ -173,8 +190,18 @@ class UserService {
             return { success: false, error: validation.errors.join(' ') };
         }
 
-        eventBus.emit('user:worker_updated', { worker: validation.data });
-        return { success: true, data: validation.data };
+        try {
+            const driver = new SupabaseDriver();
+            const saved = await driver.set(`worker_profile_${uid}`, validation.data);
+            if (!saved) throw new Error('Fallo al persistir en app_storage.');
+
+            eventBus.emit('user:worker_updated', { worker: validation.data });
+            eventBus.emit('workspace:refresh_data');
+            return { success: true, data: validation.data };
+        } catch (error) {
+            Logger.error('UserService', 'Error actualizando perfil laboral en Supabase:', error);
+            return { success: false, error: error.message };
+        }
     }
 
     /**

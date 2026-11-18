@@ -12,6 +12,7 @@ import { NotificationTray } from '@/shared/ui/components/notifications/Notificat
 import { Header } from '@/shared/ui/layouts/components/TopBar.js';
 import { $, $$, $on, $addClass, $removeClass } from '@/shared/utils/dom.js';
 import { Logger } from '@/shared/utils/logger.js';
+import { sessionState } from '@/core/state/session.js';
 import { safeReload } from '@/core/utils/system-helper.js';
 
 export const ActionDispatcher = {
@@ -171,8 +172,20 @@ export const ActionDispatcher = {
             }
         });
 
-        // Navegación de Negocios
-        eventBus.on('ui:enter_business', () => {
+        // Navegación y Selección de Negocios
+        eventBus.on('ui:enter_business', (payload = {}) => {
+            const bizId = payload?.id || payload?.businessId;
+            if (bizId && bizId !== 'Dashboard') {
+                sessionState.set({ tenantId: bizId });
+                Logger.info('ActionDispatcher', `Unidad comercial activa establecida en sesión: ${bizId}`);
+                eventBus.emit('business:selected', { id: bizId });
+                eventBus.emit('notifications:push', {
+                    title: 'Unidad Seleccionada',
+                    message: `Comercio activo establecido en la sesión.`,
+                    type: 'info'
+                });
+            }
+            ModalService.closeModal();
             router.navigate('/workspace');
         });
 

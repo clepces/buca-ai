@@ -1,17 +1,19 @@
 /**
  * ProfileController - Controlador interactivo para el perfil de usuario.
  * =========================================================================
- * Maneja pestañas modulares, actualización en Supabase y vinculación de
- * Google Authenticator (TOTP) 100% nativa y gratuita ($0).
+ * Maneja pestañas modulares, actualización en Supabase, vinculación MFA TOTP
+ * y orquesta los subcontroladores de perfil.
  * =========================================================================
  */
 import userService from '@/modules/auth/services/UserService.js';
 import { sessionState } from '@/core/state/session.js';
 import { MFAEnrollmentModal } from './components/MFAEnrollmentModal.js';
 import { eventBus } from '@/core/eventBus/index.js';
-import { $id, $$, $on, $val, $mount, $show, $hide, $className, $addClass, $removeClass } from '@/shared/utils/dom.js';
+import { $id, $$, $on, $val, $mount, $show, $className, $addClass, $removeClass } from '@/shared/utils/dom.js';
 import { setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
 import { Logger } from '@/shared/utils/logger.js';
+import { escapeHTML } from '@/shared/utils/security.js';
+import { ProfileWorkerController } from './logic/profile-worker-controller.js';
 
 export const ProfileController = {
     _generatedSecret: null,
@@ -21,7 +23,16 @@ export const ProfileController = {
         this._bindTabs(initialTab);
         this._bindGeneralForm();
         this._bindSecurityTab();
-        this._bindWorkerTab();
+        ProfileWorkerController.bind(this);
+    },
+
+    showFeedback(msg, isError = false) {
+        const feedbackEl = $id('profile-feedback-alert');
+        if (!feedbackEl) return;
+        $className(feedbackEl, `alert alert-${isError ? 'danger' : 'success'} py-2 px-3 small mb-3 rounded-3 animate__animated animate__fadeIn`);
+        $mount(feedbackEl, `<i class="bi bi-${isError ? 'exclamation-circle' : 'check-circle'}-fill me-1"></i> ${escapeHTML(msg)}`);
+        $show(feedbackEl);
+        feedbackEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     },
 
     _bindTabs(initialTab) {
@@ -47,15 +58,6 @@ export const ProfileController = {
     },
 
     _bindGeneralForm() {
-        const feedbackEl = $id('profile-feedback-alert');
-        const showProfileFeedback = (msg, isError = false) => {
-            if (!feedbackEl) return;
-            $className(feedbackEl, `alert alert-${isError ? 'danger' : 'success'} py-2 px-3 small mb-3 rounded-3 animate__animated animate__fadeIn`);
-            $mount(feedbackEl, `<i class="bi bi-${isError ? 'exclamation-circle' : 'check-circle'}-fill me-1"></i> ${msg}`);
-            $show(feedbackEl);
-            feedbackEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        };
-
         const formGeneral = $id('form-profile-general');
         if (!formGeneral) return;
 
@@ -85,12 +87,12 @@ export const ProfileController = {
             const city_state = $val('prof-city-state');
 
             if (!username) {
-                showProfileFeedback('El alias / nombre de usuario es obligatorio.', true);
+                this.showFeedback('El alias / nombre de usuario es obligatorio.', true);
                 if (submitBtn) { submitBtn.disabled = false; setButtonLoading(submitBtn, false); }
                 return;
             }
             if (!firstName || !lastName) {
-                showProfileFeedback('Nombres y Apellidos son obligatorios.', true);
+                this.showFeedback('Nombres y Apellidos son obligatorios.', true);
                 if (submitBtn) { submitBtn.disabled = false; setButtonLoading(submitBtn, false); }
                 return;
             }
@@ -103,12 +105,12 @@ export const ProfileController = {
                     fiscal_address, city_state
                 });
                 if (!res.success) {
-                    showProfileFeedback(res.error || 'Error al validar datos del perfil.', true);
+                    this.showFeedback(res.error || 'Error al validar datos del perfil.', true);
                 } else {
-                    showProfileFeedback('¡Perfil corporativo actualizado con éxito en Supabase!', false);
+                    this.showFeedback('¡Perfil corporativo actualizado con éxito en Supabase!', false);
                 }
             } catch (err) {
-                showProfileFeedback(err.message || 'Error al actualizar perfil.', true);
+                this.showFeedback(err.message || 'Error al actualizar perfil.', true);
             } finally {
                 if (submitBtn) {
                     submitBtn.disabled = false;
@@ -144,24 +146,6 @@ export const ProfileController = {
                 }
             });
         }
-    },
-
-    _bindWorkerTab() {
-        const cardsList = $id('experience-cards-list');
-        if (!cardsList) return;
-
-        $on(cardsList, 'click', (e) => {
-            const toggle = e.target.closest('[data-action="worker:toggle_ficha"]');
-            if (!toggle || e.target.closest('button')) return;
-
-            const currentCard = toggle.closest('.experience-card-item');
-            if (!currentCard) return;
-
-            $$('.experience-card-item', cardsList).forEach(c => {
-                if (c !== currentCard) $addClass(c, 'collapsed');
-            });
-            currentCard.classList.toggle('collapsed');
-        });
     }
 };
 

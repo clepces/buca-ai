@@ -25,6 +25,7 @@ import { WorkspaceNavRibbon } from '../components/WorkspaceNavRibbon.js';
 
 // Business Module Components
 import { BusinessHub } from '@/modules/business/components/BusinessHub.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const WorkspacePage = {
     renderSkeleton() {
@@ -81,7 +82,7 @@ export const WorkspacePage = {
         `;
     },
     init() {
-        console.log('[WorkspacePage] -> Full Neural Workspace initialized');
+        Logger.info('WorkspacePage', 'Full Neural Workspace initialized');
         
         // Mount Navigation Ribbon
         WorkspaceNavRibbon.mount('workspace-nav-slot');
@@ -95,7 +96,7 @@ export const WorkspacePage = {
         if (typeof SystemHealthMonitor.init === 'function') SystemHealthMonitor.init();
     },
     destroy() {
-        console.log('[WorkspacePage] -> Destroying workspace components...');
+        Logger.info('WorkspacePage', 'Destroying workspace components...');
         if (typeof BusinessHub.destroy === 'function') BusinessHub.destroy();
         if (typeof RecentActivity.destroy === 'function') RecentActivity.destroy();
         if (typeof WorkspaceNavRibbon.unmount === 'function') WorkspaceNavRibbon.unmount();

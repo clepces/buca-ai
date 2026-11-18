@@ -143,6 +143,8 @@ export const BusinessWizardController = {
             });
 
             eventBus.emit('business:registered', created);
+            eventBus.emit('workspace:business_created', created);
+            eventBus.emit('workspace:refresh_data');
 
             setTimeout(() => {
                 const modalEl = $id('buca-global-modal');

@@ -10,10 +10,11 @@ import { uiState } from '@/core/state/ui.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { router } from '@/core/router/router.js';
 import { workspaceRoutes } from './routes.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const WorkspaceModule = {
     async init() {
-        console.log('[Workspace] -> Módulo inicializado');
+        Logger.info('WorkspaceModule', 'Módulo inicializado');
         if (router && typeof router.addRoutes === 'function') {
             router.addRoutes(workspaceRoutes);
         }
@@ -27,7 +28,7 @@ export const WorkspaceModule = {
         const perf = uiState.get().graphics?.tier || 'balanced';
         const config = WidgetOrchestrator.getLayoutConfig(perf);
         
-        console.log(`[Workspace] -> Configurando layout para perfil: ${perf}`, config);
+        Logger.debug('WorkspaceModule', `Configurando layout para perfil: ${perf}`, config);
     },
 
     /**

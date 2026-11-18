@@ -5,6 +5,7 @@
  * configuración de seguridad, PIN universal y dispositivos confiables.
  */
 import { eventBus } from '@/core/eventBus/index.js';
+import { Logger } from '@/shared/utils/logger.js';
 import ProfileController from './ProfileController.js';
 import { userProfileFullTemplate } from './templates/_user_profile.js';
 
@@ -14,7 +15,7 @@ export const ProfileModule = {
     async init() {
         if (this.isInitialized) return;
         this.isInitialized = true;
-        console.log('[ProfileModule] -> Inicializado módulo de perfil');
+        Logger.info('ProfileModule', 'Inicializado módulo de perfil');
 
         // Escuchar eventos de apertura del perfil
         eventBus.on('profile:open_modal', (data) => {

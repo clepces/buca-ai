@@ -9,6 +9,7 @@ import { SupabaseProvider } from './SupabaseProvider.js';
 import { getSupabase } from '@/core/config/supabase.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { sessionState } from '@/core/state/session.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const AuthService = {
     /**
@@ -61,7 +62,7 @@ export const AuthService = {
      * @param {string} password 
      */
     async login(email, password) {
-        console.log(`[AuthService] -> Intentando login con Supabase para ${email}`);
+        Logger.info('AuthService', `Intentando login con Supabase para ${email}`);
 
         try {
             const data = await SupabaseProvider.login(email, password);
@@ -71,7 +72,7 @@ export const AuthService = {
             try {
                 const aal = await SupabaseProvider.getAssuranceLevel();
                 if (aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
-                    console.log('[AuthService] -> MFA Requerido (AAL2)');
+                    Logger.info('AuthService', 'MFA Requerido (AAL2)');
                     const factors = await SupabaseProvider.mfaListFactors();
                     const totpFactor = factors?.totp?.[0];
 

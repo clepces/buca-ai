@@ -6,6 +6,7 @@
  * =========================================================================
  */
 import { getSupabase, supabase } from '@/core/config/supabase.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const SupabaseProvider = {
     _getClient() {
@@ -18,7 +19,7 @@ export const SupabaseProvider = {
      * @param {string} password 
      */
     async login(email, password) {
-        console.log('[SupabaseProvider] -> Ejecutando signInWithPassword...');
+        Logger.info('SupabaseProvider', 'Ejecutando signInWithPassword...');
         const client = this._getClient();
         const { data, error } = await client.auth.signInWithPassword({
             email,
@@ -40,7 +41,7 @@ export const SupabaseProvider = {
      * @param {string} name 
      */
     async register(email, password, name) {
-        console.log('[SupabaseProvider] -> Ejecutando signUp en Supabase...');
+        Logger.info('SupabaseProvider', 'Ejecutando signUp en Supabase...');
         const client = this._getClient();
         const { data, error } = await client.auth.signUp({
             email,
@@ -66,7 +67,7 @@ export const SupabaseProvider = {
      * @param {string} email 
      */
     async recoverPassword(email) {
-        console.log('[SupabaseProvider] -> Enviando recuperación...');
+        Logger.info('SupabaseProvider', 'Enviando recuperación...');
         const client = this._getClient();
         const { error } = await client.auth.resetPasswordForEmail(email);
         if (error) throw error;

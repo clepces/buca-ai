@@ -14,13 +14,14 @@ import { SupabaseProvider } from './services/SupabaseProvider.js';
 import { sessionState } from '@/core/state/session.js';
 import { router } from '@/core/router/router.js';
 import { getSupabase } from '@/core/config/supabase.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const AuthModule = {
     /**
      * Inicializa los listeners del módulo.
      */
     async init() {
-        console.log('[Auth] -> Módulo inicializado (Supabase Backend)');
+        Logger.info('AuthModule', 'Módulo inicializado (Supabase Backend)');
         if (router && typeof router.addRoutes === 'function') {
             router.addRoutes(authRoutes);
         }
@@ -31,7 +32,17 @@ export const AuthModule = {
             SupabaseProvider.onAuthStateChange(async (_event, session) => {
                 if (session && session.user) {
                     const user = session.user;
-                    let role = 'user';
+                    const currentSession = sessionState.get();
+
+                    // Prevenir sobrecarga de peticiones: Si el usuario ya está autenticado y sólo es renovación de token o foco de ventana
+                    if (currentSession.isAuthenticated && currentSession.user?.uid === user.id) {
+                        if (_event === 'TOKEN_REFRESHED' || _event === 'INITIAL_SESSION') {
+                            Logger.debug('AuthModule', `Sincronización silenciosa [${_event}]: sesión activa para ${user.email}`);
+                            return;
+                        }
+                    }
+
+                    let role = currentSession.user?.role || 'user';
                     try {
                         const client = getSupabase();
                         const { data: profile } = await client
@@ -41,10 +52,10 @@ export const AuthModule = {
                             .maybeSingle();
 
                         if (profile) {
-                            role = profile.platform_role || 'user';
+                            role = profile.platform_role || role;
                         }
                     } catch {
-                        role = 'user';
+                        // Mantener rol previo o fallback seguro
                     }
 
                     try {
@@ -53,17 +64,19 @@ export const AuthModule = {
                             sessionState.set({
                                 isAuthenticated: false,
                                 mfaPending: true,
+                                isAAL2Verified: false,
                                 user: null,
                                 currentRole: 'guest'
                             });
-                            console.log('[AuthModule] -> Sesión retenida: AAL2 pendiente de verificación TOTP.');
+                            Logger.warn('AuthModule', 'Sesión retenida: AAL2 pendiente de verificación TOTP.');
                             return;
                         }
                     } catch (aalErr) {
-                        console.error('[AuthModule] -> Fallo evaluando AAL (Fail-Closed):', aalErr.message);
+                        Logger.error('AuthModule', 'Fallo evaluando AAL (Fail-Closed):', aalErr.message);
                         sessionState.set({
                             isAuthenticated: false,
                             mfaPending: true,
+                            isAAL2Verified: false,
                             user: null,
                             currentRole: 'guest'
                         });
@@ -73,6 +86,7 @@ export const AuthModule = {
                     sessionState.set({
                         isAuthenticated: true,
                         mfaPending: false,
+                        isAAL2Verified: true,
                         user: {
                             uid: user.id,
                             email: user.email,
@@ -81,17 +95,22 @@ export const AuthModule = {
                         },
                         currentRole: role
                     });
-                    console.log('[AuthModule] -> Sesión sincronizada con Supabase Auth:', user.email);
+                    Logger.info('AuthModule', `Sesión sincronizada [${_event || 'SYNC'}]: ${user.email}`);
                 } else {
-                    sessionState.set({
-                        isAuthenticated: false,
-                        user: null,
-                        currentRole: 'guest'
-                    });
+                    const currentSession = sessionState.get();
+                    if (currentSession.isAuthenticated) {
+                        sessionState.set({
+                            isAuthenticated: false,
+                            isAAL2Verified: false,
+                            user: null,
+                            currentRole: 'guest'
+                        });
+                        Logger.info('AuthModule', 'Sesión cerrada o invalidada en Supabase.');
+                    }
                 }
             });
         } catch (err) {
-            console.warn('[AuthModule] -> No se pudo adjuntar listener de Supabase Auth:', err);
+            Logger.warn('AuthModule', 'No se pudo adjuntar listener de Supabase Auth:', err);
         }
     },
 
@@ -125,22 +144,22 @@ export const AuthModule = {
      */
     async handleLogin({ email, password }) {
         try {
-            console.log(`[Auth] -> Iniciando Phase 1: Identity para ${email}`);
+            Logger.info('AuthModule', `Iniciando Phase 1: Identity para ${email}`);
             const result = await AuthService.login(email, password);
 
             if (result.success) {
                 // Phase 2: Device Authorization
                 const fingerprint = await DeviceFingerprint.generate();
-                console.log(`[Auth] -> Fingerprint generado: ${fingerprint}`);
+                Logger.info('AuthModule', `Fingerprint generado: ${fingerprint}`);
 
                 eventBus.emit(AUTH_EVENTS.DEVICE_CHALLENGE, { fingerprint });
             } else if (result.mfaRequired) {
-                console.log('[Auth] -> Desafío MFA requerido para completar el inicio de sesión.');
+                Logger.info('AuthModule', 'Desafío MFA requerido para completar el inicio de sesión.');
             } else {
-                console.error('[Auth] -> Login fallido:', result.error);
+                Logger.error('AuthModule', 'Login fallido:', result.error);
             }
         } catch (error) {
-            console.error('[Auth] -> Error en login:', error);
+            Logger.error('AuthModule', 'Error en login:', error);
         }
     }
 };
