@@ -2,8 +2,10 @@
  * @fileoverview DOM Utilities & Helpers (Clean Core Vanilla JS)
  * @module shared/utils/dom
  * @description Utilidades de alto rendimiento para manipulación segura del DOM,
- * selectores optimizados, gestión de estado de botones sin innerHTML y control por clases CSS.
+ * selectores optimizados, montaje atómico (cero innerHTML), y gestión de clases/atributos.
  */
+
+import { isBrowser } from '@/core/utils/system-helper.js';
 
 /**
  * Resuelve un elemento a partir de una referencia o de un selector/ID.
@@ -75,10 +77,53 @@ export const $empty = (target) => {
 };
 
 /**
+ * Obtiene o asigna de forma segura el texto plano de un elemento (textContent).
+ * @param {HTMLElement|string} target
+ * @param {string} [value] - Texto a asignar; si se omite, retorna el texto actual
+ * @returns {string|HTMLElement|null}
+ */
+export const $text = (target, value) => {
+    const el = resolveEl(target);
+    if (!el) return null;
+    if (typeof value === 'undefined') return el.textContent?.trim() || '';
+    el.textContent = String(value);
+    return el;
+};
+
+/**
+ * Asigna o lee la clase (className) de un elemento de forma limpia.
+ * @param {HTMLElement|string} target
+ * @param {string} [className]
+ * @returns {string|HTMLElement|null}
+ */
+export const $className = (target, className) => {
+    const el = resolveEl(target);
+    if (!el) return null;
+    if (typeof className === 'undefined') return el.className;
+    el.className = className;
+    return el;
+};
+
+/**
+ * Asigna una variable CSS personalizada a un elemento de forma segura.
+ * @param {HTMLElement|string} target
+ * @param {string} varName - Nombre de la variable (ej: '--buca-progress')
+ * @param {string} value - Valor asignado
+ * @returns {HTMLElement|null}
+ */
+export const $styleVar = (target, varName, value) => {
+    const el = resolveEl(target);
+    if (el && el.style && typeof el.style.setProperty === 'function') {
+        el.style.setProperty(varName, String(value));
+    }
+    return el;
+};
+
+/**
  * Gestiona atributos del elemento de forma segura y tipada.
  * @param {HTMLElement|string} target - Elemento destino
  * @param {string} name - Nombre del atributo
- * @param {string|number|null} [value] - Valor a asignar (si es null se elimina el atributo; si se omite, se lee)
+ * @param {string|number|null} [value] - Valor a asignar
  * @returns {string|null|HTMLElement}
  */
 export const $attr = (target, name, value) => {
@@ -139,7 +184,7 @@ export const $checked = (target, fallback = false) => {
 };
 
 /**
- * Muestra un elemento removiendo la clase 'd-none' (sin usar .style.display).
+ * Muestra un elemento removiendo la clase 'd-none'.
  * @param {HTMLElement|string} target
  */
 export const $show = (target) => {
@@ -148,7 +193,7 @@ export const $show = (target) => {
 };
 
 /**
- * Oculta un elemento agregando la clase 'd-none' (sin usar .style.display).
+ * Oculta un elemento agregando la clase 'd-none'.
  * @param {HTMLElement|string} target
  */
 export const $hide = (target) => {
@@ -173,8 +218,6 @@ export const $toggle = (target, visible) => {
 
 /**
  * Modifica el estado de carga de un botón de forma segura (sin innerHTML).
- * Crea el spinner nativo mediante nodos del DOM y gestiona el atributo disabled.
- * 
  * @param {HTMLElement|string} target - Botón o selector
  * @param {boolean} isLoading - Estado de carga activo
  * @param {string} [loadingText='Procesando...'] - Texto durante la carga
@@ -204,7 +247,7 @@ export const setButtonLoading = (target, isLoading, loadingText = 'Procesando...
 };
 
 /**
- * Asigna un escuchador de eventos de forma segura utilizando addEventListener (evita onclick obsoleto).
+ * Asigna un escuchador de eventos de forma segura utilizando addEventListener.
  * @param {HTMLElement|string} target - Elemento o ID
  * @param {string} event - Tipo de evento (ej: 'click')
  * @param {Function} handler - Callback del evento
@@ -218,8 +261,20 @@ export const $on = (target, event, handler, options) => {
 };
 
 /**
+ * Ejecuta una función cuando el DOM esté completamente cargado.
+ * @param {Function} callback 
+ */
+export const $onReady = (callback) => {
+    if (!isBrowser() || typeof callback !== 'function') return;
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', callback, { once: true });
+    } else {
+        callback();
+    }
+};
+
+/**
  * Modifica el contenido de un botón de forma segura con icono opcional (sin innerHTML).
- * 
  * @param {HTMLElement|string} target - Botón o selector
  * @param {string} text - Texto del botón
  * @param {string} [iconClass=''] - Clase de icono (ej: 'bi bi-check-circle-fill')

@@ -24,7 +24,8 @@ import { storage } from '@/core/storage/StorageAdapter.js';
 import ModalService from '@/shared/ui/overlays/ModalService.js';
 import { PerformanceStorage } from '@/core/storage/PerformanceStorage.js';
 import { SearchService } from '@/core/services/SearchService.js';
-import { $id, $mount, $attr, $addClass } from '@/shared/utils/dom.js';
+import { getPath, replaceHistory } from '@/core/utils/index.js';
+import { $id, $mount, $attr, $addClass, $$, $text, $className, $styleVar, $on } from '@/shared/utils/dom.js';
 
 class BucaKernel {
     constructor() {
@@ -46,7 +47,7 @@ class BucaKernel {
         const updateStatus = (pct, text) => {
             this.updateSplashProgress(pct);
             const statusEl = $id('splash-status');
-            if (statusEl) statusEl.textContent = text;
+            if (statusEl) $text(statusEl, text);
         };
 
         try {
@@ -82,13 +83,13 @@ class BucaKernel {
             const sessionCheck = await AuthService.checkSession();
             const isAuthenticated = Boolean(sessionCheck?.isAuthenticated);
 
-            let initialPath = window.location.pathname;
+            let initialPath = getPath();
             const isExplicitAuthPath = initialPath.startsWith('/auth');
 
             // Gate Estricto: Si la ruta requiere autenticación y no hay sesión, forzar /auth/login
             if (!isAuthenticated && !isExplicitAuthPath) {
                 initialPath = '/auth/login';
-                window.history.replaceState({}, '', '/auth/login');
+                replaceHistory('/auth/login');
             }
 
             updateStatus(70, 'Construyendo Estructura de Interfaz Autorizada...');
@@ -153,7 +154,7 @@ class BucaKernel {
         const appContainer = $id('app');
         if (!appContainer) return;
 
-        const path = targetPath || window.location.pathname;
+        const path = targetPath || getPath();
         const isAuth = path.startsWith('/auth');
         const mode = isAuth ? 'auth' : 'workspace';
 
@@ -198,7 +199,7 @@ class BucaKernel {
             if (preloader.parentNode) preloader.remove();
         };
 
-        preloader.addEventListener('animationend', cleanUp, { once: true });
+        $on(preloader, 'animationend', cleanUp, { once: true });
         setTimeout(cleanUp, 550);
     }
 
@@ -213,9 +214,9 @@ class BucaKernel {
     startTelemetry() {
         uiState.subscribe((state) => {
             if (state.graphics) {
-                document.querySelectorAll('[data-perf="profile-badge"]').forEach(b => {
-                    b.textContent = state.graphics.id;
-                    b.className = `badge badge--${state.graphics.tier}`;
+                $$('[data-perf="profile-badge"]').forEach(b => {
+                    $text(b, state.graphics.id);
+                    $className(b, `badge badge--${state.graphics.tier}`);
                 });
             }
         });
@@ -223,9 +224,9 @@ class BucaKernel {
 
     updateSplashProgress(percent) {
         const bar = $id('splash-progress');
-        if (bar) bar.style.setProperty('--buca-progress', `${percent}%`);
+        if (bar) $styleVar(bar, '--buca-progress', `${percent}%`);
         const pct = $id('splash-percentage');
-        if (pct) pct.textContent = `${percent}%`;
+        if (pct) $text(pct, `${percent}%`);
         eventBus.emit('kernel:boot:progress', percent);
     }
 

@@ -5,3 +5,4 @@
 
 export * from './system-helper.js';
 export * from './async-helper.js';
+export * from './uuid.js';
