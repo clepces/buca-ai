@@ -4,12 +4,13 @@
  * Cálculos en caliente en el modal de finanzas: VES, USD, EUR, USDT.
  * =========================================================================
  */
+import { $id, $$, $on, $text, $attr } from '@/shared/utils/dom.js';
 
 export const RateCalculatorHelper = {
     bind(financialData, currentRate) {
-        const amountInput = document.getElementById('calc-amount-input');
-        const currencySelect = document.getElementById('calc-currency-select');
-        const presets = document.querySelectorAll('.btn-calc-preset');
+        const amountInput = $id('calc-amount-input');
+        const currencySelect = $id('calc-currency-select');
+        const presets = $$('.btn-calc-preset');
 
         const calculate = () => {
             if (!amountInput || !currencySelect) return;
@@ -32,28 +33,23 @@ export const RateCalculatorHelper = {
 
             const format = (v) => Number(v || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-            const resVes = document.getElementById('res-ves');
-            const resUsd = document.getElementById('res-usd');
-            const resEur = document.getElementById('res-eur');
-            const resUsdt = document.getElementById('res-usdt');
-
-            if (resVes) resVes.textContent = `Bs. ${format(inVes)}`;
-            if (resUsd) resUsd.textContent = `$ ${format(equivUsd)}`;
-            if (resEur) resEur.textContent = `€ ${format(equivEur)}`;
-            if (resUsdt) resUsdt.textContent = `₮ ${format(equivUsdt)}`;
+            $text('res-ves', `Bs. ${format(inVes)}`);
+            $text('res-usd', `$ ${format(equivUsd)}`);
+            $text('res-eur', `€ ${format(equivEur)}`);
+            $text('res-usdt', `₮ ${format(equivUsdt)}`);
         };
 
-        if (amountInput) amountInput.oninput = calculate;
-        if (currencySelect) currencySelect.onchange = calculate;
+        if (amountInput) $on(amountInput, 'input', calculate);
+        if (currencySelect) $on(currencySelect, 'change', calculate);
 
         presets.forEach(btn => {
-            btn.onclick = () => {
-                const val = btn.getAttribute('data-val');
+            $on(btn, 'click', () => {
+                const val = $attr(btn, 'data-val');
                 if (amountInput) {
                     amountInput.value = val;
                     calculate();
                 }
-            };
+            });
         });
     }
 };

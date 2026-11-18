@@ -16,6 +16,9 @@ import { FinanceRepository } from '../services/FinanceRepository.js';
 import { sessionState } from '@/core/state/session.js';
 import { RateCalculatorHelper } from './RateCalculatorHelper.js';
 import { RateTabsBinder } from './RateTabsBinder.js';
+import { $id, $$, $on, $mount, $show, $hide, $text, $addClass, $removeClass } from '@/shared/utils/dom.js';
+import { setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export function formatVariation(raw) {
     if (raw === null || raw === undefined || isNaN(Number(raw))) return '+0.00%';
@@ -44,7 +47,7 @@ export const RateController = {
     },
 
     async show() {
-        console.log('[RateController] -> Opening Multi-Currency Rate Dashboard');
+        Logger.info('RateController', 'Opening Multi-Currency Rate Dashboard');
         this._renderModalContent();
         this._loadAndPopulateData();
     },
@@ -72,19 +75,7 @@ export const RateController = {
                     </div>
                 `
             }),
-            body: rateManagementTemplate({
-                currentRate: this.currentRate,
-                lastUpdate: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                bcvData: this.financialData?.bcv,
-                usdtData: this.financialData?.usdt,
-                interventionsData: this.financialData?.interventions,
-                history: this.financialData?.history,
-                historyPage: this.historyPage,
-                historyPerPage: this.historyPerPage,
-                interventionsPage: this.interventionsPage,
-                interventionsPerPage: this.interventionsPerPage,
-                apiConfig: this.apiConfig
-            }),
+            body: rateManagementTemplate(this._buildTemplateData()),
             footer: {
                 left: `
                     <div class="d-flex align-items-center gap-2 text-muted small">
@@ -104,14 +95,8 @@ export const RateController = {
         this._bindEvents();
     },
 
-    _renderBodyContent(preserveTab = null) {
-        const bodySlot = document.getElementById('modal-body-content');
-        if (!bodySlot) return;
-
-        const currentTab = preserveTab || this.activeTab || 'overview';
-        this.activeTab = currentTab;
-
-        bodySlot.innerHTML = rateManagementTemplate({
+    _buildTemplateData() {
+        return {
             currentRate: this.currentRate,
             lastUpdate: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             bcvData: this.financialData?.bcv,
@@ -123,15 +108,25 @@ export const RateController = {
             interventionsPage: this.interventionsPage,
             interventionsPerPage: this.interventionsPerPage,
             apiConfig: this.apiConfig
-        });
+        };
+    },
 
-        const tabsNav = document.getElementById('rate-tabs-nav');
+    _renderBodyContent(preserveTab = null) {
+        const bodySlot = $id('modal-body-content');
+        if (!bodySlot) return;
+
+        const currentTab = preserveTab || this.activeTab || 'overview';
+        this.activeTab = currentTab;
+
+        $mount(bodySlot, rateManagementTemplate(this._buildTemplateData()));
+
+        const tabsNav = $id('rate-tabs-nav');
         if (tabsNav) {
-            tabsNav.querySelectorAll('[data-rate-tab]').forEach(b => {
+            $$('[data-rate-tab]', tabsNav).forEach(b => {
                 b.classList.toggle('active', b.getAttribute('data-rate-tab') === currentTab);
             });
         }
-        document.querySelectorAll('.rate-tab-content').forEach(pane => {
+        $$('.rate-tab-content').forEach(pane => {
             pane.classList.toggle('active', pane.id === `tab-rate-${currentTab}`);
         });
 
@@ -139,23 +134,19 @@ export const RateController = {
     },
 
     async _loadAndPopulateData() {
-        const spinner = document.getElementById('sync-spinner');
-        if (spinner) spinner.classList.remove('d-none');
+        const spinner = $id('sync-spinner');
+        if (spinner) $show(spinner);
 
         try {
             const data = await ForexManager.loadAllFinancialData();
             this.financialData = data;
-
-            if (data.bcv?.current?.usd) {
-                this.currentRate = data.bcv.current.usd;
-            }
-
+            if (data.bcv?.current?.usd) this.currentRate = data.bcv.current.usd;
             this._renderBodyContent();
             this._updatePageRates(this.currentRate);
         } catch (err) {
-            console.error('[RateController] Error loading financial data:', err);
+            Logger.error('RateController', 'Error loading financial data:', err);
         } finally {
-            if (spinner) spinner.classList.add('d-none');
+            if (spinner) $hide(spinner);
         }
     },
 
@@ -165,84 +156,80 @@ export const RateController = {
         RateTabsBinder.bindApiControls(this);
         RateCalculatorHelper.bind(this.financialData, this.currentRate);
 
-        const btnRefreshHeader = document.getElementById('btn-refresh-rate-header');
-        const applyBtn = document.getElementById('btn-apply-rate');
-        const input = document.getElementById('manual-rate-input');
-        const syncBtn = document.getElementById('btn-sync-api');
-        const btnAnchorUsd = document.getElementById('btn-anchor-usd');
-        const btnAnchorEur = document.getElementById('btn-anchor-eur');
+        const btnRefreshHeader = $id('btn-refresh-rate-header');
+        const applyBtn = $id('btn-apply-rate');
+        const input = $id('manual-rate-input');
+        const syncBtn = $id('btn-sync-api');
+        const btnAnchorUsd = $id('btn-anchor-usd');
+        const btnAnchorEur = $id('btn-anchor-eur');
 
         if (btnRefreshHeader) {
-            btnRefreshHeader.onclick = (e) => {
+            $on(btnRefreshHeader, 'click', (e) => {
                 e.stopPropagation();
                 this._loadAndPopulateData();
-            };
+            });
         }
 
         if (btnAnchorUsd && input) {
-            btnAnchorUsd.onclick = () => {
+            $on(btnAnchorUsd, 'click', () => {
                 const val = this.financialData?.bcv?.current?.usd || this.currentRate || 0;
                 input.value = val;
                 input.dispatchEvent(new Event('input'));
-            };
+            });
         }
         if (btnAnchorEur && input) {
-            btnAnchorEur.onclick = () => {
+            $on(btnAnchorEur, 'click', () => {
                 const val = this.financialData?.bcv?.current?.eur || 0;
                 input.value = val;
                 input.dispatchEvent(new Event('input'));
-            };
+            });
         }
 
         if (applyBtn && input) {
-            applyBtn.onclick = async () => {
+            $on(applyBtn, 'click', async () => {
                 const newRate = parseFloat(input.value);
-                if (Validator.isValidRate(newRate) && newRate < 1000000) {
-                    applyBtn.disabled = true;
-                    applyBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Guardando...';
+                if (!Validator.isValidRate(newRate) || newRate >= 1000000) return;
 
-                    try {
-                        const tenantId = sessionState.get().tenantId || 'default';
-                        const parallelRate = this.financialData?.usdt?.current?.average || null;
+                applyBtn.disabled = true;
+                setButtonLoading(applyBtn, true, 'Guardando...');
 
-                        await FinanceRepository.saveRateSnapshot(tenantId, {
-                            rate: newRate,
-                            rateParallel: parallelRate,
-                            currency: 'USD',
-                            source: 'BCV/DolarVzla'
-                        });
+                try {
+                    const tenantId = sessionState.get().tenantId || 'default';
+                    const parallelRate = this.financialData?.usdt?.current?.average || null;
 
-                        this.currentRate = newRate;
-                        this._updatePageRates(newRate);
+                    await FinanceRepository.saveRateSnapshot(tenantId, {
+                        rate: newRate, rateParallel: parallelRate,
+                        currency: 'USD', source: 'BCV/DolarVzla'
+                    });
 
-                        eventBus.emit('notifications:push', {
-                            title: 'Tasa ERP Actualizada',
-                            message: `Se ha anclado la tasa a Bs. ${newRate.toFixed(2)} exitosamente en Supabase.`,
-                            type: 'success'
-                        });
-
-                        this.hide();
-                    } catch {
-                        eventBus.emit('notifications:push', {
-                            title: 'Error de Persistencia',
-                            message: 'No se pudo guardar la tasa en la base de datos.',
-                            type: 'error'
-                        });
-                    } finally {
-                        applyBtn.disabled = false;
-                        applyBtn.innerHTML = '<i class="bi bi-check2-circle me-1"></i> Aplicar Tasa a ERP';
-                    }
+                    this.currentRate = newRate;
+                    this._updatePageRates(newRate);
+                    eventBus.emit('notifications:push', {
+                        title: 'Tasa ERP Actualizada',
+                        message: `Se ha anclado la tasa a Bs. ${newRate.toFixed(2)} exitosamente en Supabase.`,
+                        type: 'success'
+                    });
+                    this.hide();
+                } catch {
+                    eventBus.emit('notifications:push', {
+                        title: 'Error de Persistencia',
+                        message: 'No se pudo guardar la tasa en la base de datos.',
+                        type: 'error'
+                    });
+                } finally {
+                    applyBtn.disabled = false;
+                    setButtonContent(applyBtn, 'Aplicar Tasa a ERP', 'bi bi-check2-circle');
                 }
-            };
+            });
         }
 
         if (syncBtn) {
-            syncBtn.onclick = () => this._loadAndPopulateData();
+            $on(syncBtn, 'click', () => this._loadAndPopulateData());
         }
     },
 
     async _updatePageRates(newRate) {
-        console.log(`[RateController] -> Broadcasting Global Rate: Bs. ${newRate}`);
+        Logger.info('RateController', `Broadcasting Global Rate: Bs. ${newRate}`);
 
         try {
             const { globalState } = await import('@/core/state/global.js');
@@ -250,22 +237,18 @@ export const RateController = {
                 globalState.updateRates({ bcv: newRate });
             }
         } catch (e) {
-            console.error('[RateController] Error syncing with globalState:', e);
+            Logger.error('RateController', 'Error syncing with globalState:', e);
         }
 
-        document.querySelectorAll('.live-bcv-mini-pill span, .pill-amount').forEach(el => {
-            el.textContent = `Bs. ${Number(newRate).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        const formatted = Number(newRate).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        $$('.live-bcv-mini-pill span, .pill-amount').forEach(el => {
+            $text(el, `Bs. ${formatted}`);
+        });
+        $$('#global-bcv-rate, .bcv-rate-value, .rate-bcv-display').forEach(el => {
+            $text(el, Number(newRate).toFixed(2));
         });
 
-        const globalRateElements = document.querySelectorAll('#global-bcv-rate, .bcv-rate-value, .rate-bcv-display');
-        globalRateElements.forEach(el => {
-            el.textContent = Number(newRate).toFixed(2);
-        });
-
-        eventBus.emit('buca:rate_change', {
-            rate: newRate,
-            timestamp: new Date().toISOString()
-        });
+        eventBus.emit('buca:rate_change', { rate: newRate, timestamp: new Date().toISOString() });
     }
 };
 

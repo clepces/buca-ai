@@ -13,14 +13,13 @@ import { CanvasQRRenderer } from '@/core/security/CanvasQRRenderer.js';
 import { BackupKeyService } from '@/core/security/BackupKeyService.js';
 import { sessionState } from '@/core/state/session.js';
 import { eventBus } from '@/core/eventBus/index.js';
+import { $id, $on, $text, $mount, $hide, $show, $checked } from '@/shared/utils/dom.js';
+import { setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
 
 export class MFAEnrollmentModal {
     static _enrollmentData = null;
     static _backupKeys = [];
 
-    /**
-     * Muestra el modal de enrolamiento iniciando en Paso 1: Reautenticación.
-     */
     static show() {
         const user = sessionState.get().user || {};
         const email = user.email || '';
@@ -35,9 +34,7 @@ export class MFAEnrollmentModal {
                 <div id="mfa-step-container" class="p-2">
                     <div class="alert alert-warning d-flex align-items-start gap-2 rounded-3 small mb-3">
                         <i class="bi bi-shield-exclamation text-warning fs-5 flex-shrink-0"></i>
-                        <div>
-                            <strong>Reautenticación de Seguridad:</strong> Ingrese su contraseña actual para desbloquear la vinculación del autenticador TOTP.
-                        </div>
+                        <div><strong>Reautenticación de Seguridad:</strong> Ingrese su contraseña actual para desbloquear la vinculación del autenticador TOTP.</div>
                     </div>
                     <form id="mfa-reauth-form">
                         <div class="mb-3">
@@ -52,8 +49,7 @@ export class MFAEnrollmentModal {
                         <div class="d-flex justify-content-end gap-2">
                             <button type="button" class="btn btn-ghost" data-action="ui:close_modal">Cancelar</button>
                             <button type="submit" id="btn-mfa-reauth" class="btn btn-primary px-4 fw-bold">
-                                <span>Verificar Contraseña</span>
-                                <i class="bi bi-arrow-right ms-1"></i>
+                                <span>Verificar Contraseña</span><i class="bi bi-arrow-right ms-1"></i>
                             </button>
                         </div>
                     </form>
@@ -66,59 +62,56 @@ export class MFAEnrollmentModal {
     }
 
     static _bindReauthForm(email) {
-        const form = document.getElementById('mfa-reauth-form');
+        const form = $id('mfa-reauth-form');
         if (!form) return;
 
-        form.onsubmit = async (e) => {
+        $on(form, 'submit', async (e) => {
             e.preventDefault();
-            const pwdInput = document.getElementById('mfa-reauth-pwd');
-            const feedback = document.getElementById('mfa-reauth-feedback');
-            const btn = document.getElementById('btn-mfa-reauth');
+            const pwdInput = $id('mfa-reauth-pwd');
+            const feedback = $id('mfa-reauth-feedback');
+            const btn = $id('btn-mfa-reauth');
 
             const password = pwdInput?.value || '';
             if (!password) return;
 
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Verificando...';
-            if (feedback) feedback.classList.add('d-none');
+            setButtonLoading(btn, true, 'Verificando...');
+            $hide(feedback);
 
             try {
-                // Reautenticar con Supabase Auth
                 await SupabaseProvider.login(email, password);
                 await this._showStep2QR(email);
             } catch {
                 if (feedback) {
-                    feedback.textContent = 'Contraseña incorrecta. Se requiere reautenticación válida.';
-                    feedback.classList.remove('d-none');
+                    $text(feedback, 'Contraseña incorrecta. Se requiere reautenticación válida.');
+                    $show(feedback);
                 }
                 btn.disabled = false;
-                btn.innerHTML = '<span>Verificar Contraseña</span><i class="bi bi-arrow-right ms-1"></i>';
+                setButtonContent(btn, 'Verificar Contraseña', 'bi bi-arrow-right');
             }
-        };
+        });
     }
 
     static async _showStep2QR(email) {
-        const container = document.getElementById('mfa-step-container');
+        const container = $id('mfa-step-container');
         if (!container) return;
 
-        container.innerHTML = `
+        $mount(container, `
             <div class="text-center py-2">
                 <div class="buca-spinner mx-auto mb-3"></div>
                 <div class="small text-muted">Generando factor TOTP y código QR seguro...</div>
             </div>
-        `;
+        `);
 
         const enrollment = await AuthService.enrollTOTP();
         if (!enrollment.success) {
-            container.innerHTML = '<div class="alert alert-danger py-2 small" id="mfa-enroll-error"></div>';
-            const errEl = document.getElementById('mfa-enroll-error');
-            if (errEl) errEl.textContent = `Error generando TOTP: ${enrollment.error}`;
+            $mount(container, `<div class="alert alert-danger py-2 small">${enrollment.error || 'Error generando TOTP'}</div>`);
             return;
         }
 
         this._enrollmentData = enrollment;
 
-        container.innerHTML = `
+        $mount(container, `
             <div class="text-center mb-3">
                 <p class="small text-muted mb-2">Escanee este código con Google Authenticator, Authy o Microsoft Authenticator:</p>
                 <div class="d-flex justify-content-center p-2 rounded-3 bg-white shadow-xs mx-auto border u-box-220">
@@ -135,60 +128,55 @@ export class MFAEnrollmentModal {
                 </div>
                 <div id="mfa-verify-feedback" class="small text-danger mt-1 d-none"></div>
             </div>
-        `;
+        `);
 
-        const secretEl = document.getElementById('mfa-secret-text');
-        if (secretEl) secretEl.textContent = enrollment.secret;
+        $text('mfa-secret-text', enrollment.secret);
 
-        // Renderizado nativo del QR en Canvas (Cero APIs externas)
-        const canvas = document.getElementById('mfa-canvas-qr');
+        const canvas = $id('mfa-canvas-qr');
         if (canvas && enrollment.qrCode) {
             await CanvasQRRenderer.renderToCanvas(canvas, enrollment.qrCode, { size: 220, padding: 10 });
         }
 
-        const confirmBtn = document.getElementById('btn-mfa-confirm-code');
-        const codeInput = document.getElementById('mfa-verify-code');
-        const verifyFeedback = document.getElementById('mfa-verify-feedback');
+        const confirmBtn = $id('btn-mfa-confirm-code');
+        const codeInput = $id('mfa-verify-code');
+        const verifyFeedback = $id('mfa-verify-feedback');
 
-        confirmBtn.onclick = async () => {
-            const code = codeInput?.value?.trim() || '';
-            if (code.length !== 6) {
-                if (verifyFeedback) {
-                    verifyFeedback.textContent = 'Ingrese el código de 6 dígitos generado por la aplicación.';
-                    verifyFeedback.classList.remove('d-none');
+        if (confirmBtn) {
+            $on(confirmBtn, 'click', async () => {
+                const code = codeInput?.value?.trim() || '';
+                if (code.length !== 6) {
+                    $text(verifyFeedback, 'Ingrese el código de 6 dígitos generado por la aplicación.');
+                    $show(verifyFeedback);
+                    return;
                 }
-                return;
-            }
 
-            confirmBtn.disabled = true;
-            confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Verificando...';
-            if (verifyFeedback) verifyFeedback.classList.add('d-none');
+                confirmBtn.disabled = true;
+                setButtonLoading(confirmBtn, true, 'Verificando...');
+                $hide(verifyFeedback);
 
-            const res = await AuthService.confirmTOTPEnrollment(enrollment.factorId, code);
-            if (res.success) {
-                await this._showStep3BackupKeys(email);
-            } else {
-                if (verifyFeedback) {
-                    verifyFeedback.textContent = 'Código inválido o expirado. Compruebe la hora de su teléfono móvil.';
-                    verifyFeedback.classList.remove('d-none');
+                const res = await AuthService.confirmTOTPEnrollment(enrollment.factorId, code);
+                if (res.success) {
+                    await this._showStep3BackupKeys(email);
+                } else {
+                    $text(verifyFeedback, 'Código inválido o expirado. Compruebe la hora de su teléfono móvil.');
+                    $show(verifyFeedback);
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = 'Activar';
                 }
-                confirmBtn.disabled = false;
-                confirmBtn.innerHTML = 'Activar';
-            }
-        };
+            });
+        }
     }
 
     static async _showStep3BackupKeys(email) {
         const user = sessionState.get().user || {};
-        const container = document.getElementById('mfa-step-container');
+        const container = $id('mfa-step-container');
         if (!container) return;
 
-        // Generar 8 claves de respaldo de emergencia en memoria segura (Zero-Knowledge)
         const keys = BackupKeyService.generateKeys(8);
         this._backupKeys = keys;
         await BackupKeyService.acknowledgeEmission(user.uid, keys);
 
-        container.innerHTML = `
+        $mount(container, `
             <div class="text-center mb-3">
                 <div class="profile-icon-box-sm rounded-circle bg-success text-white mx-auto d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-check2-circle fs-3"></i>
@@ -220,34 +208,42 @@ export class MFAEnrollmentModal {
                     Finalizar y Activar Protección
                 </button>
             </div>
-        `;
+        `);
 
-        document.getElementById('btn-download-keys').onclick = () => {
-            BackupKeyService.downloadAsText(keys, email);
-            const check = document.getElementById('mfa-saved-keys-check');
-            if (check) check.checked = true;
-            document.getElementById('btn-mfa-finish').disabled = false;
-        };
+        const btnDownload = $id('btn-download-keys');
+        const btnPrint = $id('btn-print-keys');
+        const check = $id('mfa-saved-keys-check');
+        const finishBtn = $id('btn-mfa-finish');
 
-        document.getElementById('btn-print-keys').onclick = () => {
-            BackupKeyService.printSlip(keys, email);
-        };
-
-        const check = document.getElementById('mfa-saved-keys-check');
-        const finishBtn = document.getElementById('btn-mfa-finish');
-        check.onchange = () => {
-            finishBtn.disabled = !check.checked;
-        };
-
-        finishBtn.onclick = () => {
-            ModalService.hideModal();
-            eventBus.emit('profile:mfa-enrolled');
-            eventBus.emit('ui:notification_hud', {
-                title: 'Seguridad AAL2 Activada',
-                message: 'Autenticación en dos pasos (TOTP) configurada y activa.',
-                type: 'success'
+        if (btnDownload) {
+            $on(btnDownload, 'click', () => {
+                BackupKeyService.downloadAsText(keys, email);
+                if (check) check.checked = true;
+                if (finishBtn) finishBtn.disabled = false;
             });
-        };
+        }
+
+        if (btnPrint) {
+            $on(btnPrint, 'click', () => BackupKeyService.printSlip(keys, email));
+        }
+
+        if (check) {
+            $on(check, 'change', () => {
+                if (finishBtn) finishBtn.disabled = !check.checked;
+            });
+        }
+
+        if (finishBtn) {
+            $on(finishBtn, 'click', () => {
+                ModalService.hideModal();
+                eventBus.emit('profile:mfa-enrolled');
+                eventBus.emit('ui:notification_hud', {
+                    title: 'Seguridad AAL2 Activada',
+                    message: 'Autenticación en dos pasos (TOTP) configurada y activa.',
+                    type: 'success'
+                });
+            });
+        }
     }
 }
 

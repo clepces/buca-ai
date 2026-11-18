@@ -12,7 +12,8 @@ import kernel from '@/core/kernel.js';
 import '@/shared/ui/utils/ui-helper.js';
 import { Logger } from '@/shared/utils/logger.js';
 import { $id, $mount, $addClass } from '@/shared/utils/dom.js';
-import { $onWindow } from '@/core/utils/system-helper.js';
+import { $onWindow, setGlobal, getGlobal } from '@/core/utils/system-helper.js';
+import { $onReady } from '@/shared/utils/dom.js';
 
 /**
  * @function bootstrap
@@ -20,8 +21,8 @@ import { $onWindow } from '@/core/utils/system-helper.js';
  * Sigue una secuencia estricta: PWA -> Kernel Boot -> Teardown seguro.
  */
 (async function bootstrap() {
-    if (window.__bucaBootstrapped) return;
-    window.__bucaBootstrapped = true;
+    if (getGlobal('__bucaBootstrapped')) return;
+    setGlobal('__bucaBootstrapped', true);
 
     try {
         // 1. Registro de Service Worker (Capacidades PWA y Offline)
@@ -46,11 +47,7 @@ import { $onWindow } from '@/core/utils/system-helper.js';
             }
         };
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', startKernel, { once: true });
-        } else {
-            startKernel();
-        }
+        $onReady(startKernel);
 
         // 3. Limpieza de memoria y ciclo de vida al desmontar la ventana
         $onWindow('beforeunload', () => {

@@ -4,6 +4,8 @@
  * Panel unificado para configurar cuenta y aplicación según roles
  * (super_admin, admin, owner).
  */
+import { $id, $show, $hide } from '@/shared/utils/dom.js';
+import { safeReload } from '@/core/utils/system-helper.js';
 
 export const SettingsPage = {
     render() {
@@ -31,7 +33,6 @@ export const SettingsPage = {
                     </ul>
 
                     <div class="tab-content">
-                        <!-- Configuraciones Generales -->
                         <div class="tab-pane fade show active" id="settings-general" role="tabpanel">
                             <div class="setting-item d-flex justify-content-between align-items-center mb-3">
                                 <div>
@@ -55,7 +56,6 @@ export const SettingsPage = {
                             </div>
                         </div>
 
-                        <!-- Negocio (Admin/Owner) -->
                         <div class="tab-pane fade" id="settings-business" role="tabpanel">
                             <div class="alert alert-info py-2 small mb-3 border-0 bg-info bg-opacity-10 text-info">
                                 <i class="bi bi-info-circle me-2"></i>Opciones de sucursal y facturación.
@@ -70,7 +70,6 @@ export const SettingsPage = {
                             <button class="btn btn-sm btn-outline-primary w-100" disabled>Actualizar Datos Fiscales</button>
                         </div>
 
-                        <!-- Super Admin (Core) -->
                         <div class="tab-pane fade" id="settings-super" role="tabpanel">
                             <div class="alert alert-danger py-2 small mb-3 border-0 bg-danger bg-opacity-10 text-danger">
                                 <i class="bi bi-shield-lock-fill me-2"></i>Zona de Peligro: Core Settings
@@ -95,22 +94,15 @@ export const SettingsPage = {
             const { user, currentRole } = sessionState.get();
 
             if (!user) {
-                window.location.href = '/auth/login';
+                safeReload('/auth/login');
                 return;
             }
 
             const isSuperAdmin = currentRole === 'super_admin';
             const isAdminOrOwner = isSuperAdmin || currentRole === 'admin' || currentRole === 'owner';
 
-            if (isSuperAdmin) {
-                const tabSuper = document.getElementById('tab-super');
-                if (tabSuper) tabSuper.classList.remove('d-none');
-            }
-
-            if (!isAdminOrOwner) {
-                const tabBusiness = document.getElementById('tab-business');
-                if (tabBusiness) tabBusiness.classList.add('d-none');
-            }
+            if (isSuperAdmin) $show('tab-super');
+            if (!isAdminOrOwner) $hide('tab-business');
         });
     }
 };

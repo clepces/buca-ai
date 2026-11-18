@@ -5,6 +5,9 @@
  * Incluye soporte para pegar código (Paste), autocompletado y navegación de foco.
  * =========================================================================
  */
+import { $id, $$, $on, $mount, $show, $className, $addClass, $removeClass } from '@/shared/utils/dom.js';
+import { setButtonLoading } from '@/shared/utils/dom.js';
+
 export const PINForm = {
     render(email = 'usuario@empresa.com', _options = {}) {
         return `
@@ -24,7 +27,7 @@ export const PINForm = {
                     <input type="text" maxlength="1" id="pin-digit-0" name="pin-0" autocomplete="one-time-code" aria-label="Dígito 1 del PIN" class="form-control text-center fw-bold p-0 pin-digit-box" data-index="0" inputmode="numeric" placeholder="•">
                     <input type="text" maxlength="1" id="pin-digit-1" name="pin-1" autocomplete="one-time-code" aria-label="Dígito 2 del PIN" class="form-control text-center fw-bold p-0 pin-digit-box" data-index="1" inputmode="numeric" placeholder="•">
                     <input type="text" maxlength="1" id="pin-digit-2" name="pin-2" autocomplete="one-time-code" aria-label="Dígito 3 del PIN" class="form-control text-center fw-bold p-0 pin-digit-box" data-index="2" inputmode="numeric" placeholder="•">
-                    <input type="text" maxlength="1" id="pin-digit-3" name="pin-3" autocomplete="one-time-code" aria-label="Dígito 4 del PIN" class="form-control text-center fw-bold p-0 pin-digit-box" data-index="3" inputmode="numeric" placeholder="•">
+                    <input type="text" maxlength="1" id="pin-digit-3" name="pin-3" autocomplete="one-time-code" aria-label="Dígito 3 del PIN" class="form-control text-center fw-bold p-0 pin-digit-box" data-index="3" inputmode="numeric" placeholder="•">
                     <input type="text" maxlength="1" id="pin-digit-4" name="pin-4" autocomplete="one-time-code" aria-label="Dígito 5 del PIN" class="form-control text-center fw-bold p-0 pin-digit-box" data-index="4" inputmode="numeric" placeholder="•">
                     <input type="text" maxlength="1" id="pin-digit-5" name="pin-5" autocomplete="one-time-code" aria-label="Dígito 6 del PIN" class="form-control text-center fw-bold p-0 pin-digit-box" data-index="5" inputmode="numeric" placeholder="•">
                 </div>
@@ -50,98 +53,87 @@ export const PINForm = {
     },
 
     init(onSuccess, onBack, onResend) {
-        const inputs = Array.from(document.querySelectorAll('#pin-inputs input'));
-        const btnVerify = document.getElementById('btn-verify-pin');
-        const backBtn = document.getElementById('back-to-login');
-        const resendBtn = document.getElementById('resend-pin');
+        const inputs = $$('#pin-inputs input');
+        const btnVerify = $id('btn-verify-pin');
+        const backBtn = $id('back-to-login');
+        const resendBtn = $id('resend-pin');
 
         const populateCode = (codeStr) => {
             const digits = String(codeStr).replace(/\D/g, '').slice(0, 6);
             inputs.forEach((input, i) => {
                 input.value = digits[i] || '';
-                if (digits[i]) input.classList.add('filled');
-                else input.classList.remove('filled');
+                if (digits[i]) $addClass(input, 'filled');
+                else $removeClass(input, 'filled');
             });
-            if (digits.length === 6 && btnVerify) {
-                btnVerify.focus();
-            }
+            if (digits.length === 6 && btnVerify) btnVerify.focus();
         };
 
         // Auto-foco y navegación entre campos
         inputs.forEach((input, idx) => {
-            input.addEventListener('keyup', (e) => {
+            $on(input, 'keyup', (e) => {
                 if (e.key >= '0' && e.key <= '9') {
-                    input.classList.add('filled');
+                    $addClass(input, 'filled');
                     if (idx < inputs.length - 1) inputs[idx + 1].focus();
                 } else if (e.key === 'Backspace') {
-                    input.classList.remove('filled');
+                    $removeClass(input, 'filled');
                     if (idx > 0) inputs[idx - 1].focus();
                 } else if (e.key === 'Enter') {
                     if (btnVerify) btnVerify.click();
                 }
             });
 
-            // Evitar caracteres no numéricos
-            input.addEventListener('input', (e) => {
+            $on(input, 'input', (e) => {
                 e.target.value = e.target.value.replace(/[^0-9]/g, '');
             });
 
-            // Soporte de Pegar (Paste) 6 dígitos de una vez
-            input.addEventListener('paste', (e) => {
+            $on(input, 'paste', (e) => {
                 e.preventDefault();
                 const pastedData = (e.clipboardData || window.clipboardData).getData('text');
                 const cleanDigits = pastedData.replace(/\D/g, '').slice(0, 6);
                 if (cleanDigits.length > 0) {
                     populateCode(cleanDigits);
-                    if (cleanDigits.length === 6 && btnVerify) {
-                        btnVerify.click();
-                    }
+                    if (cleanDigits.length === 6 && btnVerify) btnVerify.click();
                 }
             });
         });
 
         if (btnVerify) {
-            btnVerify.onclick = () => {
+            $on(btnVerify, 'click', () => {
                 const pin = inputs.map(i => i.value).join('');
                 if (pin.length === 6) {
                     this.showFeedback('Validando factor de autenticación...', 'success');
-                    btnVerify.disabled = true;
-                    btnVerify.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Validando...';
+                    setButtonLoading(btnVerify, true, 'Validando...');
                     setTimeout(() => onSuccess(pin), 600);
                 } else {
                     this.showFeedback('Por favor, ingrese los 6 dígitos del código.', 'error');
                 }
-            };
+            });
         }
 
         if (resendBtn) {
-            resendBtn.onclick = (e) => {
+            $on(resendBtn, 'click', (e) => {
                 e.preventDefault();
                 this.showFeedback('Nuevo código generado.', 'success');
                 if (onResend) onResend();
-            };
+            });
         }
 
         if (backBtn) {
-            backBtn.onclick = (e) => {
+            $on(backBtn, 'click', (e) => {
                 e.preventDefault();
                 if (onBack) onBack();
-            };
+            });
         }
 
-        // Foco inicial suave
-        setTimeout(() => {
-            if (inputs[0]) inputs[0].focus();
-        }, 300);
+        setTimeout(() => { if (inputs[0]) inputs[0].focus(); }, 300);
     },
 
     showFeedback(message, type = 'error') {
-        const area = document.getElementById('pin-feedback');
+        const area = $id('pin-feedback');
         if (!area) return;
-        
-        area.innerHTML = `<span>${message}</span>`;
-        area.className = `alert alert-${type === 'error' ? 'danger' : 'success'} py-2 small mb-3 text-center animate__animated animate__shakeX`;
-        area.classList.remove('d-none');
+        $mount(area, `<span>${message}</span>`);
+        $className(area, `alert alert-${type === 'error' ? 'danger' : 'success'} py-2 small mb-3 text-center animate__animated animate__shakeX`);
+        $show(area);
     }
 };
 

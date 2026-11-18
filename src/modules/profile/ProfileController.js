@@ -9,13 +9,15 @@ import userService from '@/modules/auth/services/UserService.js';
 import { sessionState } from '@/core/state/session.js';
 import { MFAEnrollmentModal } from './components/MFAEnrollmentModal.js';
 import { eventBus } from '@/core/eventBus/index.js';
+import { $id, $$, $on, $val, $mount, $show, $hide, $className, $addClass, $removeClass } from '@/shared/utils/dom.js';
+import { setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const ProfileController = {
     _generatedSecret: null,
 
     init(initialTab = 'general') {
-        console.log('[ProfileController] Initialized with tab:', initialTab);
-        
+        Logger.info('ProfileController', `Initialized with tab: ${initialTab}`);
         this._bindTabs(initialTab);
         this._bindGeneralForm();
         this._bindSecurityTab();
@@ -23,171 +25,140 @@ export const ProfileController = {
     },
 
     _bindTabs(initialTab) {
-        const tabsContainer = document.getElementById('profile-modal-tabs');
+        const tabsContainer = $id('profile-modal-tabs');
         if (!tabsContainer) return;
 
         const switchTab = (tabId) => {
-            tabsContainer.querySelectorAll('.modal-nav-tab').forEach(b => {
+            $$('.modal-nav-tab', tabsContainer).forEach(b => {
                 b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
             });
-            document.querySelectorAll('.tab-content-pane').forEach(pane => {
-                pane.classList.remove('active');
-            });
-            const targetPane = document.getElementById(`tab-profile-${tabId}`);
-            if (targetPane) targetPane.classList.add('active');
+            $$('.tab-content-pane').forEach(pane => $removeClass(pane, 'active'));
+            const targetPane = $id(`tab-profile-${tabId}`);
+            if (targetPane) $addClass(targetPane, 'active');
         };
 
-        tabsContainer.addEventListener('click', (e) => {
+        $on(tabsContainer, 'click', (e) => {
             const btn = e.target.closest('[data-tab]');
             if (!btn) return;
-            const tabId = btn.getAttribute('data-tab');
-            switchTab(tabId);
+            switchTab(btn.getAttribute('data-tab'));
         });
 
-        // Activar tab inicial
         switchTab(initialTab);
     },
 
     _bindGeneralForm() {
-        const feedbackEl = document.getElementById('profile-feedback-alert');
+        const feedbackEl = $id('profile-feedback-alert');
         const showProfileFeedback = (msg, isError = false) => {
             if (!feedbackEl) return;
-            feedbackEl.className = `alert alert-${isError ? 'danger' : 'success'} py-2 px-3 small mb-3 rounded-3 animate__animated animate__fadeIn`;
-            feedbackEl.innerHTML = `<i class="bi bi-${isError ? 'exclamation-circle' : 'check-circle'}-fill me-1"></i> ${msg}`;
-            feedbackEl.classList.remove('d-none');
+            $className(feedbackEl, `alert alert-${isError ? 'danger' : 'success'} py-2 px-3 small mb-3 rounded-3 animate__animated animate__fadeIn`);
+            $mount(feedbackEl, `<i class="bi bi-${isError ? 'exclamation-circle' : 'check-circle'}-fill me-1"></i> ${msg}`);
+            $show(feedbackEl);
             feedbackEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         };
 
-        const formGeneral = document.getElementById('form-profile-general');
-        if (formGeneral) {
-            formGeneral.onsubmit = async (e) => {
-                e.preventDefault();
-                
-                const submitBtn = document.getElementById('btn-save-profile-general');
-                const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+        const formGeneral = $id('form-profile-general');
+        if (!formGeneral) return;
+
+        $on(formGeneral, 'submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = $id('btn-save-profile-general');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                setButtonLoading(submitBtn, true, 'Guardando en Supabase...');
+            }
+
+            const username = $val('prof-username');
+            const emailInput = $val('prof-email');
+            const sessionEmail = sessionState.get().user?.email || '';
+            const mail = emailInput || sessionEmail;
+            const firstName = $val('prof-firstname');
+            const lastName = $val('prof-lastname');
+            const tax_id = $val('prof-tax-id');
+            const phone = $val('prof-phone');
+            const timezone = $val('prof-timezone') || 'America/Caracas';
+            const preferred_currency = $val('prof-currency') || 'VES_BCV';
+            const language = $val('prof-language') || 'es_VE';
+            const active_mode = $val('prof-active-mode') || 'owner';
+            const timeoutRaw = $val('prof-timeout');
+            const session_timeout_mins = timeoutRaw ? parseInt(timeoutRaw, 10) : 30;
+            const fiscal_address = $val('prof-fiscal-address');
+            const city_state = $val('prof-city-state');
+
+            if (!username) {
+                showProfileFeedback('El alias / nombre de usuario es obligatorio.', true);
+                if (submitBtn) { submitBtn.disabled = false; setButtonLoading(submitBtn, false); }
+                return;
+            }
+            if (!firstName || !lastName) {
+                showProfileFeedback('Nombres y Apellidos son obligatorios.', true);
+                if (submitBtn) { submitBtn.disabled = false; setButtonLoading(submitBtn, false); }
+                return;
+            }
+
+            try {
+                const res = await userService.updateProfile({
+                    username, mail, firstName, lastName, tax_id, phone,
+                    timezone, preferred_currency, language, active_mode,
+                    session_timeout_mins: isNaN(session_timeout_mins) ? 30 : session_timeout_mins,
+                    fiscal_address, city_state
+                });
+                if (!res.success) {
+                    showProfileFeedback(res.error || 'Error al validar datos del perfil.', true);
+                } else {
+                    showProfileFeedback('¡Perfil corporativo actualizado con éxito en Supabase!', false);
+                }
+            } catch (err) {
+                showProfileFeedback(err.message || 'Error al actualizar perfil.', true);
+            } finally {
                 if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Guardando en Supabase...';
+                    submitBtn.disabled = false;
+                    setButtonLoading(submitBtn, false);
                 }
-
-                const username = document.getElementById('prof-username')?.value?.trim() || '';
-                const emailInput = document.getElementById('prof-email')?.value?.trim();
-                const sessionEmail = sessionState.get().user?.email || '';
-                const mail = emailInput || sessionEmail;
-                const firstName = document.getElementById('prof-firstname')?.value?.trim() || '';
-                const lastName = document.getElementById('prof-lastname')?.value?.trim() || '';
-                const tax_id = document.getElementById('prof-tax-id')?.value?.trim() || '';
-                const phone = document.getElementById('prof-phone')?.value?.trim() || '';
-                const timezone = document.getElementById('prof-timezone')?.value || 'America/Caracas';
-                const preferred_currency = document.getElementById('prof-currency')?.value || 'VES_BCV';
-                const language = document.getElementById('prof-language')?.value || 'es_VE';
-                const active_mode = document.getElementById('prof-active-mode')?.value || 'owner';
-                const timeoutRaw = document.getElementById('prof-timeout')?.value;
-                const session_timeout_mins = timeoutRaw !== undefined ? parseInt(timeoutRaw, 10) : 30;
-                const fiscal_address = document.getElementById('prof-fiscal-address')?.value?.trim() || '';
-                const city_state = document.getElementById('prof-city-state')?.value?.trim() || '';
-
-                if (!username) {
-                    showProfileFeedback('El alias / nombre de usuario es obligatorio.', true);
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnText;
-                    }
-                    return;
-                }
-
-                if (!firstName || !lastName) {
-                    showProfileFeedback('Nombres y Apellidos son obligatorios.', true);
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnText;
-                    }
-                    return;
-                }
-
-                try {
-                    const profilePayload = {
-                        username,
-                        mail,
-                        firstName,
-                        lastName,
-                        tax_id,
-                        phone,
-                        timezone,
-                        preferred_currency,
-                        language,
-                        active_mode,
-                        session_timeout_mins: isNaN(session_timeout_mins) ? 30 : session_timeout_mins,
-                        fiscal_address,
-                        city_state
-                    };
-
-                    const res = await userService.updateProfile(profilePayload);
-                    if (!res.success) {
-                        showProfileFeedback(res.error || 'Error al validar datos del perfil.', true);
-                    } else {
-                        showProfileFeedback('¡Perfil corporativo actualizado con éxito en Supabase!', false);
-                    }
-                } catch (err) {
-                    showProfileFeedback(err.message || 'Error al actualizar perfil.', true);
-                } finally {
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnText;
-                    }
-                }
-            };
-        }
+            }
+        });
     },
 
     _bindSecurityTab() {
-        const btnSetupTotp = document.getElementById('btn-setup-totp');
-        const toggle2FA = document.getElementById('profile-2fa-toggle');
+        const btnSetupTotp = $id('btn-setup-totp');
+        const toggle2FA = $id('profile-2fa-toggle');
 
-        // 1. Desplegar Modal de Enrolamiento MFA Nativo con Canvas QR
         if (btnSetupTotp) {
-            btnSetupTotp.onclick = () => {
-                MFAEnrollmentModal.show();
-            };
+            $on(btnSetupTotp, 'click', () => MFAEnrollmentModal.show());
         }
 
-        // 2. Escuchar evento de enrolamiento completado
         eventBus.on('profile:mfa-enrolled', () => {
             if (toggle2FA) toggle2FA.checked = true;
             if (btnSetupTotp) {
-                btnSetupTotp.classList.remove('btn-outline-primary');
-                btnSetupTotp.classList.add('btn-outline-success');
-                btnSetupTotp.innerHTML = '<i class="bi bi-shield-check"></i> <span>Google Authenticator Activo (AAL2)</span>';
+                $removeClass(btnSetupTotp, 'btn-outline-primary');
+                $addClass(btnSetupTotp, 'btn-outline-success');
+                setButtonContent(btnSetupTotp, 'Google Authenticator Activo (AAL2)', 'bi bi-shield-check');
             }
         });
 
-        // 3. Switch general de 2FA
         if (toggle2FA) {
-            toggle2FA.onchange = async () => {
+            $on(toggle2FA, 'change', async () => {
                 try {
                     await userService.updateSecurity({ two_factor_enabled: toggle2FA.checked });
                 } catch (e) {
-                    console.warn('[ProfileController] Error guardando estado 2FA:', e);
+                    Logger.warn('ProfileController', 'Error guardando estado 2FA:', e);
                 }
-            };
+            });
         }
     },
 
     _bindWorkerTab() {
-        const cardsList = document.getElementById('experience-cards-list');
+        const cardsList = $id('experience-cards-list');
         if (!cardsList) return;
 
-        cardsList.addEventListener('click', (e) => {
+        $on(cardsList, 'click', (e) => {
             const toggle = e.target.closest('[data-action="worker:toggle_ficha"]');
-            if (!toggle) return;
-            if (e.target.closest('button')) return;
+            if (!toggle || e.target.closest('button')) return;
 
             const currentCard = toggle.closest('.experience-card-item');
             if (!currentCard) return;
 
-            const allCards = cardsList.querySelectorAll('.experience-card-item');
-            allCards.forEach(c => {
-                if (c !== currentCard) c.classList.add('collapsed');
+            $$('.experience-card-item', cardsList).forEach(c => {
+                if (c !== currentCard) $addClass(c, 'collapsed');
             });
             currentCard.classList.toggle('collapsed');
         });

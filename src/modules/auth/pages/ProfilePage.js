@@ -4,6 +4,10 @@
  * Visualización y edición de datos del usuario en sesión.
  * Utiliza el estilo Corporate Hybrid Glass.
  */
+import { $id, $on, $text, $attr, $hide, $show, $className, $mount } from '@/shared/utils/dom.js';
+import { setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
+import { safeReload } from '@/core/utils/system-helper.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const ProfilePage = {
     render() {
@@ -34,7 +38,6 @@ export const ProfilePage = {
                     </ul>
 
                     <div class="tab-content" id="profile-tab-content">
-                        <!-- Vista Pública -->
                         <div class="tab-pane fade show active" id="content-public" role="tabpanel">
                             <ul class="list-unstyled small mb-0 text-muted">
                                 <li class="mb-2 d-flex justify-content-between border-bottom pb-2 border-opacity-10">
@@ -52,7 +55,6 @@ export const ProfilePage = {
                             </ul>
                         </div>
 
-                        <!-- Vista de Edición -->
                         <div class="tab-pane fade" id="content-edit" role="tabpanel">
                             <form id="profile-edit-form">
                                 <div class="form-group mb-3">
@@ -100,8 +102,8 @@ export const ProfilePage = {
             const { user } = sessionState.get();
 
             if (!user) {
-                console.warn('[ProfilePage] No hay usuario en sesión. Redirigiendo a login...');
-                window.location.href = '/auth/login';
+                Logger.warn('ProfilePage', 'No hay usuario en sesión. Redirigiendo a login...');
+                safeReload('/auth/login');
                 return;
             }
 
@@ -109,23 +111,23 @@ export const ProfilePage = {
             const email = user.email || '';
             const photoURL = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=2563eb&color=fff&size=96`;
 
-            document.getElementById('profile-display-name').textContent = displayName;
-            document.getElementById('profile-email').textContent = email;
-            document.getElementById('profile-avatar').src = photoURL;
+            $text('profile-display-name', displayName);
+            $text('profile-email', email);
+            $attr('profile-avatar', 'src', photoURL);
 
-            const editForm = document.getElementById('profile-edit-form');
-            const nameInput = document.getElementById('edit-display-name');
-            const btnSave = document.getElementById('btn-save-profile');
-            const feedback = document.getElementById('profile-feedback');
+            const editForm = $id('profile-edit-form');
+            const nameInput = $id('edit-display-name');
+            const btnSave = $id('btn-save-profile');
+            const feedback = $id('profile-feedback');
 
-            nameInput.value = user.displayName || '';
+            if (nameInput) nameInput.value = user.displayName || '';
 
             if (editForm) {
-                editForm.onsubmit = async (e) => {
+                $on(editForm, 'submit', async (e) => {
                     e.preventDefault();
                     btnSave.disabled = true;
-                    btnSave.innerHTML = '<div class="buca-spinner sm"></div>';
-                    feedback.classList.add('d-none');
+                    setButtonLoading(btnSave, true, 'Guardando...');
+                    $hide(feedback);
 
                     try {
                         const nameParts = nameInput.value.trim().split(' ');
@@ -136,32 +138,30 @@ export const ProfilePage = {
                             mail: user.email
                         });
 
-                        document.getElementById('profile-display-name').textContent = nameInput.value || user.email || '';
+                        $text('profile-display-name', nameInput.value || user.email || '');
                         feedback.textContent = 'Perfil actualizado exitosamente.';
-                        feedback.className = 'alert alert-success animate__animated animate__fadeIn py-2 small mb-4 text-center';
-                        feedback.classList.remove('d-none');
-
-                        setTimeout(() => feedback.classList.add('d-none'), 3000);
+                        $className(feedback, 'alert alert-success animate__animated animate__fadeIn py-2 small mb-4 text-center');
+                        $show(feedback);
+                        setTimeout(() => $hide(feedback), 3000);
                     } catch (error) {
-                        console.error('[ProfilePage] Error actualizando perfil:', error);
+                        Logger.error('ProfilePage', 'Error actualizando perfil:', error);
                         feedback.textContent = 'Error al actualizar el perfil.';
-                        feedback.className = 'alert alert-danger animate__animated animate__headShake py-2 small mb-4 text-center';
-                        feedback.classList.remove('d-none');
+                        $className(feedback, 'alert alert-danger animate__animated animate__headShake py-2 small mb-4 text-center');
+                        $show(feedback);
                     } finally {
                         btnSave.disabled = false;
-                        btnSave.innerHTML = '<span>GUARDAR CAMBIOS</span><i class="bi bi-check2"></i>';
+                        setButtonContent(btnSave, 'GUARDAR CAMBIOS', 'bi bi-check2');
                     }
-                };
+                });
             }
 
-            // Manejar Cerrar Sesión
-            const btnLogout = document.getElementById('btn-logout');
+            const btnLogout = $id('btn-logout');
             if (btnLogout) {
-                btnLogout.onclick = async () => {
+                $on(btnLogout, 'click', async () => {
                     const { AuthService } = await import('../services/AuthService.js');
                     await AuthService.logout();
-                    window.location.href = '/auth/login';
-                };
+                    safeReload('/auth/login');
+                });
             }
         });
     }

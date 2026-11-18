@@ -2,6 +2,8 @@
  * RegisterPage - Contenedor de Registro de Usuarios
  */
 import { router } from '@/core/router/router.js';
+import { $id, $on, $mount, $className, $hide, $show, $val } from '@/shared/utils/dom.js';
+import { setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
 
 export const RegisterPage = {
     render() {
@@ -58,51 +60,55 @@ export const RegisterPage = {
 
     init() {
         import('../services/AuthService.js').then(({ AuthService }) => {
-            const form = document.getElementById('register-form');
-            const togglePwd = document.getElementById('reg-toggle-password');
-            const pwdInput = document.getElementById('reg-password');
-            const btnSubmit = document.getElementById('btn-register-submit');
-            const feedback = document.getElementById('register-feedback');
+            const form = $id('register-form');
+            const togglePwd = $id('reg-toggle-password');
+            const pwdInput = $id('reg-password');
+            const btnSubmit = $id('btn-register-submit');
+            const feedback = $id('register-feedback');
 
             if (togglePwd && pwdInput) {
-                togglePwd.onclick = () => {
+                $on(togglePwd, 'click', () => {
                     const isPassword = pwdInput.type === 'password';
                     pwdInput.type = isPassword ? 'text' : 'password';
-                    togglePwd.innerHTML = `<i class="bi bi-eye${isPassword ? '-slash' : ''}"></i>`;
-                };
+                    setButtonContent(togglePwd, '', `bi bi-eye${isPassword ? '-slash' : ''}`);
+                    togglePwd.textContent = '';
+                    const icon = document.createElement('i');
+                    icon.className = `bi bi-eye${isPassword ? '-slash' : ''}`;
+                    togglePwd.replaceChildren(icon);
+                });
             }
 
             if (form) {
-                form.onsubmit = async (e) => {
+                $on(form, 'submit', async (e) => {
                     e.preventDefault();
-                    
-                    const name = document.getElementById('reg-name').value;
-                    const email = document.getElementById('reg-email').value;
+                    const name = $val('reg-name');
+                    const email = $val('reg-email');
                     const password = pwdInput.value;
 
                     btnSubmit.disabled = true;
-                    btnSubmit.innerHTML = '<span>REGISTRANDO...</span> <i class="bi bi-arrow-repeat spin"></i>';
-                    feedback.classList.add('d-none');
+                    setButtonLoading(btnSubmit, true, 'REGISTRANDO...');
+                    $hide(feedback);
 
                     try {
                         const result = await AuthService.register(email, password, name);
-                        if (!result.success) throw new Error(result.error === 'auth/email-already-in-use' ? 'El correo ya está registrado.' : 'Error al crear la cuenta. Intente de nuevo.');
+                        if (!result.success) {
+                            throw new Error(result.error === 'auth/email-already-in-use'
+                                ? 'El correo ya está registrado.'
+                                : 'Error al crear la cuenta. Intente de nuevo.');
+                        }
 
-                        feedback.innerHTML = '<span>Cuenta creada con éxito. Redirigiendo...</span>';
-                        feedback.className = 'alert alert-success animate__animated animate__fadeIn py-2 small mb-4';
-                        feedback.classList.remove('d-none');
-                        
+                        $mount(feedback, '<span>Cuenta creada con éxito. Redirigiendo...</span>');
+                        $className(feedback, 'alert alert-success animate__animated animate__fadeIn py-2 small mb-4');
+                        $show(feedback);
                         setTimeout(() => router.navigate('/workspace'), 1200);
-
                     } catch (error) {
-                        feedback.innerHTML = `<span>${error.message}</span>`;
-                        feedback.className = 'alert alert-danger animate__animated animate__headShake py-2 small mb-4';
-                        feedback.classList.remove('d-none');
-                        
+                        $mount(feedback, `<span>${error.message}</span>`);
+                        $className(feedback, 'alert alert-danger animate__animated animate__headShake py-2 small mb-4');
+                        $show(feedback);
                         btnSubmit.disabled = false;
-                        btnSubmit.innerHTML = '<span>REGISTRAR MI EMPRESA</span> <i class="bi bi-person-plus-fill"></i>';
+                        setButtonContent(btnSubmit, 'REGISTRAR MI EMPRESA', 'bi bi-person-plus-fill');
                     }
-                };
+                });
             }
         });
     }

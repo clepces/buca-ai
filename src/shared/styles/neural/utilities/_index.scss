@@ -173,3 +173,19 @@
     height: 2.75rem;
 }
 
+/* =========================================================================
+   UTILITY CLASSES — Comportamiento y estado visual (cursor, pointer-events)
+   ========================================================================= */
+
+.u-cursor-pointer {
+    cursor: pointer;
+}
+
+.u-cursor-default {
+    cursor: default;
+}
+
+.u-pointer-events-none {
+    pointer-events: none;
+}
+

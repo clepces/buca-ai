@@ -3,9 +3,10 @@
  * =========================================================================
  * Proporciona una atmósfera inmersiva de cristal para login y seguridad.
  * Independiente del MainLayout para evitar conflictos de scroll y UI.
+ * SessionDashboard se inyecta desacoplado vía EventBus desde el módulo auth.
  */
-import SessionDashboard from '../../../modules/auth/components/SessionDashboard.js';
-import { $id, $, $mount, $on } from '@/shared/utils/dom.js';
+import { $id, $, $on, $mount, $addClass } from '@/shared/utils/dom.js';
+import { eventBus } from '@/core/eventBus/index.js';
 
 export const AuthLayout = {
     render: (content = '') => {
@@ -72,17 +73,14 @@ export const AuthLayout = {
     },
 
     init() {
-        const dashboardSlot = $id('auth-session-dashboard-slot');
-        if (dashboardSlot) {
-            $mount(dashboardSlot, SessionDashboard.render());
-            if (typeof SessionDashboard.init === 'function') SessionDashboard.init();
-        }
+        // Emitir evento para que el módulo auth inyecte SessionDashboard desacoplado
+        eventBus.emit('auth-layout:mounted');
 
-        // Vincular el icono "extra" (escudo) para abrir el dashboard
+        // Vincular el icono "extra" (escudo) para toggle del dashboard
         const extraIcon = $('.floating-icon.extra');
         if (extraIcon) {
-            extraIcon.style.cursor = 'pointer';
-            $on(extraIcon, 'click', () => SessionDashboard.toggle());
+            $addClass(extraIcon, 'u-cursor-pointer');
+            $on(extraIcon, 'click', () => eventBus.emit('auth:toggle-session-dashboard'));
         }
     }
 };

@@ -1,6 +1,10 @@
 /**
  * RecoveryPage - Recuperación de Acceso
  */
+import { $id, $on, $mount, $className, $addClass, $hide, $show } from '@/shared/utils/dom.js';
+import { setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
+import { Logger } from '@/shared/utils/logger.js';
+
 export const RecoveryPage = {
     render() {
         return `
@@ -41,40 +45,44 @@ export const RecoveryPage = {
     },
     init() {
         import('../services/AuthService.js').then(({ AuthService }) => {
-            const form = document.getElementById('recovery-form');
-            if (form) {
-                form.onsubmit = async (e) => {
-                    e.preventDefault();
-                    const btn = document.getElementById('btn-recovery-submit');
-                    const email = document.getElementById('recovery-email').value;
-                    const feedback = document.getElementById('recovery-feedback');
-                    
-                    btn.disabled = true;
-                    btn.innerHTML = '<div class="buca-spinner sm" data-buca-perf="ignore"></div> <span class="ms-2">ENVIANDO...</span>';
-                    feedback.classList.add('d-none');
+            const form = $id('recovery-form');
+            if (!form) return;
 
-                    console.log('[Auth] -> Solicitud de recuperación enviada');
-                    
-                    try {
-                        const result = await AuthService.recoverPassword(email);
-                        if (!result.success) throw new Error(result.error === 'auth/user-not-found' ? 'No se encontró una cuenta con este correo.' : 'Ocurrió un error. Por favor intente más tarde.');
-                        
-                        btn.innerHTML = '<i class="bi bi-check-circle"></i> <span class="ms-2">ENLACE ENVIADO</span>';
-                        btn.style.background = 'linear-gradient(to bottom, #10b981, #059669)';
-                        
-                        feedback.innerHTML = '<span>Se ha enviado un enlace de recuperación a su correo corporativo.</span>';
-                        feedback.className = 'alert alert-success animate__animated animate__fadeIn py-2 small mt-3';
-                        feedback.classList.remove('d-none');
-                    } catch (error) {
-                        feedback.innerHTML = `<span>${error.message}</span>`;
-                        feedback.className = 'alert alert-danger animate__animated animate__headShake py-2 small mb-4';
-                        feedback.classList.remove('d-none');
-                        
-                        btn.disabled = false;
-                        btn.innerHTML = '<span>ENVIAR ENLACE</span> <i class="bi bi-send-fill ms-2"></i>';
+            $on(form, 'submit', async (e) => {
+                e.preventDefault();
+                const btn = $id('btn-recovery-submit');
+                const email = $id('recovery-email')?.value;
+                const feedback = $id('recovery-feedback');
+
+                btn.disabled = true;
+                setButtonLoading(btn, true, 'ENVIANDO...');
+                $hide(feedback);
+
+                Logger.info('Auth', 'Solicitud de recuperación enviada');
+
+                try {
+                    const result = await AuthService.recoverPassword(email);
+                    if (!result.success) {
+                        throw new Error(result.error === 'auth/user-not-found'
+                            ? 'No se encontró una cuenta con este correo.'
+                            : 'Ocurrió un error. Por favor intente más tarde.');
                     }
-                };
-            }
+
+                    setButtonContent(btn, 'ENLACE ENVIADO', 'bi bi-check-circle');
+                    $addClass(btn, 'btn-success');
+
+                    $mount(feedback, '<span>Se ha enviado un enlace de recuperación a su correo corporativo.</span>');
+                    $className(feedback, 'alert alert-success animate__animated animate__fadeIn py-2 small mt-3');
+                    $show(feedback);
+                } catch (error) {
+                    $mount(feedback, `<span>${error.message}</span>`);
+                    $className(feedback, 'alert alert-danger animate__animated animate__headShake py-2 small mb-4');
+                    $show(feedback);
+
+                    btn.disabled = false;
+                    setButtonContent(btn, 'ENVIAR ENLACE', 'bi bi-send-fill');
+                }
+            });
         });
     }
 };

@@ -103,3 +103,53 @@ export const getGlobal = (key) => (isBrowser() ? window[key] : undefined);
 export const setGlobal = (key, val) => {
     if (isBrowser()) window[key] = val;
 };
+
+/**
+ * Obtiene el ancho del viewport de forma segura.
+ * @returns {number}
+ */
+export const getViewportWidth = () => (isBrowser() ? window.innerWidth : 0);
+
+/**
+ * Obtiene el alto del viewport de forma segura.
+ * @returns {number}
+ */
+export const getViewportHeight = () => (isBrowser() ? window.innerHeight : 0);
+
+/**
+ * Verifica si el navegador está en modo pantalla completa.
+ * @returns {boolean}
+ */
+export const isFullscreen = () => (isBrowser() ? Boolean(document.fullscreenElement) : false);
+
+/**
+ * Solicita pantalla completa en el elemento raíz del documento.
+ * @returns {Promise<void>}
+ */
+export const requestFullscreen = async () => {
+    if (isBrowser() && document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+    }
+};
+
+/**
+ * Sale del modo pantalla completa de forma segura.
+ * @returns {Promise<void>}
+ */
+export const exitFullscreen = async () => {
+    if (isBrowser() && document.exitFullscreen) {
+        await document.exitFullscreen();
+    }
+};
+
+/**
+ * Obtiene el hash de la URL actual de forma segura.
+ * @returns {string}
+ */
+export const getHash = () => (isBrowser() ? window.location.hash : '');
+
+/**
+ * Obtiene el hostname actual de forma segura.
+ * @returns {string}
+ */
+export const getHostname = () => (isBrowser() ? window.location.hostname : '');

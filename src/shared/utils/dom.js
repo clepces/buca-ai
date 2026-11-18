@@ -294,3 +294,51 @@ export const setButtonContent = (target, text, iconClass = '') => {
     const textNode = document.createTextNode(text);
     btn.replaceChildren(icon, textNode);
 };
+
+/**
+ * Remueve un escuchador de eventos de forma segura usando removeEventListener.
+ * @param {HTMLElement|string} target - Elemento o ID
+ * @param {string} event - Tipo de evento
+ * @param {Function} handler - Callback a remover
+ * @param {EventListenerOptions|boolean} [options]
+ */
+export const $off = (target, event, handler, options) => {
+    const el = resolveEl(target);
+    if (el && typeof el.removeEventListener === 'function') {
+        el.removeEventListener(event, handler, options);
+    }
+};
+
+/**
+ * Crea un elemento HTML de forma segura con atributos opcionales.
+ * @param {string} tag - Nombre del tag (ej: 'div', 'span', 'button')
+ * @param {Object} [attrs={}] - Atributos: { id, className, text, html, ...dataset }
+ * @returns {HTMLElement}
+ */
+export const $create = (tag, attrs = {}) => {
+    const el = document.createElement(tag);
+    const { id, className, text, ...rest } = attrs;
+    if (id) el.id = id;
+    if (className) el.className = className;
+    if (text) el.textContent = text;
+    for (const [key, val] of Object.entries(rest)) {
+        if (key.startsWith('data')) {
+            el.setAttribute(key.replace(/([A-Z])/g, '-$1').toLowerCase(), val);
+        } else {
+            el.setAttribute(key, val);
+        }
+    }
+    return el;
+};
+
+/**
+ * Añade un nodo hijo a un elemento padre de forma segura.
+ * @param {HTMLElement|string} parent - Contenedor padre
+ * @param {HTMLElement} child - Elemento hijo a añadir
+ * @returns {HTMLElement|null}
+ */
+export const $appendTo = (parent, child) => {
+    const el = resolveEl(parent);
+    if (el && child) el.appendChild(child);
+    return el;
+};

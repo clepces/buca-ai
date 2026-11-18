@@ -102,6 +102,22 @@ export const AuthModule = {
         eventBus.on(AUTH_EVENTS.LOGIN_START, async (credentials) => {
             await this.handleLogin(credentials);
         });
+
+        // Desacoplamiento: AuthLayout emite 'auth-layout:mounted' y auth inyecta SessionDashboard
+        eventBus.on('auth-layout:mounted', async () => {
+            const { $id, $mount } = await import('@/shared/utils/dom.js');
+            const { default: SessionDashboard } = await import('./components/SessionDashboard.js');
+            const slot = $id('auth-session-dashboard-slot');
+            if (slot) {
+                $mount(slot, SessionDashboard.render());
+                if (typeof SessionDashboard.init === 'function') SessionDashboard.init();
+            }
+        });
+
+        eventBus.on('auth:toggle-session-dashboard', async () => {
+            const { default: SessionDashboard } = await import('./components/SessionDashboard.js');
+            SessionDashboard.toggle();
+        });
     },
 
     /**

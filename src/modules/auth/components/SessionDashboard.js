@@ -4,6 +4,9 @@
  * Visualiza dispositivos vinculados, sesiones activas y nivel de seguridad.
  * Refactorizado para Bootstrap 5.3 y sistema de paneles Glass.
  */
+import { $id, $toggle } from '@/shared/utils/dom.js';
+import { Logger } from '@/shared/utils/logger.js';
+
 export const SessionDashboard = {
     render() {
         return `
@@ -79,11 +82,11 @@ export const SessionDashboard = {
     },
 
     init() {
-        console.log('[SessionDashboard] -> Integrado en sistema de paneles');
+        Logger.info('SessionDashboard', 'Integrado en sistema de paneles');
     },
 
     toggle() {
-        const panel = document.getElementById('panel-session-dashboard');
+        const panel = $id('panel-session-dashboard');
         if (panel) {
             panel.classList.toggle('active');
         }
