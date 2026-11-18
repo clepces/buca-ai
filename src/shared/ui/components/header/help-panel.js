@@ -10,7 +10,8 @@ export const HelpPanel = {
             {
                 id: 'ai_copilot',
                 icon: 'bi-stars',
-                color: '#2563eb',
+                colorClass: 'text-primary',
+                bgClass: 'bg-primary-subtle',
                 title: 'BUCA Assistant',
                 desc: 'Obtén ayuda guiada con tu ERP directamente en el sistema.',
                 action: 'ui:open_ai_assistant'
@@ -18,7 +19,8 @@ export const HelpPanel = {
             {
                 id: 'docs',
                 icon: 'bi-journal-code',
-                color: '#059669',
+                colorClass: 'text-success',
+                bgClass: 'bg-success-subtle',
                 title: 'Documentación Oficial',
                 desc: 'Consulta guías, referencias y arquitectura de módulos.',
                 action: 'ui:open_docs'
@@ -26,7 +28,8 @@ export const HelpPanel = {
             {
                 id: 'troubleshooting',
                 icon: 'bi-wrench-adjustable',
-                color: '#d97706',
+                colorClass: 'text-warning',
+                bgClass: 'bg-warning-subtle',
                 title: 'Resolución de Problemas',
                 desc: 'Encuentra soluciones a errores comunes de la plataforma.',
                 action: 'ui:open_troubleshooting'
@@ -34,7 +37,8 @@ export const HelpPanel = {
             {
                 id: 'status',
                 icon: 'bi-activity',
-                color: '#10b981',
+                colorClass: 'text-info',
+                bgClass: 'bg-info-subtle',
                 title: 'Estatus del Sistema',
                 desc: 'Revisa disponibilidad de Supabase y servicios de red.',
                 action: 'ui:open_performance'
@@ -42,7 +46,8 @@ export const HelpPanel = {
             {
                 id: 'support',
                 icon: 'bi-envelope',
-                color: '#6366f1',
+                colorClass: 'text-primary',
+                bgClass: 'bg-primary-subtle',
                 title: 'Contacta con Soporte',
                 desc: 'Envía una solicitud para problemas de cuenta o facturación.',
                 action: 'feedback:select_type',
@@ -69,7 +74,7 @@ export const HelpPanel = {
                         <button type="button" class="help-item-btn w-100 p-2.5 rounded-3 d-flex align-items-start gap-3 border-0 bg-transparent text-start transition-all mb-1"
                                 data-action="${item.action}"
                                 ${item.payload ? `data-payload='${JSON.stringify(item.payload)}'` : ''}>
-                            <div class="help-icon-wrapper rounded-2 p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="color: ${item.color}; background: rgba(37, 99, 235, 0.08);">
+                            <div class="help-icon-wrapper rounded-2 p-2 d-flex align-items-center justify-content-center flex-shrink-0 ${item.bgClass} ${item.colorClass}">
                                 <i class="bi ${item.icon} fs-5"></i>
                             </div>
                             <div class="flex-grow-1 min-w-0">

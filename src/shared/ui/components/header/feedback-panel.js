@@ -10,14 +10,14 @@ export const FeedbackPanel = {
             {
                 id: 'issue',
                 icon: 'bi-exclamation-triangle',
-                color: '#dc2626',
+                colorClass: 'text-danger',
                 title: 'Incidencia',
                 desc: 'Problema técnico con mi unidad o datos'
             },
             {
                 id: 'idea',
                 icon: 'bi-lightbulb',
-                color: '#d97706',
+                colorClass: 'text-warning',
                 title: 'Idea',
                 desc: 'Sugerencia para mejorar BUCA AI'
             }
@@ -39,7 +39,7 @@ export const FeedbackPanel = {
                                 <button type="button" class="feedback-card-btn w-100 p-3 rounded-3 text-center border transition-all h-100" 
                                         data-action="feedback:select_type" 
                                         data-type="${opt.id}">
-                                    <div class="feedback-icon-box mb-2" style="color: ${opt.color}">
+                                    <div class="feedback-icon-box mb-2 ${opt.colorClass}">
                                         <i class="bi ${opt.icon} fs-3"></i>
                                     </div>
                                     <span class="d-block fw-bold text-main small mb-1">${escapeHTML(opt.title)}</span>

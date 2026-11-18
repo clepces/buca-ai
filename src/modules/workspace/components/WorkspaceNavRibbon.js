@@ -39,8 +39,8 @@ export const WorkspaceNavRibbon = {
 
         updateBusinessCount();
 
-        // Control del menú desplegable 3-dots
-        const overflowBtn = $id('ws-actions-overflow-toggle');
+        // Control del menú desplegable Nav Overflow ('... Más')
+        const overflowBtn = $id('ws-nav-overflow-more-toggle') || $id('ws-actions-overflow-toggle');
         const overflowMenu = $id('ws-actions-dropdown');
         if (overflowBtn && overflowMenu) {
             $on(overflowBtn, 'click', (e) => {
@@ -49,23 +49,10 @@ export const WorkspaceNavRibbon = {
             });
         }
 
-        // Control del menú Nav Overflow 'Más'
-        const navMoreBtn = $id('nav-overflow-more-toggle');
-        const navMoreMenu = $id('nav-overflow-more-menu');
-        if (navMoreBtn && navMoreMenu) {
-            $on(navMoreBtn, 'click', (e) => {
-                e.stopPropagation();
-                $toggle(navMoreMenu);
-            });
-        }
-
-        // Cierre de desplegables al hacer clic fuera
+        // Cierre de desplegable al hacer clic fuera
         $on(document, 'click', (e) => {
-            if (overflowMenu && !overflowMenu.contains(e.target) && e.target !== overflowBtn) {
+            if (overflowMenu && !overflowMenu.contains(e.target) && e.target !== overflowBtn && !overflowBtn?.contains(e.target)) {
                 $addClass(overflowMenu, 'd-none');
-            }
-            if (navMoreMenu && !navMoreMenu.contains(e.target) && e.target !== navMoreBtn) {
-                $addClass(navMoreMenu, 'd-none');
             }
         });
 

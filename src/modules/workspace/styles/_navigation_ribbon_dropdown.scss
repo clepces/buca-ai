@@ -1,0 +1,78 @@
+/**
+ * Workspace Navigation Ribbon Dropdown Styles
+ * @module modules/workspace/styles/_navigation_ribbon_dropdown
+ */
+@use "@/shared/styles/neural/abstracts" as *;
+
+.ws-actions-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 250px;
+    background: var(--surface-card, #ffffff);
+    border: 1px solid var(--border-glass, rgba(0, 0, 0, 0.08));
+    border-radius: 1rem;
+    padding: 0.5rem;
+    z-index: 1050;
+    animation: drop-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+
+    [data-theme="dark"] & {
+        background: #0f172a;
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .dropdown-item-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.45rem 0.75rem;
+        border-radius: 0.5rem;
+        border: none;
+        background: transparent;
+        font-size: 0.8rem;
+        font-family: 'Inter', sans-serif;
+        color: var(--text-main, #1e293b);
+        cursor: pointer;
+        text-align: left;
+        transition: background 0.15s ease, color 0.15s ease;
+
+        &:hover {
+            background: rgba(37, 99, 235, 0.08);
+            color: #2563eb;
+        }
+
+        &.disabled-dev-item {
+            cursor: not-allowed;
+            opacity: 0.8;
+
+            &:hover {
+                background: rgba(0, 0, 0, 0.04);
+            }
+        }
+    }
+}
+
+.action-more-pill {
+    background: var(--glass-surface-bg, rgba(255, 255, 255, 0.7));
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &:hover {
+        background: #fff;
+        color: var(--primary-color, #2563eb) !important;
+        border-color: rgba(37, 99, 235, 0.3);
+    }
+
+    [data-theme="dark"] & {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.1);
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff !important;
+        }
+    }
+}
