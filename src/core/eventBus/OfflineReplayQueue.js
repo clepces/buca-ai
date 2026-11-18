@@ -6,6 +6,9 @@
  * =========================================================================
  */
 
+import { $onWindow, generateUUID } from '../utils/index.js';
+import { Logger } from '../../shared/utils/logger.js';
+
 const DB_NAME = 'buca_eventbus_offline';
 const STORE_NAME = 'events_queue';
 const DB_VERSION = 1;
@@ -56,9 +59,7 @@ class OfflineReplayQueue {
     async enqueue(event, ...args) {
         if (!this._isTransactional(event)) return false;
 
-        const idempotencyKey = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
-            ? crypto.randomUUID()
-            : `idemp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+        const idempotencyKey = generateUUID();
 
         const record = {
             idempotency_key: idempotencyKey,
@@ -103,7 +104,7 @@ class OfflineReplayQueue {
 
         // No descartar ni drenar si no existe emisor registrado
         if (typeof targetEmitter !== 'function') {
-            console.warn('[OfflineReplayQueue] Cero emisores registrados. Drenaje suspendido.');
+            Logger.warn('OfflineReplayQueue', 'Cero emisores registrados. Drenaje suspendido.');
             return 0;
         }
 
@@ -116,13 +117,13 @@ class OfflineReplayQueue {
             while (this._inMemoryQueue.length > 0) {
                 const item = this._inMemoryQueue[0];
                 try {
-                    const idempKey = item.idempotency_key || `mem_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+                    const idempKey = item.idempotency_key || `mem_${generateUUID()}`;
                     item.idempotency_key = idempKey;
                     await targetEmitter(item.event, ...item.args, { idempotency_key: idempKey, timestamp: item.timestamp });
                     this._inMemoryQueue.shift();
                     count++;
                 } catch (emitErr) {
-                    console.warn('[OfflineReplayQueue] Fallo en retransmisión en memoria. Deteniendo drenaje para preservar orden:', emitErr);
+                    Logger.warn('OfflineReplayQueue', 'Fallo en retransmisión en memoria. Deteniendo drenaje para preservar orden:', emitErr);
                     inMemoryHalted = true;
                     break;
                 }
@@ -151,7 +152,7 @@ class OfflineReplayQueue {
             if (records.length > 0) {
                 for (const item of records) {
                     try {
-                        const idempKey = item.idempotency_key || `legacy_${item.id || Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+                        const idempKey = item.idempotency_key || `legacy_${generateUUID()}`;
                         item.idempotency_key = idempKey;
 
                         // Esperar la resolución asíncrona real del handler
@@ -172,7 +173,7 @@ class OfflineReplayQueue {
                         });
                         count++;
                     } catch (err) {
-                        console.warn('[OfflineReplayQueue] Fallo en confirmación de comando persistido. Deteniendo drenaje:', item.idempotency_key, err);
+                        Logger.warn('OfflineReplayQueue', 'Fallo en confirmación de comando persistido. Deteniendo drenaje:', item.idempotency_key, err);
                         break;
                     }
                 }
@@ -185,14 +186,12 @@ class OfflineReplayQueue {
     }
 
     _initListener() {
-        if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
-            window.addEventListener('online', () => {
-                console.log('[OfflineReplayQueue] Red recuperada. Reenviando eventos encolados...');
-                if (this._onOnlineEmitter) {
-                    this.drain(this._onOnlineEmitter);
-                }
-            });
-        }
+        $onWindow('online', () => {
+            Logger.info('OfflineReplayQueue', 'Red recuperada. Reenviando eventos encolados...');
+            if (this._onOnlineEmitter) {
+                this.drain(this._onOnlineEmitter);
+            }
+        });
     }
 
     registerEmitter(emitterFn) {
