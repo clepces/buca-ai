@@ -5,7 +5,7 @@
 export function renderRibbonTemplate() {
     return `
         <div class="workspace-navigation-ribbon" role="toolbar" aria-label="Navegación y controles del Workspace">
-            <div class="ribbon-content container-max px-2">
+            <div class="ribbon-content">
                 <!-- 1. LEFT ZONE: BREADCRUMBS & CONTEXT PILLS -->
                 <div class="ws-ribbon-left d-flex align-items-center gap-2">
                     <nav class="breadcrumb-trail d-none d-lg-flex align-items-center gap-1.5" aria-label="Ubicación">
@@ -36,44 +36,44 @@ export function renderRibbonTemplate() {
                     </div>
                 </div>
 
-                <!-- 2. CENTER ZONE: RESERVED EMPTY SPACE (No pills here) -->
+                <!-- 2. CENTER ZONE: RESERVED EMPTY SPACE -->
                 <div class="ws-ribbon-center flex-grow-1"></div>
 
                 <!-- 3. RIGHT ZONE: ACTIONS & TOOLS NAV OVERFLOW SUITE -->
                 <div class="ws-ribbon-right d-flex align-items-center gap-2">
                     <!-- Primary CTA -->
-                    <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 d-flex align-items-center gap-1.5 fw-semibold shadow-xs ws-btn-primary" data-action="ui:open_create_business" title="Registrar Nueva Unidad de Negocio">
+                    <button type="button" class="btn btn-sm btn-primary ws-btn-primary shadow-xs" data-action="ui:open_create_business" title="Registrar Nueva Unidad de Negocio">
                         <i class="bi bi-plus-lg"></i>
-                        <span class="d-none d-sm-inline">Nueva Unidad</span>
+                        <span class="ws-btn-label">Nueva Unidad</span>
                     </button>
 
                     <!-- Nav Overflow Tools Cluster (Direct Tools + Collapsible '... Más') -->
                     <div class="ws-tools-overflow nav-overflow d-flex align-items-center gap-1" data-bs-toggle="nav-overflow">
                         <!-- Direct Action Tools (Desktop) -->
                         <div class="ws-direct-tools d-none d-md-flex align-items-center gap-1">
-                            <button type="button" class="btn btn-sm btn-icon rounded-circle text-muted p-1.5 action-mini-pill" title="Alternar Vista (Grid/Lista)" data-action="workspace:toggle_view_mode">
+                            <button type="button" class="btn btn-sm action-mini-pill" title="Alternar Vista (Grid/Lista)" data-action="workspace:toggle_view_mode">
                                 <i class="bi bi-grid-fill"></i>
                             </button>
-                            <button type="button" class="btn btn-sm btn-icon rounded-circle text-muted p-1.5 action-mini-pill" title="Sincronizar Datos Operativos" data-action="workspace:refresh_data">
+                            <button type="button" class="btn btn-sm action-mini-pill" title="Sincronizar Datos Operativos" data-action="workspace:refresh_data">
                                 <i class="bi bi-arrow-clockwise"></i>
                             </button>
-                            <button type="button" class="btn btn-sm btn-icon rounded-circle text-muted p-1.5 action-mini-pill" title="Exportar Reporte Mensual" data-action="ui:export_report">
+                            <button type="button" class="btn btn-sm action-mini-pill" title="Exportar Reporte Mensual" data-action="ui:export_report">
                                 <i class="bi bi-cloud-arrow-down"></i>
                             </button>
-                            <button type="button" class="btn btn-sm btn-icon rounded-circle text-muted p-1.5 action-mini-pill" title="Ajustes del Workspace" data-action="ui:open_settings">
+                            <button type="button" class="btn btn-sm action-mini-pill" title="Ajustes del Workspace" data-action="ui:open_settings">
                                 <i class="bi bi-sliders2"></i>
                             </button>
                         </div>
 
                         <!-- Nav Overflow Trigger Button ('... Más') -->
                         <div class="dropdown-wrapper position-relative" id="dw-ws-nav-overflow">
-                            <button type="button" class="btn btn-sm btn-nav-pill rounded-pill px-2.5 py-1.5 x-small fw-semibold text-muted d-flex align-items-center gap-1 action-more-pill" id="ws-nav-overflow-more-toggle" title="Centro de Operaciones y Herramientas">
+                            <button type="button" class="btn btn-sm action-more-pill" id="ws-nav-overflow-more-toggle" title="Centro de Operaciones y Herramientas">
                                 <i class="bi bi-three-dots"></i>
-                                <span class="d-none d-sm-inline">Más</span>
+                                <span>Más</span>
                             </button>
 
                             <!-- Collapsible Operations Dropdown -->
-                            <div class="ws-actions-dropdown shadow-xl rounded-4 border d-none" id="ws-actions-dropdown">
+                            <div class="ws-actions-dropdown shadow-xl rounded-3 border d-none" id="ws-actions-dropdown">
                                 <div class="p-2 buca-scroll-area max-h-360">
                                     <!-- Herramientas Rápidas para móvil / tablet -->
                                     <div class="d-md-none border-bottom pb-2 mb-2">
@@ -146,7 +146,7 @@ export function renderRibbonTemplate() {
                                         </div>
                                     </button>
                                     <button type="button" class="dropdown-item-btn d-flex align-items-center gap-2.5 w-100 p-2 rounded-3 text-start border-0 bg-transparent" data-action="ui:open_settings">
-                                        <div class="p-1.5 rounded-2 bg-secondary-subtle text-muted"><i class="bi bi-sliders2"></i></div>
+                                        <div class="p-1.5 rounded-2 bg-secondary-subtle text-muted"><i class="bi bi-gear"></i></div>
                                         <div class="flex-grow-1 min-w-0">
                                             <span class="d-block small fw-semibold text-main">Ajustes del Workspace</span>
                                             <span class="d-block x-small text-muted">Parámetros de espacio y entorno</span>

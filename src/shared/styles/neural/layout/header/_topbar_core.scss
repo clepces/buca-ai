@@ -4,34 +4,36 @@
 
 @use "../../abstracts" as *;
 
-/* ── FLOATING CAPSULE HEADER ────────────────────────────────────────── */
+/* ── FULL-WIDTH FLUSH STUDIO HEADER ─────────────────────────────────── */
 .app-header {
     position: relative;
     width: 100%;
-    max-width: var(--max-width, 1400px);
-    margin: 10px auto 0;
+    margin: 0;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 1000;
     box-sizing: border-box !important;
-    background: var(--surface-glass);
-    -webkit-backdrop-filter: blur(var(--ui-glass-blur));
-    backdrop-filter: blur(var(--ui-glass-blur));
-    border: 1px solid var(--border-glass-bright);
-    border-radius: var(--ui-capsule-radius);
-    height: 54px;
+    background: var(--surface-glass, rgba(255, 255, 255, 0.92));
+    -webkit-backdrop-filter: blur(var(--ui-glass-blur, 16px));
+    backdrop-filter: blur(var(--ui-glass-blur, 16px));
+    border: none;
+    border-bottom: 1px solid var(--border-glass, rgba(0, 0, 0, 0.08));
+    border-radius: 0 !important;
+    height: 52px;
     display: flex;
     align-items: center;
-    padding: 0 14px !important;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 0 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s ease;
 
-    @media screen and (max-height: 800px) {
-        height: 44px;
-        padding: 0 10px !important;
+    [data-theme="dark"] & {
+        background: rgba(15, 23, 42, 0.92);
+        border-bottom-color: rgba(255, 255, 255, 0.08);
     }
 
-    @media screen and (max-width: 1100px) {
-        height: 46px;
-        padding: 0 12px !important;
+    @media screen and (max-height: 800px) {
+        height: 48px;
     }
 
     .container-fluid {
@@ -39,16 +41,18 @@
         justify-content: space-between;
         align-items: center;
         width: 100%;
-        padding: 0 !important;
-        margin: 0 !important;
-        gap: 10px;
+        max-width: var(--max-width, 1600px);
+        margin: 0 auto !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        gap: 12px;
         min-width: 0;
-    }
+        height: 100%;
 
-    &:hover {
-        background: var(--surface-glass-bright);
-        border-color: rgba(37, 99, 235, 0.35);
-        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+        @media (min-width: 992px) {
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+        }
     }
 }
 
@@ -240,67 +244,5 @@
 
     @include respond-below('lg') {
         max-width: 150px;
-    }
-
-    .search-inner-wrapper {
-        background: rgba(0, 0, 0, 0.035);
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        border-radius: 50px;
-        height: 36px;
-        padding: 0 12px;
-        display: flex;
-        align-items: center;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        width: 100%;
-
-        .search-icon-neural {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-right: 6px;
-            transition: color 0.25s;
-            flex-shrink: 0;
-        }
-
-        .search-input-field {
-            font-size: 0.82rem;
-            color: var(--text-main);
-            width: 100%;
-            outline: none;
-            background: transparent;
-            border: none;
-            min-width: 0;
-
-            &::placeholder {
-                color: var(--text-muted);
-                opacity: 0.65;
-            }
-        }
-
-        .search-kbd-hint {
-            opacity: 0.45;
-            flex-shrink: 0;
-            margin-left: 4px;
-            
-            .kbd-key {
-                background: rgba(0, 0, 0, 0.06);
-                border: 1px solid rgba(0, 0, 0, 0.1);
-                border-radius: 4px;
-                padding: 1px 4px;
-                font-size: 0.62rem;
-                font-weight: 700;
-                color: var(--text-main);
-                line-height: 1.1;
-            }
-        }
-
-        &:focus-within {
-            background: var(--surface-solid);
-            border-color: var(--buca-blue);
-            box-shadow: 0 2px 10px rgba(37, 99, 235, 0.12);
-
-            .search-icon-neural {
-                color: var(--buca-blue);
-            }
-        }
     }
 }

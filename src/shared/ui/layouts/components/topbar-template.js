@@ -22,16 +22,16 @@ export function renderTopBar() {
 
     return `
         <header class="app-header header--solid shadow-2xs">
-            <div class="container-fluid px-3">
+            <div class="container-fluid">
                 <!-- Left Zone: Logo, Versión & Negocio Activo -->
                 <div class="header-left-identity d-flex align-items-center gap-2">
                     <a href="/" class="navbar-brand-premium d-flex align-items-center gap-2 m-0 text-decoration-none">
-                        <div class="logo-neural-container d-flex align-items-center justify-content-center p-1.5 rounded-3 bg-subtle border">
-                            <img id="app-logo" src="${logoSrc}" alt="Logo BUCA" class="logo-img-premium" width="22" height="22">
+                        <div class="logo-neural-container d-flex align-items-center justify-content-center p-1.5 rounded-2 bg-subtle border">
+                            <img id="app-logo" src="${logoSrc}" alt="Logo BUCA" class="logo-img-premium" width="20" height="20">
                         </div>
                         <div class="d-flex align-items-center gap-1.5">
                             <span class="brand-name-main fw-bold text-main">BUCA <span class="text-primary">AI</span></span>
-                            <span class="badge bg-secondary-subtle text-muted rounded-pill px-2 py-0.5 x-small font-monospace">v1.1.20</span>
+                            <span class="badge bg-secondary-subtle text-muted rounded-pill px-2 py-0.5 x-small font-monospace">v1.1.23-alpha</span>
                         </div>
                     </a>
 
@@ -52,7 +52,7 @@ export function renderTopBar() {
                 <div class="header-right d-flex align-items-center gap-1.5">
                     <!-- 1. Botón Feedback -->
                     <div class="dropdown-wrapper position-relative" id="dw-panel-feedback">
-                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 d-flex align-items-center gap-1.5 fw-semibold x-small header-btn-feedback" data-action="header:toggle_panel" data-target="panel-feedback" title="Compartir Feedback">
+                        <button type="button" class="btn btn-sm header-btn-feedback d-flex align-items-center gap-1.5 px-2.5 py-1" data-action="header:toggle_panel" data-target="panel-feedback" title="Compartir Feedback">
                             <i class="bi bi-chat-square-text"></i>
                             <span class="d-none d-sm-inline">Feedback</span>
                         </button>
@@ -60,7 +60,7 @@ export function renderTopBar() {
                     </div>
 
                     <!-- 2. Botón Buscar (Command Palette) -->
-                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 d-flex align-items-center gap-2 text-muted x-small header-btn-search" data-action="ui:open_search_palette" title="Buscar o ejecutar comandos (Ctrl + K)">
+                    <button type="button" class="btn btn-sm header-btn-search d-flex align-items-center gap-2 px-2.5 py-1" data-action="ui:open_search_palette" title="Buscar o ejecutar comandos (Ctrl + K)">
                         <i class="bi bi-search"></i>
                         <span class="d-none d-md-inline">Buscar...</span>
                         <kbd class="d-none d-lg-inline-block bg-subtle text-muted px-1.5 py-0.2 rounded border x-small">Ctrl K</kbd>
@@ -68,7 +68,7 @@ export function renderTopBar() {
 
                     <!-- 3. Botón Ayuda (?) -->
                     <div class="dropdown-wrapper position-relative" id="dw-panel-help">
-                        <button type="button" class="btn btn-sm btn-icon rounded-circle text-muted p-1.5 header-circle-btn" data-action="header:toggle_panel" data-target="panel-help" title="Centro de Ayuda & Documentación">
+                        <button type="button" class="btn btn-sm header-circle-btn" data-action="header:toggle_panel" data-target="panel-help" title="Centro de Ayuda & Documentación">
                             <i class="bi bi-question-circle fs-6"></i>
                         </button>
                         ${HelpPanel.render()}
@@ -76,7 +76,7 @@ export function renderTopBar() {
 
                     <!-- 4. Botón Advisor Center (Bombillo / Campana) -->
                     <div class="dropdown-wrapper position-relative" id="dw-panel-advisor">
-                        <button type="button" class="btn btn-sm btn-icon rounded-circle text-muted p-1.5 position-relative header-circle-btn" data-action="header:toggle_panel" data-target="panel-advisor" title="Centro de Asesoría y Diagnóstico">
+                        <button type="button" class="btn btn-sm header-circle-btn position-relative" data-action="header:toggle_panel" data-target="panel-advisor" title="Centro de Asesoría y Diagnóstico">
                             <i class="bi bi-lightbulb fs-6"></i>
                             <span class="position-absolute top-1 end-1 p-1 bg-warning rounded-circle notif-glow-dot"></span>
                         </button>
@@ -84,12 +84,12 @@ export function renderTopBar() {
                     </div>
 
                     <!-- 5. Botón Consola de Auditoría -->
-                    <button type="button" class="btn btn-sm btn-icon rounded-circle text-muted p-1.5 header-circle-btn d-none d-sm-inline-flex" data-action="ui:open_activity_log" title="Consola & Auditoría de Actividad">
+                    <button type="button" class="btn btn-sm header-circle-btn d-none d-sm-inline-flex" data-action="ui:open_activity_log" title="Consola & Auditoría de Actividad">
                         <i class="bi bi-terminal fs-6"></i>
                     </button>
 
                     <!-- 6. Botón AI Assistant -->
-                    <button type="button" class="btn btn-sm btn-icon rounded-circle text-primary p-1.5 header-circle-btn header-ai-btn" data-action="ui:open_ai_assistant" title="BUCA AI Assistant">
+                    <button type="button" class="btn btn-sm header-circle-btn text-primary" data-action="ui:open_ai_assistant" title="BUCA AI Assistant">
                         <i class="bi bi-stars fs-6"></i>
                     </button>
 

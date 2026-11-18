@@ -8,10 +8,10 @@
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
-    min-width: 250px;
+    min-width: 260px;
     background: var(--surface-card, #ffffff);
     border: 1px solid var(--border-glass, rgba(0, 0, 0, 0.08));
-    border-radius: 1rem;
+    border-radius: 0.75rem;
     padding: 0.5rem;
     z-index: 1050;
     animation: drop-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -28,7 +28,7 @@
         display: flex;
         align-items: center;
         gap: 0.6rem;
-        padding: 0.45rem 0.75rem;
+        padding: 0.45rem 0.65rem;
         border-radius: 0.5rem;
         border: none;
         background: transparent;
@@ -46,33 +46,59 @@
 
         &.disabled-dev-item {
             cursor: not-allowed;
-            opacity: 0.8;
+            opacity: 0.65;
 
             &:hover {
-                background: rgba(0, 0, 0, 0.04);
+                background: rgba(0, 0, 0, 0.03);
             }
         }
     }
 }
 
 .action-more-pill {
-    background: var(--glass-surface-bg, rgba(255, 255, 255, 0.7));
+    height: 32px;
+    padding: 0 0.65rem;
+    border-radius: 0.5rem;
+    font-size: 0.78rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    color: var(--text-muted, #64748b);
+    background: rgba(0, 0, 0, 0.02);
     border: 1px solid rgba(0, 0, 0, 0.08);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
-    &:hover {
-        background: #fff;
-        color: var(--primary-color, #2563eb) !important;
-        border-color: rgba(37, 99, 235, 0.3);
+    [data-theme="dark"] & {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #94a3b8;
     }
 
-    [data-theme="dark"] & {
-        background: rgba(255, 255, 255, 0.06);
-        border-color: rgba(255, 255, 255, 0.1);
+    &:hover {
+        background: #ffffff;
+        color: var(--primary-color, #2563eb);
+        border-color: rgba(37, 99, 235, 0.3);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 
-        &:hover {
-            background: rgba(255, 255, 255, 0.12);
-            color: #fff !important;
+        [data-theme="dark"] & {
+            background: #1e293b;
+            color: #60a5fa;
+            border-color: rgba(96, 165, 250, 0.3);
         }
+    }
+}
+
+@keyframes drop-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
