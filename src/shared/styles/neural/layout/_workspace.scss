@@ -117,8 +117,11 @@
     .business-carousel-container {
         position: relative;
         padding: 16px 0;
+
         @include buca-mask-fade(0, 0, 60px, 60px);
+
         overflow-x: auto;
+
         @include hide-scrollbar;
     }
 }
@@ -145,12 +148,12 @@
 
         &:hover {
             background: var(--primary-color);
-            color: #ffffff !important;
+            color: #fff !important;
             border-color: var(--primary-color);
             transform: translateX(2px);
 
             span {
-                color: #ffffff;
+                color: #fff;
             }
         }
     }

@@ -63,8 +63,11 @@ export function renderTopBar() {
                     <button type="button" class="btn btn-sm header-btn-search d-flex align-items-center gap-2 px-2.5 py-1" data-action="ui:open_search_palette" title="Buscar o ejecutar comandos (Ctrl + K)">
                         <i class="bi bi-search"></i>
                         <span class="d-none d-md-inline">Buscar...</span>
-                        <kbd class="d-none d-lg-inline-block bg-subtle text-muted px-1.5 py-0.2 rounded border x-small">Ctrl K</kbd>
+                        <kbd class="d-none d-lg-inline-block px-1.5 py-0.2 rounded border x-small">Ctrl K</kbd>
                     </button>
+
+                    <!-- Divisor Visual 1 -->
+                    <span class="header-divider d-none d-sm-inline-block"></span>
 
                     <!-- 3. Botón Ayuda (?) -->
                     <div class="dropdown-wrapper position-relative" id="dw-panel-help">
@@ -76,7 +79,7 @@ export function renderTopBar() {
 
                     <!-- 4. Botón Advisor Center (Bombillo / Campana) -->
                     <div class="dropdown-wrapper position-relative" id="dw-panel-advisor">
-                        <button type="button" class="btn btn-sm header-circle-btn position-relative" data-action="header:toggle_panel" data-target="panel-advisor" title="Centro de Asesoría y Diagnóstico">
+                        <button type="button" class="btn btn-sm header-circle-btn position-relative" data-action="header:toggle_panel" data-target="panel-advisor" title="Centro de Asesoría y Diagnóstico (Advisor Center)">
                             <i class="bi bi-lightbulb fs-6"></i>
                             <span class="position-absolute top-1 end-1 p-1 bg-warning rounded-circle notif-glow-dot"></span>
                         </button>
@@ -93,8 +96,11 @@ export function renderTopBar() {
                         <i class="bi bi-stars fs-6"></i>
                     </button>
 
+                    <!-- Divisor Visual 2 -->
+                    <span class="header-divider d-none d-sm-inline-block"></span>
+
                     <!-- 7. Avatar & Account Settings -->
-                    <div class="dropdown-wrapper position-relative ms-1" id="dw-panel-profile">
+                    <div class="dropdown-wrapper position-relative ms-0.5" id="dw-panel-profile">
                         <button type="button" class="btn btn-sm p-0 rounded-circle border-0 header-avatar-trigger" data-action="header:toggle_panel" data-target="panel-profile" title="Ajustes de Cuenta & Perfil">
                             <div class="user-avatar-circle bg-primary text-white d-flex align-items-center justify-content-center rounded-circle position-relative topbar-avatar">
                                 <span class="fw-bold x-small">${initials}</span>

@@ -137,12 +137,12 @@
 
                 [data-theme="dark"] & {
                     background: rgba(255, 255, 255, 0.08);
-                    color: #ffffff;
+                    color: #fff;
                 }
             }
 
             &.active {
-                background: var(--surface-card, #ffffff);
+                background: var(--surface-card, #fff);
                 color: var(--primary-color, #2563eb);
                 box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 
@@ -180,7 +180,7 @@
         align-items: center;
         gap: 0.4rem;
         background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        color: #ffffff;
+        color: #fff;
         border: none;
         padding: 0 0.85rem;
         border-radius: 0.5rem;
@@ -197,7 +197,7 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
             background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-            color: #ffffff;
+            color: #fff;
         }
 
         &:active {
@@ -236,7 +236,7 @@
         }
 
         &:hover {
-            background: #ffffff;
+            background: #fff;
             color: #2563eb;
             border-color: rgba(37, 99, 235, 0.3);
             transform: translateY(-1px);

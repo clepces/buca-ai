@@ -6,7 +6,7 @@
 
 /* ── SOLID DROPDOWN PANELS (Zero Blur Thrashing) ─────────────────────── */
 .solid-dropdown-panel {
-    background: #ffffff !important;
+    background: #fff !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     border-radius: 16px !important;
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
@@ -22,23 +22,16 @@
     }
 }
 
-.feedback-dropdown-panel {
-    width: min(94vw, 380px);
-}
-
-.help-dropdown-panel,
-.advisor-dropdown-panel {
-    width: min(94vw, 390px);
-}
-
-.profile-dropdown-panel {
-    width: min(92vw, 330px);
-}
+.feedback-dropdown-panel { width: min(94vw, 380px); }
+.help-dropdown-panel, .advisor-dropdown-panel { width: min(94vw, 400px); }
+.profile-dropdown-panel { width: min(92vw, 330px); }
 
 /* ── TARJETAS DE FEEDBACK ────────────────────────────────────────────── */
 .feedback-card-btn {
     background: #f8fafc;
     border-color: rgba(0, 0, 0, 0.08) !important;
+    border-radius: 14px !important;
+    padding: 18px 14px !important;
     cursor: pointer;
 
     [data-theme="dark"] & {
@@ -50,17 +43,76 @@
         background: rgba(37, 99, 235, 0.05);
         border-color: var(--primary-color) !important;
         transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
     }
 }
 
 /* ── BOTONES DE AYUDA Y ADVISOR ───────────────────────────────────────── */
-.help-item-btn:hover,
-.advisor-card:hover {
-    background: rgba(0, 0, 0, 0.03);
-    border-color: rgba(37, 99, 235, 0.3) !important;
+.help-item-btn {
+    border-radius: 12px !important;
+    border: 1px solid transparent !important;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.03);
+        border-color: rgba(37, 99, 235, 0.25) !important;
+        transform: translateY(-1px);
+
+        [data-theme="dark"] & {
+            background: rgba(255, 255, 255, 0.04);
+        }
+    }
+}
+
+.advisor-card {
+    border-radius: 12px !important;
+    border: 1px solid rgba(0, 0, 0, 0.07) !important;
+    transition: all 0.2s ease;
 
     [data-theme="dark"] & {
-        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.025);
+        border-color: rgba(37, 99, 235, 0.3) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+
+        [data-theme="dark"] & {
+            background: rgba(255, 255, 255, 0.04);
+        }
+    }
+}
+
+.advisor-severity-badge {
+    font-size: 0.58rem !important;
+    padding: 2px 7px !important;
+    letter-spacing: 0.4px;
+    font-weight: 700 !important;
+
+    &.severity-info { background: rgba(37, 99, 235, 0.1) !important; color: #2563eb !important; border: 1px solid rgba(37, 99, 235, 0.2); }
+    &.severity-warning { background: rgba(245, 158, 11, 0.12) !important; color: #d97706 !important; border: 1px solid rgba(245, 158, 11, 0.3); }
+    &.severity-success { background: rgba(16, 185, 129, 0.1) !important; color: #059669 !important; border: 1px solid rgba(16, 185, 129, 0.25); }
+    &.severity-critical { background: rgba(239, 68, 68, 0.12) !important; color: #dc2626 !important; border: 1px solid rgba(239, 68, 68, 0.3); }
+}
+
+.advisor-filter-popover {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 14px;
+    z-index: 1060;
+    width: 215px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    padding: 12px;
+
+    [data-theme="dark"] & {
+        background: #0f172a;
+        border-color: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
     }
 }
 
@@ -132,7 +184,7 @@
 
         &.active {
             background: var(--primary-color) !important;
-            color: #ffffff !important;
+            color: #fff !important;
             border-color: var(--primary-color);
         }
     }
@@ -142,7 +194,7 @@
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
-    background: #ffffff;
+    background: #fff;
     border: 1px solid rgba(0, 0, 0, 0.1);
     z-index: 1050;
     min-width: 260px;
@@ -156,9 +208,23 @@
 }
 
 /* ── HEADER BUTTONS & TOOLBAR CONTROLS (Studio Style) ─────────────── */
+.header-divider {
+    width: 1px;
+    height: 18px;
+    background: rgba(0, 0, 0, 0.08);
+    margin: 0 3px;
+    flex-shrink: 0;
+
+    [data-theme="dark"] & {
+        background: rgba(255, 255, 255, 0.1);
+    }
+}
+
 .header-circle-btn {
     width: 32px;
     height: 32px;
+    min-width: 32px;
+    min-height: 32px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -175,7 +241,7 @@
     }
 
     &:hover {
-        background: #ffffff;
+        background: #fff;
         color: var(--primary-color, #2563eb) !important;
         border-color: rgba(37, 99, 235, 0.35) !important;
         transform: translateY(-1px);
@@ -211,7 +277,7 @@
     }
 
     &:hover {
-        background: #ffffff;
+        background: #fff;
         border-color: rgba(37, 99, 235, 0.35) !important;
         color: var(--primary-color, #2563eb) !important;
         transform: translateY(-1px);
@@ -226,6 +292,28 @@
 
     &:active {
         transform: scale(0.98);
+    }
+}
+
+/* ── KBD & PALETTE STYLING (Zero Black Box) ─────────────────────────── */
+kbd,
+.cmd-kbd,
+.header-btn-search kbd {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+    font-size: 0.62rem !important;
+    font-weight: 600;
+    padding: 1px 5px !important;
+    border-radius: 4px !important;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    font-family: inherit;
+    line-height: 1.2;
+
+    [data-theme="dark"] & {
+        background: #1e293b !important;
+        color: #94a3b8 !important;
+        border-color: #334155 !important;
     }
 }
 

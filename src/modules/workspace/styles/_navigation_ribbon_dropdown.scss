@@ -9,7 +9,7 @@
     top: calc(100% + 8px);
     right: 0;
     min-width: 260px;
-    background: var(--surface-card, #ffffff);
+    background: var(--surface-card, #fff);
     border: 1px solid var(--border-glass, rgba(0, 0, 0, 0.08));
     border-radius: 0.75rem;
     padding: 0.5rem;
@@ -78,7 +78,7 @@
     }
 
     &:hover {
-        background: #ffffff;
+        background: #fff;
         color: var(--primary-color, #2563eb);
         border-color: rgba(37, 99, 235, 0.3);
         transform: translateY(-1px);

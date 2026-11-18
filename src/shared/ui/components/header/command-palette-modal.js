@@ -3,10 +3,8 @@
  * @module shared/ui/components/header/command-palette-modal
  */
 import { ModalService } from '@/shared/ui/overlays/ModalService.js';
-import { router } from '@/core/router/router.js';
-import { eventBus } from '@/core/eventBus/index.js';
 import { escapeHTML } from '@/shared/utils/security.js';
-import { $id, $, $$, $on, $addClass, $removeClass, $show, $hide } from '@/shared/utils/dom.js';
+import { $id, $on, $addClass, $removeClass } from '@/shared/utils/dom.js';
 
 export const CommandPaletteModal = {
     _viewMode: 'list', // 'list' | 'mosaic'
@@ -44,10 +42,10 @@ export const CommandPaletteModal = {
                     
                     <!-- View switcher -->
                     <div class="d-flex align-items-center gap-1 border rounded-pill p-1 bg-subtle">
-                        <button type="button" class="btn btn-sm btn-icon rounded-circle ${this._viewMode === 'list' ? 'btn-primary' : 'btn-link text-muted'}" id="btn-view-list" title="Vista Lista">
+                        <button type="button" class="btn btn-sm btn-icon rounded-circle d-flex align-items-center justify-content-center p-0 ${this._viewMode === 'list' ? 'btn-primary' : 'btn-link text-muted'}" id="btn-view-list" style="width: 28px; height: 28px;" title="Vista Lista">
                             <i class="bi bi-list-ul"></i>
                         </button>
-                        <button type="button" class="btn btn-sm btn-icon rounded-circle ${this._viewMode === 'mosaic' ? 'btn-primary' : 'btn-link text-muted'}" id="btn-view-mosaic" title="Vista Mosaico">
+                        <button type="button" class="btn btn-sm btn-icon rounded-circle d-flex align-items-center justify-content-center p-0 ${this._viewMode === 'mosaic' ? 'btn-primary' : 'btn-link text-muted'}" id="btn-view-mosaic" style="width: 28px; height: 28px;" title="Vista Mosaico">
                             <i class="bi bi-grid-fill"></i>
                         </button>
                     </div>
@@ -65,7 +63,7 @@ export const CommandPaletteModal = {
             header: { left: '<span class="fw-bold small text-muted text-uppercase"><i class="bi bi-command me-1"></i> Paleta de Comandos</span>' },
             body: bodyHtml,
             footer: {
-                left: '<span class="x-small text-muted"><kbd class="bg-light text-dark px-1.5 py-0.5 rounded border">↑</kbd> <kbd class="bg-light text-dark px-1.5 py-0.5 rounded border">↓</kbd> para navegar <kbd class="bg-light text-dark px-1.5 py-0.5 rounded border">ESC</kbd> para salir</span>',
+                left: '<span class="x-small text-muted"><kbd class="cmd-kbd">↑</kbd> <kbd class="cmd-kbd">↓</kbd> para navegar <kbd class="cmd-kbd">ESC</kbd> para salir</span>',
                 right: '<button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-action="ui:close_modal">Cerrar</button>'
             }
         });
@@ -93,12 +91,12 @@ export const CommandPaletteModal = {
     _renderListItem(item) {
         const isDev = item.status === 'in-dev';
         return `
-            <div class="cmd-item-row p-2 rounded-3 d-flex align-items-center justify-content-between cursor-pointer transition-all ${isDev ? 'cmd-item--in-dev' : ''}"
+            <div class="cmd-item-row p-2.5 rounded-3 d-flex align-items-center justify-content-between cursor-pointer transition-all ${isDev ? 'cmd-item--in-dev' : ''}"
                  data-action="${item.action}"
                  ${item.payload ? `data-payload='${JSON.stringify(item.payload)}'` : ''}
                  ${isDev ? 'data-status="in-development"' : ''}>
-                <div class="d-flex align-items-center gap-2.5 min-w-0">
-                    <div class="cmd-icon-box rounded-2 p-1.5 d-flex align-items-center justify-content-center ${isDev ? 'bg-secondary-subtle text-muted' : 'bg-primary-subtle text-primary'}">
+                <div class="d-flex align-items-center gap-3 min-w-0">
+                    <div class="cmd-icon-box rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 ${isDev ? 'bg-secondary-subtle text-muted' : 'bg-primary-subtle text-primary'}" style="width: 34px; height: 34px;">
                         <i class="bi ${item.icon}"></i>
                     </div>
                     <div class="min-w-0">
@@ -107,8 +105,8 @@ export const CommandPaletteModal = {
                     </div>
                 </div>
                 ${isDev ? `
-                    <span class="badge bg-secondary-subtle text-muted rounded-pill px-2 py-0.5 x-small" title="En desarrollo">
-                        <i class="bi bi-cone-striped me-1"></i>En Roadmap
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-0.5 x-small font-monospace" title="En desarrollo">
+                        <i class="bi bi-cone-striped me-1"></i>Roadmap
                     </span>
                 ` : `
                     <i class="bi bi-arrow-return-left text-muted x-small opacity-50"></i>
@@ -126,10 +124,10 @@ export const CommandPaletteModal = {
                      ${item.payload ? `data-payload='${JSON.stringify(item.payload)}'` : ''}
                      ${isDev ? 'data-status="in-development"' : ''}>
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="cmd-icon-box rounded-2 p-2 ${isDev ? 'bg-secondary-subtle text-muted' : 'bg-primary-subtle text-primary'}">
+                        <div class="cmd-icon-box rounded-3 d-flex align-items-center justify-content-center ${isDev ? 'bg-secondary-subtle text-muted' : 'bg-primary-subtle text-primary'}" style="width: 36px; height: 36px;">
                             <i class="bi ${item.icon} fs-5"></i>
                         </div>
-                        ${isDev ? '<span class="badge bg-secondary-subtle text-muted rounded-pill px-1.5 py-0.5 x-small">Roadmap</span>' : ''}
+                        ${isDev ? '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-1.5 py-0.5 x-small font-monospace">Roadmap</span>' : ''}
                     </div>
                     <div>
                         <span class="d-block fw-semibold small text-main mb-0.5 text-truncate">${escapeHTML(item.title)}</span>

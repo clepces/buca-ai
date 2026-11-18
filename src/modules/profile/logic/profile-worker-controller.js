@@ -5,7 +5,7 @@
 
 import userService from '@/modules/auth/services/UserService.js';
 import { eventBus } from '@/core/eventBus/index.js';
-import { $id, $, $$, $on, $val, $mount, $show, $hide, $className, $addClass, $removeClass, $text } from '@/shared/utils/dom.js';
+import { $id, $, $$, $on, $val, $hide, $className, $addClass, $removeClass, $text } from '@/shared/utils/dom.js';
 import { setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
 import { escapeHTML } from '@/shared/utils/security.js';
 import { renderFichaCardHtml } from '../components/parts/worker/ficha-card.js';
@@ -172,7 +172,7 @@ export const ProfileWorkerController = {
             $$('.experience-card-item').forEach(item => {
                 const rawJson = item.getAttribute('data-ficha-json');
                 if (rawJson) {
-                    try { experience_cards.push(JSON.parse(rawJson)); } catch {}
+                    try { experience_cards.push(JSON.parse(rawJson)); } catch (_e) { /* ignorar error de parseo */ }
                 }
             });
 
