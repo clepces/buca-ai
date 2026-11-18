@@ -1,4 +1,7 @@
 
+import { $id, $mount, $on, $onReady, $addClass, $removeClass } from '@/shared/utils/dom.js';
+import { $onWindow } from '@/core/utils/index.js';
+
 /**
  * HUD Feedback Manager
  * 
@@ -18,15 +21,11 @@ class HUDFeedbackManager {
 
     init() {
         // Aseguramos de correr después de que el DOM esté listo
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.setupContainer());
-        } else {
-            this.setupContainer();
-        }
+        $onReady(() => this.setupContainer());
 
         // BNE Event — cachear referencia para poder desubscribir
         this._boundNotification = (e) => this.pushFeedback(e.detail);
-        window.addEventListener('buca:notification', this._boundNotification);
+        $onWindow('buca:notification', this._boundNotification);
         
         // Centralized EventBus Integration
         import('@/core/eventBus/index.js').then(({ eventBus }) => {
@@ -35,11 +34,11 @@ class HUDFeedbackManager {
 
         // Legacy Modular Event (Bridge)
         this._boundLegacy = (e) => this.pushFeedback(e.detail);
-        window.addEventListener('UI:NOTIFICATION_PUSH', this._boundLegacy);
+        $onWindow('UI:NOTIFICATION_PUSH', this._boundLegacy);
     }
 
     setupContainer() {
-        this.container = document.getElementById('buca-hud-feedback-container');
+        this.container = $id('buca-hud-feedback-container');
         if (!this.container) {
             this.container = document.createElement('div');
             this.container.id = 'buca-hud-feedback-container';
@@ -87,7 +86,7 @@ class HUDFeedbackManager {
             
             toast.className = `hud-toast hud-toast--${options.type || 'info'} ${isThermalThrottle ? 'hud-toast--eco' : 'hud-toast--glass'}`;
 
-            toast.innerHTML = `
+            $mount(toast, `
                 <div class="hud-toast-icon">
                     ${this.getIconForType(options.type)}
                 </div>
@@ -95,14 +94,14 @@ class HUDFeedbackManager {
                     <span class="hud-toast-message">${options.message}</span>
                 </div>
                 <button class="hud-toast-close" title="Cerrar">&times;</button>
-            `;
+            `);
 
             this.container.appendChild(toast);
 
             // Animate In (Reflow forzado para transición segura)
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    toast.classList.add('show');
+                    $addClass(toast, 'show');
                 });
             });
 
@@ -111,7 +110,7 @@ class HUDFeedbackManager {
 
             const removeToast = () => {
                 clearTimeout(timeout);
-                toast.classList.remove('show');
+                $removeClass(toast, 'show');
                 setTimeout(() => {
                     if (toast.parentNode) toast.parentNode.removeChild(toast);
                     resolve();
@@ -120,7 +119,7 @@ class HUDFeedbackManager {
 
             const closeBtn = toast.querySelector('.hud-toast-close');
             if (closeBtn) {
-                closeBtn.onclick = removeToast;
+                $on(closeBtn, 'click', removeToast);
             }
 
             timeout = setTimeout(removeToast, duration);

@@ -1,4 +1,6 @@
 import { eventBus } from '@/core/eventBus/index.js';
+import { $id, $, $$, $mount, $on, $addClass, $removeClass, $attr } from '@/shared/utils/dom.js';
+import { getPath } from '@/core/utils/index.js';
 
 /**
  * Dock Premium (Refactorizada)
@@ -36,8 +38,8 @@ export const Dock = {
     },
 
     init(containerId = 'dock-slot') {
-        const container = document.getElementById(containerId);
-        if (!container || container.querySelector('.dock-container')) return;
+        const container = $id(containerId);
+        if (!container || $('.dock-container', container)) return;
 
         this.renderTo(container);
         if (!this._eventsBound) {
@@ -45,11 +47,11 @@ export const Dock = {
             this._eventsBound = true;
         }
         
-        this.syncWithRouter(window.location.pathname);
+        this.syncWithRouter(getPath());
     },
 
     renderTo(container) {
-        container.innerHTML = this.render();
+        $mount(container, this.render());
         this._updateCurve(this.state.activeIndex);
     },
 
@@ -64,8 +66,8 @@ export const Dock = {
         }
         // 2. Micro-animación de pulsado
         if (trigger) {
-            trigger.classList.add('dock-item-pressed');
-            setTimeout(() => trigger.classList.remove('dock-item-pressed'), 180);
+            $addClass(trigger, 'dock-item-pressed');
+            setTimeout(() => $removeClass(trigger, 'dock-item-pressed'), 180);
         }
         // 3. Audio micro-pop sintetizado sutil (Web Audio API)
         try {
@@ -91,15 +93,15 @@ export const Dock = {
     },
 
     _bindEvents() {
-        document.addEventListener('click', (e) => {
+        $on(document, 'click', (e) => {
             const trigger = e.target.closest('.dock-item');
             if (!trigger) return;
 
             this._triggerFeedback(trigger);
 
-            const index = parseInt(trigger.getAttribute('data-index'));
-            const action = trigger.getAttribute('data-action');
-            const payload = trigger.getAttribute('data-payload');
+            const index = parseInt($attr(trigger, 'data-index') || '0', 10);
+            const action = $attr(trigger, 'data-action');
+            const payload = $attr(trigger, 'data-payload');
             const data = payload ? JSON.parse(payload) : {};
 
             e._bucaActionHandled = true;
@@ -112,8 +114,8 @@ export const Dock = {
             // Actualizar localmente antes de navegar
             this.state.activeIndex = index;
             this._updateCurve(index);
-            document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active'));
-            trigger.classList.add('active');
+            $$('.dock-item').forEach(el => $removeClass(el, 'active'));
+            $addClass(trigger, 'active');
 
             if (action) {
                 eventBus.emit(action, data);
@@ -132,12 +134,12 @@ export const Dock = {
         
         if (index !== -1 && index !== this.state.activeIndex) {
             this.state.activeIndex = index;
-            const dock = document.querySelector('.dock');
+            const dock = $('.dock');
             if (dock) {
-                const trigger = dock.querySelector(`[data-index="${index}"]`);
+                const trigger = $(`[data-index="${index}"]`, dock);
                 if (trigger) {
-                    document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active'));
-                    trigger.classList.add('active');
+                    $$('.dock-item').forEach(el => $removeClass(el, 'active'));
+                    $addClass(trigger, 'active');
                     this._updateCurve(index);
                 }
             }
@@ -145,8 +147,8 @@ export const Dock = {
     },
 
     _updateCurve(index) {
-        const curve = document.querySelector('.curve-container');
-        const dock = document.querySelector('.dock');
+        const curve = $('.curve-container');
+        const dock = $('.dock');
         if (!curve || !dock) return;
 
         const items = dock.querySelectorAll('.dock-item');

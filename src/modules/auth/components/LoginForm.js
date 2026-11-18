@@ -1,6 +1,8 @@
 /**
  * LoginForm - Componente de Entrada de Credenciales
  */
+import { $id, $mount, $on, $show, $hide, $val, setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
+
 export const LoginForm = {
     render() {
         return `
@@ -53,31 +55,30 @@ export const LoginForm = {
     init(onSubmit) {
         // Carga dinámica del AuthService para no inflar el bundle inicial si no se usa
         import('../services/AuthService.js').then(({ AuthService }) => {
-            const form = document.getElementById('login-form');
-            const togglePwd = document.getElementById('toggle-password');
-            const emailInput = document.getElementById('email');
-            const pwdInput = document.getElementById('password');
-            const btnSubmit = document.getElementById('btn-login-submit');
+            const form = $id('login-form');
+            const togglePwd = $id('toggle-password');
+            const emailInput = $id('email');
+            const pwdInput = $id('password');
+            const btnSubmit = $id('btn-login-submit');
 
             // Toggle Password Visibility
             if (togglePwd && pwdInput) {
-                togglePwd.onclick = () => {
+                $on(togglePwd, 'click', () => {
                     const isPassword = pwdInput.type === 'password';
                     pwdInput.type = isPassword ? 'text' : 'password';
-                    togglePwd.innerHTML = `<i class="bi bi-eye${isPassword ? '-slash' : ''}"></i>`;
-                };
+                    $mount(togglePwd, `<i class="bi bi-eye${isPassword ? '-slash' : ''}"></i>`);
+                });
             }
 
             // Form Submission
             if (form) {
-                form.onsubmit = async (e) => {
+                $on(form, 'submit', async (e) => {
                     e.preventDefault();
-                    const email = emailInput ? emailInput.value.trim() : '';
-                    const password = pwdInput ? pwdInput.value : '';
+                    const email = $val(emailInput);
+                    const password = $val(pwdInput);
 
                     // Estado de carga
-                    btnSubmit.disabled = true;
-                    btnSubmit.innerHTML = '<span>VERIFICANDO...</span> <i class="bi bi-arrow-repeat spin"></i>';
+                    setButtonLoading(btnSubmit, true, 'VERIFICANDO...');
                     this.hideFeedback();
 
                     try {
@@ -112,25 +113,25 @@ export const LoginForm = {
 
                     } catch (error) {
                         this.showFeedback(error.message, 'error');
-                        btnSubmit.disabled = false;
-                        btnSubmit.innerHTML = '<span class="btn-text">ACCEDER AL PORTAL</span> <i class="bi bi-arrow-right-short"></i>';
+                        setButtonLoading(btnSubmit, false);
+                        setButtonContent(btnSubmit, 'ACCEDER AL PORTAL', 'bi bi-arrow-right-short ms-2');
                     }
-                };
+                });
             }
         });
     },
 
     showFeedback(message, type = 'error') {
-        const area = document.getElementById('login-feedback');
+        const area = $id('login-feedback');
         if (!area) return;
         area.textContent = message;
         area.className = `alert alert-${type === 'error' ? 'danger' : 'success'} animate__animated animate__headShake py-2 small mb-4`;
-        area.classList.remove('d-none');
+        $show(area);
     },
 
     hideFeedback() {
-        const area = document.getElementById('login-feedback');
-        if (area) area.classList.add('d-none');
+        const area = $id('login-feedback');
+        if (area) $hide(area);
     }
 };
 

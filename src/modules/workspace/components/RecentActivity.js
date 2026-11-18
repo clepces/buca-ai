@@ -9,6 +9,7 @@ import { escapeHTML } from '@/shared/utils/security.js';
 import { ActivityLogService } from '@/core/services/ActivityLogService.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { sessionState } from '@/core/state/session.js';
+import { $id, $mount, $on, $show, $hide, $toggle, $addClass, $removeClass, $$ } from '@/shared/utils/dom.js';
 
 export const RecentActivity = {
     _items: [],
@@ -147,9 +148,9 @@ export const RecentActivity = {
     },
 
     _refreshDOM() {
-        const container = document.getElementById('activity-list-items');
+        const container = $id('activity-list-items');
         if (container) {
-            container.innerHTML = this.renderActivityList();
+            $mount(container, this.renderActivityList());
         }
     },
 
@@ -165,24 +166,25 @@ export const RecentActivity = {
             const group = btn.closest('#activity-filter-group');
             if (!group) return;
 
-            group.querySelectorAll('.activity-filter-pill').forEach(f => f.classList.remove('active'));
-            btn.classList.add('active');
+            $$('.activity-filter-pill', group).forEach(f => $removeClass(f, 'active'));
+            $addClass(btn, 'active');
 
             const cat = btn.getAttribute('data-filter');
-            const items = document.querySelectorAll('#activity-list-items .activity-item');
+            const items = $$('#activity-list-items .activity-item');
             items.forEach(item => {
                 const itemCat = item.getAttribute('data-category');
-                if (cat === 'all' || itemCat === cat) {
-                    item.classList.remove('is-hidden');
-                    item.style.display = '';
+                const isMatch = cat === 'all' || itemCat === cat;
+                if (isMatch) {
+                    $removeClass(item, 'is-hidden');
+                    $show(item);
                 } else {
-                    item.classList.add('is-hidden');
-                    item.style.display = 'none';
+                    $addClass(item, 'is-hidden');
+                    $hide(item);
                 }
             });
         };
 
-        document.addEventListener('click', this._filterClickHandler);
+        $on(document, 'click', this._filterClickHandler);
     },
 
     /**
