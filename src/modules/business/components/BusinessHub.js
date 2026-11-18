@@ -8,6 +8,8 @@ import { escapeHTML } from '@/shared/utils/security.js';
 import ModalService from '@/shared/ui/overlays/ModalService.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { businessService } from '@/modules/workspace/services/BusinessService.js';
+import { $id, $mount, $on } from '@/shared/utils/dom.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const BusinessHub = {
     _items: [],
@@ -190,18 +192,18 @@ export const BusinessHub = {
                 this._items = res.data || [];
             }
         } catch (err) {
-            console.error('[BusinessHub] Error cargando negocios:', err);
+            Logger.error('BusinessHub', 'Error cargando negocios:', err);
         } finally {
             this._isLoading = false;
-            const container = document.getElementById('hub-scroll-container');
+            const container = $id('hub-scroll-container');
             if (container) {
-                container.innerHTML = this.renderCards();
+                $mount(container, this.renderCards());
             }
         }
     },
 
     init() {
-        const section = document.getElementById('business-hub-section');
+        const section = $id('business-hub-section');
         if (!section || section._bucaInit) return;
         section._bucaInit = true;
         this._sectionEl = section;
@@ -264,7 +266,7 @@ export const BusinessHub = {
             }
         };
 
-        section.addEventListener('click', this._clickHandler);
+        $on(section, 'click', this._clickHandler);
     },
 
     /**

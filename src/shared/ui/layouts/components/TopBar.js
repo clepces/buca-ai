@@ -7,6 +7,8 @@ import { KeyboardShortcuts } from '@/core/services/KeyboardShortcuts.js';
 import { initTouchGestures } from '@/shared/utils/touchGestures.js';
 import { NotificationService } from '@/core/services/NotificationService.js';
 import { renderTopBar } from './topbar-template.js';
+import { $id, $, $$, $mount, $on, $addClass, $removeClass, $toggle, $text } from '@/shared/utils/dom.js';
+import { $onWindow } from '@/core/utils/index.js';
 
 /**
  * Componente modular Header — BUCA Website (Refactorizado)
@@ -17,11 +19,11 @@ import { renderTopBar } from './topbar-template.js';
 
 export const Header = {
     init(containerId = 'topbar-slot') {
-        const container = document.getElementById(containerId);
-        if (!container || container.querySelector('.app-header')) return;
+        const container = $id(containerId);
+        if (!container || $('.app-header', container)) return;
 
-        container.innerHTML = this.render();
-        this.element = container.querySelector('.app-header');
+        $mount(container, this.render());
+        this.element = $('.app-header', container);
 
         this._createOverlay();
         FloatingPanelManager.extractPanelsToBody('.app-header .glass-panel');
@@ -40,7 +42,7 @@ export const Header = {
 
     _bindEvents() {
         // Clic fuera para cerrar paneles
-        document.addEventListener('click', (e) => {
+        $on(document, 'click', (e) => {
             const isInsidePanel = e.target.closest('.glass-panel');
             const isInsideWrapper = e.target.closest('.dropdown-wrapper');
             const isTrigger = e.target.closest('[data-action]');
@@ -53,11 +55,11 @@ export const Header = {
             if (state.graphics) this.updateEngineUI(state.graphics);
         });
 
-        window.addEventListener('resize', () => {
-            const activePanel = document.querySelector('.glass-panel.active');
+        $onWindow('resize', () => {
+            const activePanel = $('.glass-panel.active');
             if (activePanel) {
                 const wrapperId = activePanel.getAttribute('data-anchor-wrapper');
-                const wrapper = document.getElementById(wrapperId);
+                const wrapper = $id(wrapperId);
                 FloatingPanelManager.positionPanel(activePanel, wrapper);
             }
         });
@@ -65,7 +67,7 @@ export const Header = {
         // Acciones vía EventBus
         eventBus.on('header:toggle_panel', (payload = {}) => {
             const targetId = payload.target || payload.id;
-            const triggerEl = payload.trigger || (targetId ? document.querySelector(`[data-target="${targetId}"]`) : null);
+            const triggerEl = payload.trigger || (targetId ? $(`[data-target="${targetId}"]`) : null);
             if (targetId) this.togglePanel(targetId, triggerEl);
         });
 
@@ -83,34 +85,34 @@ export const Header = {
 
         // Escuchar cambios globales de tasa
         eventBus.on('buca:rate_change', ({ rate }) => {
-            const pill = document.querySelector('.live-bcv-mini-pill span');
+            const pill = $('.live-bcv-mini-pill span');
             if (pill && rate) {
-                pill.textContent = `Bs. ${Number(rate).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                $text(pill, `Bs. ${Number(rate).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
             }
         });
 
         // Buscador Global
         eventBus.on('workspace:toggle_search', () => {
-            const searchInput = document.getElementById('ws-global-search');
+            const searchInput = $id('ws-global-search');
             if (searchInput) {
                 searchInput.focus();
                 searchInput.select();
-                const capsule = document.getElementById('ws-search-box');
-                if (capsule) capsule.classList.add('search-active');
+                const capsule = $id('ws-search-box');
+                if (capsule) $addClass(capsule, 'search-active');
             }
         });
 
-        const searchInput = document.getElementById('ws-global-search');
+        const searchInput = $id('ws-global-search');
         if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
+            $on(searchInput, 'input', (e) => {
                 const term = e.target.value.toLowerCase();
                 if (term.length > 2) {
                     eventBus.emit('ui:global_search', { term });
                 }
             });
-            searchInput.addEventListener('blur', () => {
-                const capsule = document.getElementById('ws-search-box');
-                if (capsule) capsule.classList.remove('search-active');
+            $on(searchInput, 'blur', () => {
+                const capsule = $id('ws-search-box');
+                if (capsule) $removeClass(capsule, 'search-active');
             });
         }
     },
@@ -120,52 +122,48 @@ export const Header = {
             notifications = NotificationService.getNotifications();
         }
         
-        const panel = document.getElementById('panel-notifications');
+        const panel = $id('panel-notifications');
         const user = sessionState.get().user;
         const currentUid = user?.uid;
 
         if (panel) {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = NotificationTray.render(notifications);
-            if (tempDiv.firstElementChild) {
-                panel.innerHTML = tempDiv.firstElementChild.innerHTML;
-            }
+            $mount(panel, NotificationTray.render(notifications));
         }
 
         // Actualizar punto de alerta (Solo si hay no leídas)
         const unreadCount = notifications.filter(n => !n.read_by?.includes(currentUid)).length;
-        const dot = document.querySelector('.notif-glow-dot');
+        const dot = $('.notif-glow-dot');
         if (dot) {
-            dot.style.display = unreadCount > 0 ? 'block' : 'none';
-            if (unreadCount > 0) dot.classList.add('pulse-notif');
-            else dot.classList.remove('pulse-notif');
+            $toggle(dot, unreadCount > 0);
+            if (unreadCount > 0) $addClass(dot, 'pulse-notif');
+            else $removeClass(dot, 'pulse-notif');
         }
     },
 
     openPanel(panelId, triggerWrapper) {
         this.closeAllPanels();
-        const panel = document.getElementById(panelId);
+        const panel = $id(panelId);
         if (!panel) return;
 
         if (triggerWrapper) {
             FloatingPanelManager.positionPanel(panel, triggerWrapper);
-            triggerWrapper.classList.add('panel-open');
+            $addClass(triggerWrapper, 'panel-open');
         }
 
-        panel.classList.add('active');
-        const overlay = document.getElementById('panel-overlay');
-        if (overlay && window.innerWidth <= 767) overlay.classList.add('active');
+        $addClass(panel, 'active');
+        const overlay = $id('panel-overlay');
+        if (overlay && window.innerWidth <= 767) $addClass(overlay, 'active');
     },
 
     closeAllPanels() {
-        document.querySelectorAll('.glass-panel.active').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.dropdown-wrapper.panel-open').forEach(w => w.classList.remove('panel-open'));
-        const overlay = document.getElementById('panel-overlay');
-        if (overlay) overlay.classList.remove('active');
+        $$('.glass-panel.active').forEach(p => $removeClass(p, 'active'));
+        $$('.dropdown-wrapper.panel-open').forEach(w => $removeClass(w, 'panel-open'));
+        const overlay = $id('panel-overlay');
+        if (overlay) $removeClass(overlay, 'active');
     },
 
     togglePanel(panelId, trigger) {
-        const panel = document.getElementById(panelId);
+        const panel = $id(panelId);
         const wrapper = trigger.closest('.dropdown-wrapper');
         if (panel && panel.classList.contains('active')) {
             this.closeAllPanels();
@@ -179,11 +177,11 @@ export const Header = {
     },
 
     _createOverlay() {
-        if (document.getElementById('panel-overlay')) return;
+        if ($id('panel-overlay')) return;
         const overlay = document.createElement('div');
         overlay.id = 'panel-overlay';
         overlay.className = 'panel-overlay';
-        overlay.addEventListener('click', () => this.closeAllPanels());
+        $on(overlay, 'click', () => this.closeAllPanels());
         document.body.appendChild(overlay);
     },
 
@@ -195,9 +193,9 @@ export const Header = {
 
     updateEngineUI(data) {
         const tierCode = data.id || 'L1';
-        const profileBadge = document.getElementById('profile-engine-badge');
+        const profileBadge = $id('profile-engine-badge');
         if (profileBadge) {
-            profileBadge.textContent = tierCode;
+            $text(profileBadge, tierCode);
             profileBadge.className = 'badge ' + this._getBadgeClassForTier(data.tier);
         }
     },
@@ -208,10 +206,10 @@ export const Header = {
     },
 
     updateStatusUI(isOnline) {
-        const badge = document.getElementById('connection-status-badge');
+        const badge = $id('connection-status-badge');
         if (!badge) return;
         
-        const icon = badge.querySelector('i');
+        const icon = $('i', badge);
         const state = uiState.get();
 
         if (state.isSyncing || state.isConnecting) {

@@ -7,6 +7,8 @@
 import { ModalTemplates } from '../templates/ModalTemplates.js';
 import { ScrollManager } from '@/shared/ui/utils/ui-helper.js';
 import { eventBus } from '@/core/eventBus/index.js';
+import { $id, $mount, $on, $addClass, $removeClass, $attr, $$ } from '@/shared/utils/dom.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export class ModalService {
     static isInitialized = false;
@@ -15,15 +17,15 @@ export class ModalService {
     static init() {
         if (this.isInitialized) return;
         this.isInitialized = true;
-        console.log('[ModalService] Initialized unified modal service.');
+        Logger.info('ModalService', 'Initialized unified modal service.');
 
         // Escuchar cierre global de modales
         eventBus.on('ui:close_modal', () => this.hideModal());
 
         // Manejar cierre con clic en el fondo oscuro
-        const modalBase = document.getElementById('modal-base');
+        const modalBase = $id('modal-base');
         if (modalBase && !this._backdropBound) {
-            modalBase.addEventListener('click', (e) => {
+            $on(modalBase, 'click', (e) => {
                 if (e.target === modalBase) {
                     this.hideModal();
                 }
@@ -32,9 +34,9 @@ export class ModalService {
         }
 
         // Manejar cierre con tecla Escape
-        document.addEventListener('keydown', (e) => {
+        $on(document, 'keydown', (e) => {
             if (e.key === 'Escape') {
-                const base = document.getElementById('modal-base');
+                const base = $id('modal-base');
                 if (base && base.classList.contains('active')) {
                     this.hideModal();
                 }
@@ -49,18 +51,18 @@ export class ModalService {
     static showModal({ size = 'md', header = {}, body = '', footer = {} } = {}) {
         this.init();
 
-        const modalBase = document.getElementById('modal-base');
-        const modalContainer = document.getElementById('modal-container');
+        const modalBase = $id('modal-base');
+        const modalContainer = $id('modal-container');
 
         if (!modalBase || !modalContainer) {
-            console.error('[ModalService] No se encontró la estructura base del modal (#modal-base).');
+            Logger.error('ModalService', 'No se encontró la estructura base del modal (#modal-base).');
             return;
         }
 
         // 1. Limpiar clases de tamaño previas y aplicar la nueva
         const sizeClasses = ['modal-full', 'modal-xl', 'modal-lg', 'modal-md', 'modal-sm', 'modal-mini', 'modal-micro'];
-        modalContainer.classList.remove(...sizeClasses);
-        modalContainer.classList.add(`modal-${size}`);
+        $removeClass(modalContainer, ...sizeClasses);
+        $addClass(modalContainer, `modal-${size}`);
 
         // 2. Inyectar contenido en los slots correspondientes
         const slots = {
@@ -74,21 +76,21 @@ export class ModalService {
         };
 
         Object.entries(slots).forEach(([id, content]) => {
-            const el = document.getElementById(id);
-            if (el) el.innerHTML = content;
+            const el = $id(id);
+            if (el) $mount(el, content);
         });
 
         // 3. Activar el overlay y bloquear scroll
-        modalBase.classList.add('active');
-        modalBase.setAttribute('aria-hidden', 'false');
+        $addClass(modalBase, 'active');
+        $attr(modalBase, 'aria-hidden', 'false');
         ScrollManager.lock();
 
         // 4. Vincular botones de cierre internos
-        modalContainer.querySelectorAll('[data-action="ui:close_modal"]').forEach(btn => {
-            btn.onclick = (e) => {
+        $$('[data-action="ui:close_modal"]', modalContainer).forEach(btn => {
+            $on(btn, 'click', (e) => {
                 e.preventDefault();
                 this.hideModal();
-            };
+            });
         });
     }
 
@@ -96,22 +98,22 @@ export class ModalService {
      * Oculta el modal activo y libera el bloqueo de pantalla.
      */
     static hideModal() {
-        const modalBase = document.getElementById('modal-base');
+        const modalBase = $id('modal-base');
         if (modalBase) {
             // Remover el foco de cualquier elemento dentro del modal antes de ocultar
             const focusedInside = modalBase.querySelector(':focus');
             if (focusedInside && typeof focusedInside.blur === 'function') {
                 focusedInside.blur();
             }
-            modalBase.classList.remove('active');
-            modalBase.setAttribute('aria-hidden', 'true');
+            $removeClass(modalBase, 'active');
+            $attr(modalBase, 'aria-hidden', 'true');
         }
         ScrollManager.forceUnlock();
     }
 
     static async showSettingsModal() {
         const { default: GraphicsEngine } = await import('@/core/engine/engine.js');
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        const currentTheme = $attr(document.documentElement, 'data-theme') || 'light';
         const currentTier = GraphicsEngine?.profile || 'balanced';
         const content = ModalTemplates.settings({ currentTheme, currentTier });
 

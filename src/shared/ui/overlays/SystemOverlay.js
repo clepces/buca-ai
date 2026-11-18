@@ -6,6 +6,8 @@
  * composición, estructura HTML y estilos CSS con variante glassmorphism.
  */
 
+import { $id, $, $mount, $on, $addClass, $removeClass, $text } from '@/shared/utils/dom.js';
+
 export class SystemOverlay {
     /**
      * Mapeo de iconos predeterminados según la severidad/tipo de alerta
@@ -79,7 +81,7 @@ export class SystemOverlay {
      * @param {Object} options - Opciones de la alerta (mismas que renderCard)
      */
     static showOverlay(options = {}) {
-        let overlay = document.getElementById('global-preloader') || document.getElementById('buca-system-overlay');
+        let overlay = $id('global-preloader') || $id('buca-system-overlay');
         const type = options.type || 'info';
         const typeClass = `preloader--${type}`;
 
@@ -99,14 +101,14 @@ export class SystemOverlay {
             overlay.style.pointerEvents = 'all';
         }
 
-        overlay.innerHTML = this.renderCard(options);
+        $mount(overlay, this.renderCard(options));
 
         // Bind click handlers para los botones de acción
         if (options.actions && options.actions.length > 0) {
             options.actions.forEach((act, index) => {
-                const btn = overlay.querySelector(`[data-overlay-btn-index="${index}"]`);
+                const btn = $(`[data-overlay-btn-index="${index}"]`, overlay);
                 if (btn && typeof act.onClick === 'function') {
-                    btn.addEventListener('click', (e) => {
+                    $on(btn, 'click', (e) => {
                         e.preventDefault();
                         act.onClick();
                     });
@@ -122,19 +124,19 @@ export class SystemOverlay {
      * @param {string} [statusText] - Texto opcional para actualizar #splash-status
      */
     static setPreloaderState(stateClass, statusText) {
-        const preloader = document.getElementById('global-preloader');
+        const preloader = $id('global-preloader');
         if (!preloader) return;
 
-        preloader.classList.add(stateClass);
+        $addClass(preloader, stateClass);
         if (stateClass.includes('error') || stateClass.includes('500') || stateClass.includes('503')) {
-            preloader.classList.add('is-error');
+            $addClass(preloader, 'is-error');
         } else if (stateClass.includes('warning')) {
-            preloader.classList.add('is-warning');
+            $addClass(preloader, 'is-warning');
         }
 
         if (statusText) {
-            const statusEl = document.getElementById('splash-status');
-            if (statusEl) statusEl.textContent = statusText;
+            const statusEl = $id('splash-status');
+            if (statusEl) $text(statusEl, statusText);
         }
     }
 
@@ -142,10 +144,11 @@ export class SystemOverlay {
      * Remueve todas las clases de utilidad de error/advertencia del #global-preloader.
      */
     static clearPreloaderState() {
-        const preloader = document.getElementById('global-preloader');
+        const preloader = $id('global-preloader');
         if (!preloader) return;
 
-        preloader.classList.remove(
+        $removeClass(
+            preloader,
             'preloader--error', 'preloader--warning', 'preloader--404',
             'preloader--500', 'preloader--503', 'is-error', 'is-warning'
         );

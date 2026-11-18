@@ -2,6 +2,8 @@ import LoginForm from '../components/LoginForm.js';
 import PINForm from '../components/PINForm.js';
 import { router } from '@/core/router/router.js';
 import { sessionState } from '@/core/state/session.js';
+import { $id, $mount, $show, $hide, $text, setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const LoginPage = {
     render() {
@@ -22,7 +24,7 @@ export const LoginPage = {
     },
 
     init() {
-        console.log('[Auth] -> LoginPage inicializada');
+        Logger.info('Auth', 'LoginPage inicializada');
         this.showLoginView();
     },
 
@@ -32,8 +34,8 @@ export const LoginPage = {
      * @param {string} newTitle - El nuevo título de la vista
      */
     async _switchView(html, newTitle) {
-        const slot = document.getElementById('auth-body-slot');
-        const titleEl = document.getElementById('auth-view-title');
+        const slot = $id('auth-body-slot');
+        const titleEl = $id('auth-view-title');
 
         if (slot) {
             // Animación de salida
@@ -42,10 +44,10 @@ export const LoginPage = {
             
             await new Promise(r => setTimeout(r, 250));
             
-            if (titleEl) titleEl.textContent = newTitle;
+            if (titleEl) $text(titleEl, newTitle);
             
             // Inyectar nuevo contenido
-            slot.innerHTML = html;
+            $mount(slot, html);
             
             // Animación de entrada
             requestAnimationFrame(() => {
@@ -58,9 +60,9 @@ export const LoginPage = {
     showLoginView() {
         const loginHTML = '<div id="login-form-slot"></div>';
         this._switchView(loginHTML, 'Acceso Corporativo').then(() => {
-            const innerSlot = document.getElementById('login-form-slot');
+            const innerSlot = $id('login-form-slot');
             if (innerSlot) {
-                innerSlot.innerHTML = LoginForm.render();
+                $mount(innerSlot, LoginForm.render());
                 LoginForm.init((data) => {
                     if (data?.mfaRequired) {
                         this.showPINView(data.email, data.factorId);
@@ -73,8 +75,8 @@ export const LoginPage = {
     },
 
     async showPINView(email, factorId = null) {
-        const footer = document.getElementById('auth-footer-slot');
-        if (footer) footer.classList.add('d-none');
+        const footer = $id('auth-footer-slot');
+        if (footer) $hide(footer);
 
         const pinHTML = PINForm.render(email, { 
             hasTotp: true 
@@ -91,10 +93,9 @@ export const LoginPage = {
                         return;
                     }
 
-                    const btnVerify = document.getElementById('btn-verify-pin');
+                    const btnVerify = $id('btn-verify-pin');
                     if (btnVerify) {
-                        btnVerify.disabled = true;
-                        btnVerify.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Verificando TOTP...';
+                        setButtonLoading(btnVerify, true, 'Verificando TOTP...');
                     }
 
                     try {
@@ -120,13 +121,13 @@ export const LoginPage = {
                     } catch (err) {
                         PINForm.showFeedback(err.message || 'Fallo en la verificación MFA.', 'error');
                         if (btnVerify) {
-                            btnVerify.disabled = false;
-                            btnVerify.innerHTML = '<span>VERIFICAR IDENTIDAD</span><i class="bi bi-shield-check ms-2"></i>';
+                            setButtonLoading(btnVerify, false);
+                            setButtonContent(btnVerify, 'VERIFICAR IDENTIDAD', 'bi bi-shield-check ms-2');
                         }
                     }
                 },
                 () => {
-                    if (footer) footer.classList.remove('d-none');
+                    if (footer) $show(footer);
                     this.showLoginView();
                 },
                 () => {
@@ -161,9 +162,9 @@ export const LoginPage = {
         `;
 
         this._switchView(welcomeHTML, 'Acceso Concedido').then(() => {
-            const bar = document.getElementById('auth-load-bar');
-            const pct = document.getElementById('auth-load-pct');
-            const statusText = document.getElementById('auth-status-text');
+            const bar = $id('auth-load-bar');
+            const pct = $id('auth-load-pct');
+            const statusText = $id('auth-status-text');
             
             const steps = [
                 { p: 20, t: 'Verificando tokens...' },

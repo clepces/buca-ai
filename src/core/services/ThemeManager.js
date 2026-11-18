@@ -5,19 +5,20 @@
 
 import { storage } from '@/core/storage/StorageAdapter.js';
 import { uiState } from '@/core/state/ui.js';
+import { $id, $attr, $$ } from '@/shared/utils/dom.js';
 
 export const ThemeManager = {
     async init() {
         const saved = await storage.get('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', saved);
+        $attr(document.documentElement, 'data-theme', saved);
         this.updateThemeUI(saved);
     },
 
     async toggle() {
-        const current = document.documentElement.getAttribute('data-theme') || 'light';
+        const current = $attr(document.documentElement, 'data-theme') || 'light';
         const next = current === 'dark' ? 'light' : 'dark';
 
-        document.documentElement.setAttribute('data-theme', next);
+        $attr(document.documentElement, 'data-theme', next);
         await storage.set('theme', next);
         uiState.update({ theme: next });
         this.updateThemeUI(next);
@@ -26,10 +27,10 @@ export const ThemeManager = {
 
     updateThemeUI(theme) {
         const isDark = theme === 'dark';
-        const logoImg = document.getElementById('app-logo');
+        const logoImg = $id('app-logo');
         if (logoImg) logoImg.src = `/assets/icons/logo-${isDark ? 'light' : 'dark'}.svg`;
 
-        document.querySelectorAll('.theme-icon').forEach(icon => {
+        $$('.theme-icon').forEach(icon => {
             icon.classList.toggle('bi-sun-fill', isDark);
             icon.classList.toggle('bi-moon-stars-fill', !isDark);
         });

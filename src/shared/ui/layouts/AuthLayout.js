@@ -5,6 +5,7 @@
  * Independiente del MainLayout para evitar conflictos de scroll y UI.
  */
 import SessionDashboard from '../../../modules/auth/components/SessionDashboard.js';
+import { $id, $, $mount, $on } from '@/shared/utils/dom.js';
 
 export const AuthLayout = {
     render: (content = '') => {
@@ -71,17 +72,17 @@ export const AuthLayout = {
     },
 
     init() {
-        const dashboardSlot = document.getElementById('auth-session-dashboard-slot');
+        const dashboardSlot = $id('auth-session-dashboard-slot');
         if (dashboardSlot) {
-            dashboardSlot.innerHTML = SessionDashboard.render();
+            $mount(dashboardSlot, SessionDashboard.render());
             if (typeof SessionDashboard.init === 'function') SessionDashboard.init();
         }
 
         // Vincular el icono "extra" (escudo) para abrir el dashboard
-        const extraIcon = document.querySelector('.floating-icon.extra');
+        const extraIcon = $('.floating-icon.extra');
         if (extraIcon) {
             extraIcon.style.cursor = 'pointer';
-            extraIcon.onclick = () => SessionDashboard.toggle();
+            $on(extraIcon, 'click', () => SessionDashboard.toggle());
         }
     }
 };
