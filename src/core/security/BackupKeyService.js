@@ -7,6 +7,8 @@
  * =========================================================================
  */
 
+import { $create, $appendTo } from '../../shared/utils/dom.js';
+
 export class BackupKeyService {
     /**
      * Genera un conjunto de claves de emergencia alfanuméricas criptográficamente seguras.
@@ -71,12 +73,13 @@ Emitido localmente en memoria segura (Zero-Knowledge Client-Only).
         const textContent = this.formatSlip(keys, email);
         const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `buca-mfa-backup-keys-${Date.now()}.txt`;
-        document.body.appendChild(link);
+        const link = $create('a', {
+            href: url,
+            download: `buca-mfa-backup-keys-${Date.now()}.txt`
+        });
+        $appendTo(document.body, link);
         link.click();
-        document.body.removeChild(link);
+        link.remove();
         URL.revokeObjectURL(url);
     }
 

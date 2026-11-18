@@ -5,6 +5,7 @@
  */
 import { router } from '@/core/router/router.js';
 import SystemOverlay from '@/shared/ui/overlays/SystemOverlay.js';
+import { $, $on } from '@/shared/utils/dom.js';
 
 export const Error403 = {
     render: () => {
@@ -25,9 +26,9 @@ export const Error403 = {
     },
 
     init: () => {
-        const btn = document.querySelector('[data-overlay-action="dashboard"]');
+        const btn = $('[data-overlay-action="dashboard"]');
         if (btn) {
-            btn.addEventListener('click', (e) => {
+            $on(btn, 'click', (e) => {
                 e.preventDefault();
                 router.navigate('/workspace');
             });

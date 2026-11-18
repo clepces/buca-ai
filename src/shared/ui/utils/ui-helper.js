@@ -1,8 +1,5 @@
-/**
- * @fileoverview UI Helper Utilities
- * @module utils/ui-helper
- * @description Utilidades globales para la manipulación dinámica de la interfaz, preloader y overlays.
- */
+import { $id, $, $mount, $create, $addClass, $removeClass, $text, $styleVar } from '@/shared/utils/dom.js';
+import { getViewportWidth } from '@/core/utils/system-helper.js';
 
 /**
  * Mapeo de iconos SVG predeterminados para los estados del preloader
@@ -65,7 +62,7 @@ export const DEFAULT_STATE_SVGS = {
  * @returns {HTMLElement|null} El elemento #global-preloader actualizado
  */
 export function updatePreloaderState(status, icon, type = 'info') {
-    const preloader = document.getElementById('global-preloader');
+    const preloader = $id('global-preloader');
     if (!preloader) return null;
 
     // 1. Limpiar clases de estado previas
@@ -74,19 +71,19 @@ export function updatePreloaderState(status, icon, type = 'info') {
         'preloader--500', 'preloader--503', 'preloader--info',
         'is-error', 'is-warning'
     ];
-    preloader.classList.remove(...stateClasses);
+    $removeClass(preloader, ...stateClasses);
 
     // 2. Si el tipo es 'reset' o 'default', restaurar estado normal de carga
     if (type === 'reset' || type === 'default') {
-        const spinner = preloader.querySelector('.buca-spinner');
-        if (spinner) spinner.style.display = 'block';
+        const spinner = $('.buca-spinner', preloader);
+        if (spinner) $styleVar(spinner, 'display', 'block');
         
-        const iconEl = document.getElementById('splash-icon');
+        const iconEl = $id('splash-icon');
         if (iconEl) iconEl.remove();
 
         if (status) {
-            const statusEl = document.getElementById('splash-status');
-            if (statusEl) statusEl.textContent = status;
+            const statusEl = $id('splash-status');
+            if (statusEl) $text(statusEl, status);
         }
         return preloader;
     }
@@ -94,21 +91,21 @@ export function updatePreloaderState(status, icon, type = 'info') {
     // 3. Aplicar nuevas clases de estado según 'type'
     const cleanType = String(type).toLowerCase().trim();
     const typeClass = `preloader--${cleanType}`;
-    preloader.classList.add(typeClass);
+    $addClass(preloader, typeClass);
 
     if (cleanType === 'error' || cleanType === '500' || cleanType === '503' || cleanType.includes('danger')) {
-        preloader.classList.add('is-error');
+        $addClass(preloader, 'is-error');
     } else if (cleanType === 'warning') {
-        preloader.classList.add('is-warning');
+        $addClass(preloader, 'is-warning');
     } else if (cleanType === '404') {
-        preloader.classList.add('is-error');
+        $addClass(preloader, 'is-error');
     }
 
     // 4. Actualizar texto de #splash-status
     if (status) {
-        const statusEl = document.getElementById('splash-status');
+        const statusEl = $id('splash-status');
         if (statusEl) {
-            statusEl.textContent = status;
+            $text(statusEl, status);
         }
     }
 
@@ -129,25 +126,26 @@ export function updatePreloaderState(status, icon, type = 'info') {
         targetSvg = DEFAULT_STATE_SVGS[cleanType] || DEFAULT_STATE_SVGS['error'];
     }
 
-    let iconContainer = document.getElementById('splash-icon');
-    const spinner = preloader.querySelector('.buca-spinner');
+    let iconContainer = $id('splash-icon');
+    const spinner = $('.buca-spinner', preloader);
 
     if (!iconContainer) {
-        iconContainer = document.createElement('div');
-        iconContainer.id = 'splash-icon';
-        iconContainer.className = 'buca-overlay-icon';
+        iconContainer = $create('div', {
+            id: 'splash-icon',
+            className: 'buca-overlay-icon'
+        });
         
         if (spinner) {
             spinner.parentNode.insertBefore(iconContainer, spinner);
-            spinner.style.display = 'none';
+            $styleVar(spinner, 'display', 'none');
         } else {
             preloader.prepend(iconContainer);
         }
     } else if (spinner) {
-        spinner.style.display = 'none';
+        $styleVar(spinner, 'display', 'none');
     }
 
-    iconContainer.innerHTML = targetSvg;
+    $mount(iconContainer, targetSvg);
 
     return preloader;
 }
@@ -165,31 +163,32 @@ export const ScrollManager = {
     lock() {
         this._lockCount++;
         if (this._lockCount === 1) {
-            this._originalStyle = document.body.style.overflow;
-            document.body.style.overflow = 'hidden';
-            document.documentElement.style.overflow = 'hidden'; // Refuerzo para iOS
-            document.body.classList.add('buca-modal-open');
+            this._originalStyle = document.body?.style?.overflow || '';
+            $styleVar(document.body, 'overflow', 'hidden');
+            $styleVar(document.documentElement, 'overflow', 'hidden'); // Refuerzo para iOS
+            $addClass(document.body, 'buca-modal-open');
             // Evitar saltos de layout por desaparición de scrollbar
-            document.body.style.paddingRight = (window.innerWidth - document.documentElement.clientWidth) + 'px';
+            const scrollbarWidth = getViewportWidth() - document.documentElement.clientWidth;
+            $styleVar(document.body, 'padding-right', `${scrollbarWidth}px`);
         }
     },
 
     unlock() {
         this._lockCount = Math.max(0, this._lockCount - 1);
         if (this._lockCount === 0) {
-            document.body.style.overflow = this._originalStyle;
-            document.documentElement.style.overflow = '';
-            document.body.style.paddingRight = '';
-            document.body.classList.remove('buca-modal-open');
+            $styleVar(document.body, 'overflow', this._originalStyle || '');
+            $styleVar(document.documentElement, 'overflow', '');
+            $styleVar(document.body, 'padding-right', '');
+            $removeClass(document.body, 'buca-modal-open');
         }
     },
 
     forceUnlock() {
         this._lockCount = 0;
-        document.body.style.overflow = '';
-        document.documentElement.style.overflow = '';
-        document.body.style.paddingRight = '';
-        document.body.classList.remove('buca-modal-open');
+        $styleVar(document.body, 'overflow', '');
+        $styleVar(document.documentElement, 'overflow', '');
+        $styleVar(document.body, 'padding-right', '');
+        $removeClass(document.body, 'buca-modal-open');
     }
 };
 

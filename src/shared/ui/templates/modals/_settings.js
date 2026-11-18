@@ -31,7 +31,7 @@ export const settingsTemplate = ({ currentTheme, currentTier }) => `
                     <div class="setting-desc">Desenfoque de fondo dinámico y sombreado neural</div>
                 </div>
                 <label class="glass-switch">
-                    <input type="checkbox" id="settings-glass-toggle" checked onchange="document.body.classList.toggle('disable-glass', !this.checked)">
+                    <input type="checkbox" id="settings-glass-toggle" checked data-action="settings:toggle_glass">
                     <span class="slider round"></span>
                 </label>
             </div>

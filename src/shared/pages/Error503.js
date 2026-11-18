@@ -4,6 +4,8 @@
  * Utiliza el SystemOverlay unificado para mantener coherencia visual.
  */
 import SystemOverlay from '@/shared/ui/overlays/SystemOverlay.js';
+import { $, $on } from '@/shared/utils/dom.js';
+import { safeReload } from '@/core/utils/system-helper.js';
 
 export const Error503 = {
     render: () => {
@@ -24,9 +26,9 @@ export const Error503 = {
     },
 
     init: () => {
-        const btnReload = document.querySelector('[data-overlay-action="reload"]');
+        const btnReload = $('[data-overlay-action="reload"]');
         if (btnReload) {
-            btnReload.addEventListener('click', () => window.location.reload());
+            $on(btnReload, 'click', () => safeReload());
         }
     }
 };

@@ -5,6 +5,8 @@
  */
 import { router } from '@/core/router/router.js';
 import SystemOverlay from '@/shared/ui/overlays/SystemOverlay.js';
+import { $, $on } from '@/shared/utils/dom.js';
+import { safeReload } from '@/core/utils/system-helper.js';
 
 export const Error500 = {
     render: () => {
@@ -31,14 +33,14 @@ export const Error500 = {
     },
 
     init: () => {
-        const btnReload = document.querySelector('[data-overlay-action="reload"]');
-        const btnHome = document.querySelector('[data-overlay-action="home"]');
+        const btnReload = $('[data-overlay-action="reload"]');
+        const btnHome = $('[data-overlay-action="home"]');
 
         if (btnReload) {
-            btnReload.addEventListener('click', () => window.location.reload());
+            $on(btnReload, 'click', () => safeReload());
         }
         if (btnHome) {
-            btnHome.addEventListener('click', (e) => {
+            $on(btnHome, 'click', (e) => {
                 e.preventDefault();
                 router.navigate('/workspace');
             });

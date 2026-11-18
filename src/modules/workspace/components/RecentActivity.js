@@ -9,7 +9,7 @@ import { escapeHTML } from '@/shared/utils/security.js';
 import { ActivityLogService } from '@/core/services/ActivityLogService.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { sessionState } from '@/core/state/session.js';
-import { $id, $mount, $on, $show, $hide, $toggle, $addClass, $removeClass, $$ } from '@/shared/utils/dom.js';
+import { $id, $mount, $on, $off, $show, $hide, $toggle, $addClass, $removeClass, $$ } from '@/shared/utils/dom.js';
 
 export const RecentActivity = {
     _items: [],
@@ -156,7 +156,7 @@ export const RecentActivity = {
 
     _bindFilterEvents() {
         if (this._filterClickHandler) {
-            document.removeEventListener('click', this._filterClickHandler);
+            $off(document, 'click', this._filterClickHandler);
         }
 
         this._filterClickHandler = (e) => {
@@ -196,7 +196,7 @@ export const RecentActivity = {
             this._unsubActivity = null;
         }
         if (this._filterClickHandler) {
-            document.removeEventListener('click', this._filterClickHandler);
+            $off(document, 'click', this._filterClickHandler);
             this._filterClickHandler = null;
         }
         this._items = [];

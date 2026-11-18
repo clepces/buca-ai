@@ -2,6 +2,9 @@
  * GhostSanitizer - Limpieza de capas con will-change y opacity: 0
  * Rescatado de Legacy Engine (GraphicsManager.js)
  */
+import { $$, $styleVar } from '@/shared/utils/dom.js';
+import { Logger } from '@/shared/utils/logger.js';
+
 export class GhostSanitizer {
     constructor(engine) {
         this.engine = engine;
@@ -29,17 +32,17 @@ export class GhostSanitizer {
     }
 
     #performSanitize() {
-        const ghosts = document.querySelectorAll('.hidden:not([data-bne-ignore])');
+        const ghosts = $$('.hidden:not([data-bne-ignore])');
         let sanitizedCount = 0;
         ghosts.forEach(el => {
-            if (el.style.display !== 'none') {
-                el.style.display = 'none';
+            if (el.style && el.style.display !== 'none') {
+                $styleVar(el, 'display', 'none');
                 sanitizedCount++;
             }
         });
         
         if (sanitizedCount > 0) {
-            console.debug(`[GhostSanitizer] Eliminadas ${sanitizedCount} capas ocultas de la GPU.`);
+            Logger.debug('GhostSanitizer', `Eliminadas ${sanitizedCount} capas ocultas de la GPU.`);
         }
     }
 

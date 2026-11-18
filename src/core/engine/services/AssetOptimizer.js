@@ -4,6 +4,9 @@
  * @description Maneja IntersectionObserver para imágenes y videos según el perfil gráfico y DPR.
  */
 
+import { $id, $styleVar } from '@/shared/utils/dom.js';
+import { $onWindow, $offWindow } from '@/core/utils/system-helper.js';
+
 export class AssetOptimizer {
     constructor(engine) {
         this.engine = engine;
@@ -39,13 +42,13 @@ export class AssetOptimizer {
             threshold: 0.01
         });
 
-        this.#modalOpenHandler = () => this.scan(document.getElementById('modal-container'));
+        this.#modalOpenHandler = () => this.scan($id('modal-container'));
         this.#layoutReadyHandler = () => this.scan();
         this.#scanGraphicsHandler = () => this.scan();
 
-        window.addEventListener('modal:opened', this.#modalOpenHandler);
-        window.addEventListener('kernel:layout-ready', this.#layoutReadyHandler);
-        window.addEventListener('ui:scan_graphics', this.#scanGraphicsHandler);
+        $onWindow('modal:opened', this.#modalOpenHandler);
+        $onWindow('kernel:layout-ready', this.#layoutReadyHandler);
+        $onWindow('ui:scan_graphics', this.#scanGraphicsHandler);
     }
 
     /**
@@ -89,9 +92,9 @@ export class AssetOptimizer {
         if (el.tagName === 'VIDEO') {
             if (tier === 'eco') {
                 el.pause();
-                el.style.opacity = '0.3';
+                $styleVar(el, 'opacity', '0.3');
             } else {
-                el.style.opacity = '1';
+                $styleVar(el, 'opacity', '1');
                 el.play().catch(() => {});
             }
         }
@@ -99,15 +102,15 @@ export class AssetOptimizer {
 
     #applySourceWithTransition(el, src) {
         if (el.tagName === 'IMG') {
-            el.style.filter = 'blur(10px)';
-            el.style.opacity = '0.7';
-            el.style.transition = 'filter 0.4s ease, opacity 0.4s ease';
+            $styleVar(el, 'filter', 'blur(10px)');
+            $styleVar(el, 'opacity', '0.7');
+            $styleVar(el, 'transition', 'filter 0.4s ease, opacity 0.4s ease');
 
             const tempImg = new Image();
             tempImg.onload = () => {
                 el.src = src;
-                el.style.filter = 'none';
-                el.style.opacity = '1';
+                $styleVar(el, 'filter', 'none');
+                $styleVar(el, 'opacity', '1');
             };
             tempImg.src = src;
         } else {
@@ -126,9 +129,9 @@ export class AssetOptimizer {
      * Limpieza completa de observadores y listeners para descarte de ciclo de vida.
      */
     destroy() {
-        if (this.#modalOpenHandler) window.removeEventListener('modal:opened', this.#modalOpenHandler);
-        if (this.#layoutReadyHandler) window.removeEventListener('kernel:layout-ready', this.#layoutReadyHandler);
-        if (this.#scanGraphicsHandler) window.removeEventListener('ui:scan_graphics', this.#scanGraphicsHandler);
+        if (this.#modalOpenHandler) $offWindow('modal:opened', this.#modalOpenHandler);
+        if (this.#layoutReadyHandler) $offWindow('kernel:layout-ready', this.#layoutReadyHandler);
+        if (this.#scanGraphicsHandler) $offWindow('ui:scan_graphics', this.#scanGraphicsHandler);
 
         if (this.intersectionObserver) {
             this.intersectionObserver.disconnect();

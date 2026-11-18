@@ -4,6 +4,8 @@
  * Refactorización Phase 5: Robustez de eventos y delegación.
  * =========================================================================
  */
+import { $id, $, $$, $on, $off, $addClass, $removeClass } from '@/shared/utils/dom.js';
+
 export const BannerComponent = {
     render(displayName = 'Usuario') {
         return `
@@ -159,14 +161,14 @@ export const BannerComponent = {
     },
 
     init() {
-        const container = document.getElementById('banner-container');
+        const container = $id('banner-container');
         if (!container || container._bucaInit) return;
         container._bucaInit = true;
 
-        const stack = container.querySelector('#banner-fan-stack');
+        const stack = $('#banner-fan-stack', container);
         if (!stack) return;
 
-        stack.addEventListener('click', (e) => {
+        $on(stack, 'click', (e) => {
             const card = e.target.closest('.fan-card');
             if (!card) return;
 
@@ -174,28 +176,28 @@ export const BannerComponent = {
             const isFlipped = card.classList.contains('flipped');
             
             // Cerrar otras
-            stack.querySelectorAll('.fan-card').forEach(c => c.classList.remove('flipped', 'active'));
+            $$('.fan-card', stack).forEach(c => $removeClass(c, 'flipped', 'active'));
             
             if (!isFlipped) {
-                card.classList.add('flipped', 'active');
+                $addClass(card, 'flipped', 'active');
             }
         });
 
         // Cerrar al hacer clic fuera con referencia desmontable
         this._outsideClickHandler = (e) => {
             if (!stack.contains(e.target)) {
-                stack.querySelectorAll('.fan-card').forEach(c => c.classList.remove('flipped', 'active'));
+                $$('.fan-card', stack).forEach(c => $removeClass(c, 'flipped', 'active'));
             }
         };
-        document.addEventListener('click', this._outsideClickHandler);
+        $on(document, 'click', this._outsideClickHandler);
     },
 
     destroy() {
         if (this._outsideClickHandler) {
-            document.removeEventListener('click', this._outsideClickHandler);
+            $off(document, 'click', this._outsideClickHandler);
             this._outsideClickHandler = null;
         }
-        const container = document.getElementById('banner-container');
+        const container = $id('banner-container');
         if (container) container._bucaInit = false;
     }
 };

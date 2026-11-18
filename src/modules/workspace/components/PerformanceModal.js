@@ -8,6 +8,7 @@ import { PerformanceStorage } from '@/core/storage/PerformanceStorage.js';
 import { PerformanceD3Dashboard } from './PerformanceD3Dashboard.js';
 import ModalService from '@/shared/ui/services/ModalService.js';
 import { ModalTemplates } from '@/shared/ui/templates/ModalTemplates.js';
+import { $id, $, $$, $on, $addClass, $removeClass, $text } from '@/shared/utils/dom.js';
 
 export const PerformanceModal = {
     activeTab: 'telemetry',
@@ -80,22 +81,22 @@ export const PerformanceModal = {
     },
 
     _bindEvents() {
-        const modal = document.getElementById('modal-container');
+        const modal = $id('modal-container');
         if (!modal) return;
 
         // Tabs
-        const tabs = modal.querySelectorAll('#perf-tabs-nav .modal-nav-tab');
+        const tabs = $$('#perf-tabs-nav .modal-nav-tab', modal);
         tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
+            $on(tab, 'click', () => {
                 const targetTab = tab.dataset.tab;
                 this.activeTab = targetTab;
                 
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
+                tabs.forEach(t => $removeClass(t, 'active'));
+                $addClass(tab, 'active');
 
-                modal.querySelectorAll('.tab-content-pane').forEach(p => p.classList.remove('active'));
-                const targetPane = modal.querySelector(`#tab-perf-${targetTab}`);
-                if (targetPane) targetPane.classList.add('active');
+                $$('.tab-content-pane', modal).forEach(p => $removeClass(p, 'active'));
+                const targetPane = $(`#tab-perf-${targetTab}`, modal);
+                if (targetPane) $addClass(targetPane, 'active');
 
                 if (targetTab === 'telemetry') {
                     requestAnimationFrame(() => {
@@ -106,40 +107,40 @@ export const PerformanceModal = {
         });
 
         // Profile Selection
-        modal.querySelectorAll('.profile-card[data-tier]').forEach(card => {
-            card.addEventListener('click', () => {
+        $$('.profile-card[data-tier]', modal).forEach(card => {
+            $on(card, 'click', () => {
                 const tier = card.dataset.tier;
                 GraphicsEngine.isManualMode = true;
                 GraphicsEngine.applyTier(tier);
                 PerformanceStorage.set({ profile: tier, isManualMode: true });
                 
                 // Actualizar UI visual
-                modal.querySelectorAll('.profile-card').forEach(c => c.classList.remove('active'));
-                card.classList.add('active');
+                $$('.profile-card', modal).forEach(c => $removeClass(c, 'active'));
+                $addClass(card, 'active');
                 
-                const modeLabel = modal.querySelector('#perf-control-mode-val');
-                if (modeLabel) modeLabel.textContent = 'MANUAL';
+                const modeLabel = $('#perf-control-mode-val', modal);
+                if (modeLabel) $text(modeLabel, 'MANUAL');
             });
         });
 
         // Panic Switch
-        const panicSwitch = modal.querySelector('#btn-toggle-panic-switch');
+        const panicSwitch = $('#btn-toggle-panic-switch', modal);
         if (panicSwitch) {
-            panicSwitch.onchange = (e) => {
+            $on(panicSwitch, 'change', (e) => {
                 GraphicsEngine.togglePanicMode(e.target.checked);
-            };
+            });
         }
 
         // Quick Mode Toggle
-        const quickToggle = modal.querySelector('#btn-quick-mode-toggle');
+        const quickToggle = $('#btn-quick-mode-toggle', modal);
         if (quickToggle) {
-            quickToggle.onclick = () => {
+            $on(quickToggle, 'click', () => {
                 const stats = GraphicsEngine.getCurrentStats();
                 const nextMode = !stats.isManualMode;
                 GraphicsEngine.isManualMode = nextMode;
                 PerformanceStorage.set({ isManualMode: nextMode });
                 this._render(); // Re-render para actualizar iconos
-            };
+            });
         }
     },
 
@@ -147,16 +148,16 @@ export const PerformanceModal = {
         if (this.telemetryInterval) clearInterval(this.telemetryInterval);
         this.telemetryInterval = setInterval(() => {
             const stats = GraphicsEngine.getCurrentStats();
-            const fpsEl = document.getElementById('perf-fps');
-            const vramEl = document.getElementById('perf-vram');
+            const fpsEl = $id('perf-fps');
+            const vramEl = $id('perf-vram');
             
-            if (fpsEl) fpsEl.textContent = stats.fps;
-            if (vramEl) vramEl.textContent = `${stats.memory}GB`;
+            if (fpsEl) $text(fpsEl, stats.fps);
+            if (vramEl) $text(vramEl, `${stats.memory}GB`);
             
-            const latencyEl = document.getElementById('perf-latency-val');
+            const latencyEl = $id('perf-latency-val');
             if (latencyEl) {
                 const lat = (Math.random() * 5 + 8).toFixed(1);
-                latencyEl.textContent = `${lat}ms`;
+                $text(latencyEl, `${lat}ms`);
             }
         }, 1000);
     },

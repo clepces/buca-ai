@@ -7,6 +7,7 @@
  */
 import { eventBus } from '@/core/eventBus/index.js';
 import { businessService } from '@/modules/workspace/services/BusinessService.js';
+import { $id, $, $$, $mount, $on, $text, $addClass, $removeClass, $hide } from '@/shared/utils/dom.js';
 
 export const WorkspaceNavRibbon = {
     render() {
@@ -146,14 +147,14 @@ export const WorkspaceNavRibbon = {
     },
 
     mount(targetSlotId = 'workspace-nav-slot') {
-        const slot = document.getElementById(targetSlotId);
+        const slot = $id(targetSlotId);
         if (!slot) return;
-        slot.innerHTML = this.render();
+        $mount(slot, this.render());
         this.init();
     },
 
     init() {
-        const ribbon = document.querySelector('.workspace-navigation-ribbon');
+        const ribbon = $('.workspace-navigation-ribbon');
         if (!ribbon || ribbon._bucaInit) return;
         ribbon._bucaInit = true;
 
@@ -162,8 +163,8 @@ export const WorkspaceNavRibbon = {
             try {
                 const res = await businessService.getUserBusinesses();
                 const count = (res.success && Array.isArray(res.data)) ? res.data.length : 0;
-                ribbon.querySelectorAll('.pill-count').forEach(el => {
-                    el.textContent = count;
+                $$('.pill-count', ribbon).forEach(el => {
+                    $text(el, count);
                 });
             } catch (err) {
                 console.warn('[WorkspaceNavRibbon] Error consultando negocios reales:', err);
@@ -173,7 +174,7 @@ export const WorkspaceNavRibbon = {
         updateBusinessCount();
 
         // Delegated click handler for robust UI interactions
-        ribbon.addEventListener('click', (e) => {
+        $on(ribbon, 'click', (e) => {
             const overflowBtn = e.target.closest('#ws-actions-overflow-toggle');
             if (overflowBtn) {
                 e.stopPropagation();
@@ -205,18 +206,18 @@ export const WorkspaceNavRibbon = {
         });
 
         // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
+        $on(document, 'click', (e) => {
             if (!ribbon.contains(e.target)) {
-                const dropdown = ribbon.querySelector('#ws-actions-dropdown');
-                if (dropdown) dropdown.classList.add('d-none');
+                const dropdown = $('#ws-actions-dropdown', ribbon);
+                if (dropdown) $hide(dropdown);
             }
         });
 
         // Listen for rate changes globally
         eventBus.on('buca:rate_change', ({ rate }) => {
-            const valEl = ribbon.querySelector('.bcv-val');
+            const valEl = $('.bcv-val', ribbon);
             if (valEl && rate) {
-                valEl.textContent = `Bs. ${Number(rate).toFixed(2)}`;
+                $text(valEl, `Bs. ${Number(rate).toFixed(2)}`);
             }
         });
 
@@ -224,10 +225,10 @@ export const WorkspaceNavRibbon = {
         eventBus.on('workspace:business_created', () => updateBusinessCount());
         eventBus.on('workspace:refresh_data', (_payload) => {
             updateBusinessCount();
-            const icon = ribbon.querySelector('.bi-arrow-clockwise');
+            const icon = $('.bi-arrow-clockwise', ribbon);
             if (icon) {
-                icon.classList.add('spin-anim');
-                setTimeout(() => icon.classList.remove('spin-anim'), 1000);
+                $addClass(icon, 'spin-anim');
+                setTimeout(() => $removeClass(icon, 'spin-anim'), 1000);
             }
         });
     }

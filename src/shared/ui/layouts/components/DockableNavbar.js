@@ -1,5 +1,5 @@
 import { eventBus } from '@/core/eventBus/index.js';
-import { $id, $, $$, $mount, $on, $addClass, $removeClass, $attr } from '@/shared/utils/dom.js';
+import { $id, $, $$, $mount, $on, $addClass, $removeClass, $attr, $styleVar } from '@/shared/utils/dom.js';
 import { getPath } from '@/core/utils/index.js';
 
 /**
@@ -151,14 +151,14 @@ export const Dock = {
         const dock = $('.dock');
         if (!curve || !dock) return;
 
-        const items = dock.querySelectorAll('.dock-item');
+        const items = $$('.dock-item', dock);
         const totalItems = items.length;
         if (totalItems === 0) return;
         
         const itemWidthPercent = 100 / totalItems;
         const pos = (index * itemWidthPercent) + (itemWidthPercent / 2);
         
-        curve.style.left = `calc(${pos}% - 55px)`;
+        $styleVar(curve, 'left', `calc(${pos}% - 55px)`);
     },
 
     switchContext(newContext) {
@@ -166,12 +166,12 @@ export const Dock = {
         this.state.currentContext = newContext;
         this.state.activeIndex = 0; // Reset al cambiar contexto
 
-        const dockContainer = document.querySelector('.dock-container');
+        const dockContainer = $('.dock-container');
         if (dockContainer) {
-            dockContainer.classList.add('dock-context-transition');
+            $addClass(dockContainer, 'dock-context-transition');
             setTimeout(() => {
-                this.renderTo(document.getElementById('dock-slot'));
-                dockContainer.classList.remove('dock-context-transition');
+                this.renderTo($id('dock-slot'));
+                $removeClass(dockContainer, 'dock-context-transition');
             }, 250);
         }
     },

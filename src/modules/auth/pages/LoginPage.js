@@ -2,7 +2,7 @@ import LoginForm from '../components/LoginForm.js';
 import PINForm from '../components/PINForm.js';
 import { router } from '@/core/router/router.js';
 import { sessionState } from '@/core/state/session.js';
-import { $id, $mount, $show, $hide, $text, setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
+import { $id, $mount, $show, $hide, $text, $styleVar, $addClass, setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
 import { Logger } from '@/shared/utils/logger.js';
 
 export const LoginPage = {
@@ -180,14 +180,14 @@ export const LoginPage = {
                 progress += Math.random() * 8;
                 
                 if (progress >= steps[currentStep].p) {
-                    statusText.textContent = steps[currentStep].t;
+                    $text(statusText, steps[currentStep].t);
                     if (currentStep < steps.length - 1) currentStep++;
                 }
 
                 if (progress >= 100) {
                     progress = 100;
                     clearInterval(interval);
-                    bar.style.background = '#22c55e';
+                    if (bar) $addClass(bar, 'bg-success');
                     
                     const currentUser = sessionState.get().user;
                     if (!currentUser) {
@@ -198,8 +198,8 @@ export const LoginPage = {
                     setTimeout(() => router.navigate('/workspace'), 800);
                 }
 
-                if (bar) bar.style.width = `${progress}%`;
-                if (pct) pct.innerText = `${Math.floor(progress)}%`;
+                if (bar) $styleVar(bar, 'width', `${progress}%`);
+                if (pct) $text(pct, `${Math.floor(progress)}%`);
             }, 100);
         });
     }

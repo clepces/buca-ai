@@ -7,6 +7,7 @@
  */
 
 import { CONFIG } from '../config/config.js';
+import { $$, $attr } from '../../shared/utils/dom.js';
 
 const STORAGE_KEY = CONFIG.STORAGE.PERFORMANCE || 'buca_performance_config';
 const VALID_PROFILES = ['eco', 'balanced', 'pro', 'ultra'];
@@ -106,16 +107,16 @@ export class PerformanceStorage {
         const tierId = tier || PROFILE_TO_TIER[profile] || 'L1';
         const root = document.documentElement;
 
-        root.setAttribute('data-buca-perf', tierId);
-        root.setAttribute('data-buca-manual', isManualMode ? 'true' : 'false');
+        $attr(root, 'data-buca-perf', tierId);
+        $attr(root, 'data-buca-manual', isManualMode ? 'true' : 'false');
 
         // Propagar a todos los contenedores de modales activos y overlays en el DOM
-        const modalTargets = document.querySelectorAll(
+        const modalTargets = $$(
             '#modal-base, .glass-modal-overlay, .glass-modal, #perf-modal-overlay, [data-buca-modal]'
         );
         modalTargets.forEach(el => {
-            el.setAttribute('data-buca-perf', tierId);
-            el.setAttribute('data-buca-manual', isManualMode ? 'true' : 'false');
+            $attr(el, 'data-buca-perf', tierId);
+            $attr(el, 'data-buca-manual', isManualMode ? 'true' : 'false');
         });
     }
 

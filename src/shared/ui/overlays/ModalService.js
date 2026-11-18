@@ -7,7 +7,7 @@
 import { ModalTemplates } from '../templates/ModalTemplates.js';
 import { ScrollManager } from '@/shared/ui/utils/ui-helper.js';
 import { eventBus } from '@/core/eventBus/index.js';
-import { $id, $mount, $on, $addClass, $removeClass, $attr, $$ } from '@/shared/utils/dom.js';
+import { $id, $, $mount, $on, $addClass, $removeClass, $attr, $$ } from '@/shared/utils/dom.js';
 import { Logger } from '@/shared/utils/logger.js';
 
 export class ModalService {
@@ -101,7 +101,7 @@ export class ModalService {
         const modalBase = $id('modal-base');
         if (modalBase) {
             // Remover el foco de cualquier elemento dentro del modal antes de ocultar
-            const focusedInside = modalBase.querySelector(':focus');
+            const focusedInside = $(':focus', modalBase);
             if (focusedInside && typeof focusedInside.blur === 'function') {
                 focusedInside.blur();
             }

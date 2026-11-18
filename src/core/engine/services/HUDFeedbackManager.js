@@ -1,6 +1,6 @@
 
-import { $id, $mount, $on, $onReady, $addClass, $removeClass } from '@/shared/utils/dom.js';
-import { $onWindow } from '@/core/utils/index.js';
+import { $id, $, $mount, $on, $onReady, $addClass, $removeClass, $create, $appendTo } from '@/shared/utils/dom.js';
+import { $onWindow, $offWindow } from '@/core/utils/index.js';
 
 /**
  * HUD Feedback Manager
@@ -40,10 +40,11 @@ class HUDFeedbackManager {
     setupContainer() {
         this.container = $id('buca-hud-feedback-container');
         if (!this.container) {
-            this.container = document.createElement('div');
-            this.container.id = 'buca-hud-feedback-container';
-            this.container.className = 'hud-feedback-container';
-            document.body.appendChild(this.container);
+            this.container = $create('div', {
+                id: 'buca-hud-feedback-container',
+                className: 'hud-feedback-container'
+            });
+            $appendTo(document.body, this.container);
         }
     }
 
@@ -79,12 +80,11 @@ class HUDFeedbackManager {
         return new Promise((resolve) => {
             if (!this.container) this.setupContainer();
 
-            const toast = document.createElement('div');
-            
             // ¿El motor está en pánico?
             const isThermalThrottle = document.documentElement.classList.contains('buca-thermal-throttle');
-            
-            toast.className = `hud-toast hud-toast--${options.type || 'info'} ${isThermalThrottle ? 'hud-toast--eco' : 'hud-toast--glass'}`;
+            const toast = $create('div', {
+                className: `hud-toast hud-toast--${options.type || 'info'} ${isThermalThrottle ? 'hud-toast--eco' : 'hud-toast--glass'}`
+            });
 
             $mount(toast, `
                 <div class="hud-toast-icon">
@@ -96,7 +96,7 @@ class HUDFeedbackManager {
                 <button class="hud-toast-close" title="Cerrar">&times;</button>
             `);
 
-            this.container.appendChild(toast);
+            $appendTo(this.container, toast);
 
             // Animate In (Reflow forzado para transición segura)
             requestAnimationFrame(() => {
@@ -117,7 +117,7 @@ class HUDFeedbackManager {
                 }, 300); // 300ms de transición CSS
             };
 
-            const closeBtn = toast.querySelector('.hud-toast-close');
+            const closeBtn = $('.hud-toast-close', toast);
             if (closeBtn) {
                 $on(closeBtn, 'click', removeToast);
             }
@@ -140,11 +140,11 @@ class HUDFeedbackManager {
      */
     destroy() {
         if (this._boundNotification) {
-            window.removeEventListener('buca:notification', this._boundNotification);
+            $offWindow('buca:notification', this._boundNotification);
             this._boundNotification = null;
         }
         if (this._boundLegacy) {
-            window.removeEventListener('UI:NOTIFICATION_PUSH', this._boundLegacy);
+            $offWindow('UI:NOTIFICATION_PUSH', this._boundLegacy);
             this._boundLegacy = null;
         }
         this.toastQueue = [];

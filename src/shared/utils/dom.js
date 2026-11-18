@@ -5,14 +5,9 @@
  * selectores optimizados, montaje atómico (cero innerHTML), y gestión de clases/atributos.
  */
 
-import { isBrowser } from '@/core/utils/system-helper.js';
+import { isBrowser } from '../../core/utils/system-helper.js';
 
-/**
- * Resuelve un elemento a partir de una referencia o de un selector/ID.
- * @param {HTMLElement|string} target - Elemento o ID/selector
- * @param {ParentNode} [scope=document]
- * @returns {HTMLElement|null}
- */
+/** Resuelve un elemento a partir de una referencia o de un selector/ID. */
 export const resolveEl = (target, scope = document) => {
     if (!target) return null;
     if (target instanceof HTMLElement || target instanceof SVGElement) return target;
@@ -22,35 +17,18 @@ export const resolveEl = (target, scope = document) => {
     return null;
 };
 
-/**
- * Selector rápido por ID (document.getElementById).
- * @param {string} id - Identificador del elemento
- * @returns {HTMLElement|null}
- */
+/** Selector rápido por ID (document.getElementById). */
 export const $id = (id) => document.getElementById(id);
 
-/**
- * QuerySelector estándar con soporte de ámbito (scope).
- * @param {string} selector - Selector CSS
- * @param {ParentNode} [scope=document] - Elemento contenedor
- * @returns {HTMLElement|null}
- */
+/** QuerySelector estándar con soporte de ámbito (scope). */
 export const $ = (selector, scope = document) => scope.querySelector(selector);
 
-/**
- * QuerySelectorAll estándar que retorna un Array nativo de elementos.
- * @param {string} selector - Selector CSS
- * @param {ParentNode} [scope=document] - Elemento contenedor
- * @returns {HTMLElement[]}
- */
+/** QuerySelectorAll estándar que retorna un Array nativo de elementos. */
 export const $$ = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
 
 /**
  * Inyecta una plantilla HTML de forma atómica y segura sin invocar asignaciones directas de innerHTML.
- * Utiliza DocumentFragment y replaceChildren para renderizado sin fugas.
- * @param {HTMLElement|string} target - Contenedor destino
- * @param {string} htmlString - Cadena de marcado HTML a renderizar
- * @returns {HTMLElement|null}
+ * Utiliza DocumentFragment y replaceChildren para renderizado sin fugas de memoria.
  */
 export const $mount = (target, htmlString) => {
     const el = resolveEl(target);
@@ -65,23 +43,14 @@ export const $mount = (target, htmlString) => {
     return el;
 };
 
-/**
- * Vacía de forma atómica y segura los hijos de un elemento sin usar innerHTML = ''.
- * @param {HTMLElement|string} target
- * @returns {HTMLElement|null}
- */
+/** Vacía de forma atómica y segura los hijos de un elemento sin usar innerHTML = ''. */
 export const $empty = (target) => {
     const el = resolveEl(target);
     if (el) el.replaceChildren();
     return el;
 };
 
-/**
- * Obtiene o asigna de forma segura el texto plano de un elemento (textContent).
- * @param {HTMLElement|string} target
- * @param {string} [value] - Texto a asignar; si se omite, retorna el texto actual
- * @returns {string|HTMLElement|null}
- */
+/** Obtiene o asigna de forma segura el texto plano de un elemento (textContent). */
 export const $text = (target, value) => {
     const el = resolveEl(target);
     if (!el) return null;
@@ -90,12 +59,7 @@ export const $text = (target, value) => {
     return el;
 };
 
-/**
- * Asigna o lee la clase (className) de un elemento de forma limpia.
- * @param {HTMLElement|string} target
- * @param {string} [className]
- * @returns {string|HTMLElement|null}
- */
+/** Asigna o lee la clase (className) de un elemento de forma limpia. */
 export const $className = (target, className) => {
     const el = resolveEl(target);
     if (!el) return null;
@@ -104,13 +68,7 @@ export const $className = (target, className) => {
     return el;
 };
 
-/**
- * Asigna una variable CSS personalizada a un elemento de forma segura.
- * @param {HTMLElement|string} target
- * @param {string} varName - Nombre de la variable (ej: '--buca-progress')
- * @param {string} value - Valor asignado
- * @returns {HTMLElement|null}
- */
+/** Asigna una variable CSS personalizada o propiedad de estilo de forma segura. */
 export const $styleVar = (target, varName, value) => {
     const el = resolveEl(target);
     if (el && el.style && typeof el.style.setProperty === 'function') {
@@ -119,13 +77,7 @@ export const $styleVar = (target, varName, value) => {
     return el;
 };
 
-/**
- * Gestiona atributos del elemento de forma segura y tipada.
- * @param {HTMLElement|string} target - Elemento destino
- * @param {string} name - Nombre del atributo
- * @param {string|number|null} [value] - Valor a asignar
- * @returns {string|null|HTMLElement}
- */
+/** Gestiona atributos del elemento de forma segura y tipada. */
 export const $attr = (target, name, value) => {
     const el = resolveEl(target);
     if (!el) return null;
@@ -135,77 +87,53 @@ export const $attr = (target, name, value) => {
     return el;
 };
 
-/**
- * Añade una o más clases a un elemento de forma segura.
- * @param {HTMLElement|string} target
- * @param {...string} classes
- * @returns {HTMLElement|null}
- */
+/** Añade una o más clases a un elemento de forma segura. */
 export const $addClass = (target, ...classes) => {
     const el = resolveEl(target);
     if (el) el.classList.add(...classes);
     return el;
 };
 
-/**
- * Remueve una o más clases de un elemento de forma segura.
- * @param {HTMLElement|string} target
- * @param {...string} classes
- * @returns {HTMLElement|null}
- */
+/** Remueve una o más clases de un elemento de forma segura. */
 export const $removeClass = (target, ...classes) => {
     const el = resolveEl(target);
     if (el) el.classList.remove(...classes);
     return el;
 };
 
-/**
- * Obtiene el valor recortado de un input, textarea o select de forma segura.
- * @param {HTMLElement|string} target - Elemento o ID
- * @param {string} [fallback=''] - Valor por defecto
- * @returns {string}
- */
+/** Verifica si un elemento contiene una clase CSS dada. */
+export const $hasClass = (target, className) => {
+    const el = resolveEl(target);
+    return el ? el.classList.contains(className) : false;
+};
+
+/** Obtiene el valor recortado de un input, textarea o select de forma segura. */
 export const $val = (target, fallback = '') => {
     const el = resolveEl(target);
     if (!el || typeof el.value === 'undefined') return fallback;
     return String(el.value).trim();
 };
 
-/**
- * Obtiene el estado booleano de un checkbox o radio button.
- * @param {HTMLElement|string} target - Elemento o ID
- * @param {boolean} [fallback=false] - Valor por defecto
- * @returns {boolean}
- */
+/** Obtiene el estado booleano de un checkbox o radio button. */
 export const $checked = (target, fallback = false) => {
     const el = resolveEl(target);
     if (!el || typeof el.checked === 'undefined') return fallback;
     return Boolean(el.checked);
 };
 
-/**
- * Muestra un elemento removiendo la clase 'd-none'.
- * @param {HTMLElement|string} target
- */
+/** Muestra un elemento removiendo la clase 'd-none'. */
 export const $show = (target) => {
     const el = resolveEl(target);
     if (el) el.classList.remove('d-none');
 };
 
-/**
- * Oculta un elemento agregando la clase 'd-none'.
- * @param {HTMLElement|string} target
- */
+/** Oculta un elemento agregando la clase 'd-none'. */
 export const $hide = (target) => {
     const el = resolveEl(target);
     if (el) el.classList.add('d-none');
 };
 
-/**
- * Alterna la visibilidad de un elemento utilizando la clase 'd-none'.
- * @param {HTMLElement|string} target
- * @param {boolean} [visible] - Forzar visible (true) u oculto (false)
- */
+/** Alterna la visibilidad de un elemento utilizando la clase 'd-none'. */
 export const $toggle = (target, visible) => {
     const el = resolveEl(target);
     if (!el) return;
@@ -216,12 +144,7 @@ export const $toggle = (target, visible) => {
     }
 };
 
-/**
- * Modifica el estado de carga de un botón de forma segura (sin innerHTML).
- * @param {HTMLElement|string} target - Botón o selector
- * @param {boolean} isLoading - Estado de carga activo
- * @param {string} [loadingText='Procesando...'] - Texto durante la carga
- */
+/** Modifica el estado de carga de un botón de forma segura (sin innerHTML). */
 export const setButtonLoading = (target, isLoading, loadingText = 'Procesando...') => {
     const btn = resolveEl(target);
     if (!btn) return;
@@ -246,13 +169,7 @@ export const setButtonLoading = (target, isLoading, loadingText = 'Procesando...
     }
 };
 
-/**
- * Asigna un escuchador de eventos de forma segura utilizando addEventListener.
- * @param {HTMLElement|string} target - Elemento o ID
- * @param {string} event - Tipo de evento (ej: 'click')
- * @param {Function} handler - Callback del evento
- * @param {AddEventListenerOptions|boolean} [options]
- */
+/** Asigna un escuchador de eventos de forma segura utilizando addEventListener. */
 export const $on = (target, event, handler, options) => {
     const el = resolveEl(target);
     if (el && typeof el.addEventListener === 'function') {
@@ -260,10 +177,7 @@ export const $on = (target, event, handler, options) => {
     }
 };
 
-/**
- * Ejecuta una función cuando el DOM esté completamente cargado.
- * @param {Function} callback 
- */
+/** Ejecuta una función cuando el DOM esté completamente cargado. */
 export const $onReady = (callback) => {
     if (!isBrowser() || typeof callback !== 'function') return;
     if (document.readyState === 'loading') {
@@ -273,12 +187,7 @@ export const $onReady = (callback) => {
     }
 };
 
-/**
- * Modifica el contenido de un botón de forma segura con icono opcional (sin innerHTML).
- * @param {HTMLElement|string} target - Botón o selector
- * @param {string} text - Texto del botón
- * @param {string} [iconClass=''] - Clase de icono (ej: 'bi bi-check-circle-fill')
- */
+/** Modifica el contenido de un botón de forma segura con icono opcional (sin innerHTML). */
 export const setButtonContent = (target, text, iconClass = '') => {
     const btn = resolveEl(target);
     if (!btn) return;
@@ -295,13 +204,7 @@ export const setButtonContent = (target, text, iconClass = '') => {
     btn.replaceChildren(icon, textNode);
 };
 
-/**
- * Remueve un escuchador de eventos de forma segura usando removeEventListener.
- * @param {HTMLElement|string} target - Elemento o ID
- * @param {string} event - Tipo de evento
- * @param {Function} handler - Callback a remover
- * @param {EventListenerOptions|boolean} [options]
- */
+/** Remueve un escuchador de eventos de forma segura usando removeEventListener. */
 export const $off = (target, event, handler, options) => {
     const el = resolveEl(target);
     if (el && typeof el.removeEventListener === 'function') {
@@ -309,12 +212,7 @@ export const $off = (target, event, handler, options) => {
     }
 };
 
-/**
- * Crea un elemento HTML de forma segura con atributos opcionales.
- * @param {string} tag - Nombre del tag (ej: 'div', 'span', 'button')
- * @param {Object} [attrs={}] - Atributos: { id, className, text, html, ...dataset }
- * @returns {HTMLElement}
- */
+/** Crea un elemento HTML de forma segura con atributos opcionales. */
 export const $create = (tag, attrs = {}) => {
     const el = document.createElement(tag);
     const { id, className, text, ...rest } = attrs;
@@ -331,12 +229,7 @@ export const $create = (tag, attrs = {}) => {
     return el;
 };
 
-/**
- * Añade un nodo hijo a un elemento padre de forma segura.
- * @param {HTMLElement|string} parent - Contenedor padre
- * @param {HTMLElement} child - Elemento hijo a añadir
- * @returns {HTMLElement|null}
- */
+/** Añade un nodo hijo a un elemento padre de forma segura. */
 export const $appendTo = (parent, child) => {
     const el = resolveEl(parent);
     if (el && child) el.appendChild(child);

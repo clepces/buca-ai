@@ -2,6 +2,8 @@
  * @fileoverview FloatingPanelManager - Gestión de posicionamiento y ciclo de vida de paneles flotantes
  * @module shared/ui/services/FloatingPanelManager
  */
+import { $$, $attr, $appendTo, $styleVar } from '@/shared/utils/dom.js';
+import { getViewportWidth } from '@/core/utils/system-helper.js';
 
 export const FloatingPanelManager = {
     /**
@@ -12,13 +14,15 @@ export const FloatingPanelManager = {
     positionPanel(panel, wrapper) {
         if (!panel || !wrapper) return;
 
+        const viewportWidth = getViewportWidth();
+
         // MOBILE (≤767px): Bottom sheet manejado por CSS
-        if (window.innerWidth <= 767) {
-            panel.style.position = '';
-            panel.style.top = '';
-            panel.style.left = '';
-            panel.style.right = '';
-            panel.style.bottom = '';
+        if (viewportWidth <= 767) {
+            $styleVar(panel, 'position', '');
+            $styleVar(panel, 'top', '');
+            $styleVar(panel, 'left', '');
+            $styleVar(panel, 'right', '');
+            $styleVar(panel, 'bottom', '');
             return;
         }
 
@@ -32,14 +36,14 @@ export const FloatingPanelManager = {
         if (left < 8) left = 8;
 
         // Evitar desbordamiento derecho
-        if (left + panelWidth > window.innerWidth - 8) {
-            left = window.innerWidth - panelWidth - 8;
+        if (left + panelWidth > viewportWidth - 8) {
+            left = viewportWidth - panelWidth - 8;
         }
 
-        panel.style.position = 'fixed';
-        panel.style.top = `${rect.bottom + 10}px`;
-        panel.style.left = `${left}px`;
-        panel.style.right = 'auto';
+        $styleVar(panel, 'position', 'fixed');
+        $styleVar(panel, 'top', `${rect.bottom + 10}px`);
+        $styleVar(panel, 'left', `${left}px`);
+        $styleVar(panel, 'right', 'auto');
     },
 
     /**
@@ -47,16 +51,16 @@ export const FloatingPanelManager = {
      * @param {string} selector - Selector de los paneles.
      */
     extractPanelsToBody(selector = '.app-header .glass-panel') {
-        const panels = document.querySelectorAll(selector);
+        const panels = $$(selector);
         panels.forEach(panel => {
             const wrapper = panel.closest('.dropdown-wrapper');
             if (wrapper) {
                 if (!wrapper.id) {
                     wrapper.id = 'dw-' + (panel.id || Math.random().toString(36).substr(2, 9));
                 }
-                panel.setAttribute('data-anchor-wrapper', wrapper.id);
+                $attr(panel, 'data-anchor-wrapper', wrapper.id);
             }
-            document.body.appendChild(panel);
+            $appendTo(document.body, panel);
         });
     }
 };

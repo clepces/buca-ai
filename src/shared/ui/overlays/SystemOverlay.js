@@ -6,7 +6,7 @@
  * composición, estructura HTML y estilos CSS con variante glassmorphism.
  */
 
-import { $id, $, $mount, $on, $addClass, $removeClass, $text } from '@/shared/utils/dom.js';
+import { $id, $, $mount, $on, $addClass, $removeClass, $text, $className, $create, $appendTo, $styleVar } from '@/shared/utils/dom.js';
 
 export class SystemOverlay {
     /**
@@ -86,19 +86,20 @@ export class SystemOverlay {
         const typeClass = `preloader--${type}`;
 
         if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'buca-system-overlay';
-            overlay.className = `buca-system-overlay ${typeClass}`;
-            document.body.appendChild(overlay);
+            overlay = $create('div', {
+                id: 'buca-system-overlay',
+                className: `buca-system-overlay ${typeClass}`
+            });
+            $appendTo(document.body, overlay);
         } else {
             if (overlay.id === 'global-preloader') {
-                overlay.className = `preloader-state ${typeClass} ${type === 'warning' ? 'is-warning' : 'is-error'}`;
+                $className(overlay, `preloader-state ${typeClass} ${type === 'warning' ? 'is-warning' : 'is-error'}`);
             } else {
-                overlay.className = `buca-system-overlay ${typeClass}`;
+                $className(overlay, `buca-system-overlay ${typeClass}`);
             }
-            overlay.style.display = 'flex';
-            overlay.style.opacity = '1';
-            overlay.style.pointerEvents = 'all';
+            $styleVar(overlay, 'display', 'flex');
+            $styleVar(overlay, 'opacity', '1');
+            $styleVar(overlay, 'pointer-events', 'all');
         }
 
         $mount(overlay, this.renderCard(options));
@@ -158,11 +159,11 @@ export class SystemOverlay {
      * Oculta suavemente el overlay si existe.
      */
     static hideOverlay() {
-        const overlay = document.getElementById('global-preloader') || document.getElementById('buca-system-overlay');
+        const overlay = $id('global-preloader') || $id('buca-system-overlay');
         if (!overlay) return;
 
-        overlay.style.pointerEvents = 'none';
-        overlay.style.opacity = '0';
+        $styleVar(overlay, 'pointer-events', 'none');
+        $styleVar(overlay, 'opacity', '0');
         setTimeout(() => {
             if (overlay && overlay.parentNode && overlay.id === 'buca-system-overlay') {
                 overlay.remove();

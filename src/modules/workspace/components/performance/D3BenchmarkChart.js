@@ -6,6 +6,7 @@
 import * as d3 from 'd3';
 import 'd3-transition';
 import { PerformanceStorage } from '@/core/storage/PerformanceStorage.js';
+import { $id, $empty, $hasClass } from '@/shared/utils/dom.js';
 
 export class D3BenchmarkChart {
     static _resizeObserver = null;
@@ -14,10 +15,10 @@ export class D3BenchmarkChart {
      * Dibuja el gráfico completo de D3 en el contenedor indicado
      */
     static render(containerId, activeProfile, onSelectProfile) {
-        const container = document.getElementById(containerId);
+        const container = $id(containerId);
         if (!container) return;
 
-        container.innerHTML = '';
+        $empty(container);
         this.destroy();
 
         const benchmarks = PerformanceStorage.getBenchmarkData();
@@ -45,32 +46,17 @@ export class D3BenchmarkChart {
         const defs = svg.append('defs');
         dataList.forEach(d => {
             const grad = defs.append('linearGradient')
-                .attr('id', `grad-${d.id}`)
-                .attr('x1', '0%').attr('y1', '0%')
-                .attr('x2', '0%').attr('y2', '100%');
-
-            grad.append('stop')
-                .attr('offset', '0%')
-                .attr('stop-color', d.gradient?.[0] || d.color || '#3b82f6')
-                .attr('stop-opacity', 0.95);
-
-            grad.append('stop')
-                .attr('offset', '100%')
-                .attr('stop-color', d.gradient?.[1] || d.color || '#1d4ed8')
-                .attr('stop-opacity', 0.6);
+                .attr('id', `grad-${d.id}`).attr('x1', '0%').attr('y1', '0%').attr('x2', '0%').attr('y2', '100%');
+            grad.append('stop').attr('offset', '0%')
+                .attr('stop-color', d.gradient?.[0] || d.color || '#3b82f6').attr('stop-opacity', 0.95);
+            grad.append('stop').attr('offset', '100%')
+                .attr('stop-color', d.gradient?.[1] || d.color || '#1d4ed8').attr('stop-opacity', 0.6);
         });
 
         const glowFilter = defs.append('filter')
-            .attr('id', 'active-glow')
-            .attr('x', '-20%').attr('y', '-20%')
-            .attr('width', '140%').attr('height', '140%');
-        glowFilter.append('feGaussianBlur')
-            .attr('stdDeviation', '4')
-            .attr('result', 'blur');
-        glowFilter.append('feComposite')
-            .attr('in', 'SourceGraphic')
-            .attr('in2', 'blur')
-            .attr('operator', 'over');
+            .attr('id', 'active-glow').attr('x', '-20%').attr('y', '-20%').attr('width', '140%').attr('height', '140%');
+        glowFilter.append('feGaussianBlur').attr('stdDeviation', '4').attr('result', 'blur');
+        glowFilter.append('feComposite').attr('in', 'SourceGraphic').attr('in2', 'blur').attr('operator', 'over');
 
         const g = svg.append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -126,15 +112,10 @@ export class D3BenchmarkChart {
             .append('rect')
             .attr('class', d => `perf-bar ${d.id === activeProfile ? 'is-active' : ''}`)
             .attr('data-id', d => d.id)
-            .attr('x', d => xScale(d.id))
-            .attr('width', xScale.bandwidth())
-            .attr('y', innerHeight)
-            .attr('height', 0)
-            .attr('rx', 8)
-            .attr('ry', 8)
+            .attr('x', d => xScale(d.id)).attr('width', xScale.bandwidth())
+            .attr('y', innerHeight).attr('height', 0).attr('rx', 8).attr('ry', 8)
             .attr('fill', d => `url(#grad-${d.id})`)
-            .style('cursor', 'pointer')
-            .style('transition', 'filter 0.3s ease, stroke-width 0.3s ease')
+            .style('cursor', 'pointer').style('transition', 'filter 0.3s ease, stroke-width 0.3s ease')
             .on('mouseover touchstart', (_event, d) => {
                 const loadVal = Number(d.avgLoadMs) || 0;
                 tooltip.classed('d-none', false)
@@ -209,7 +190,7 @@ export class D3BenchmarkChart {
             this._resizeObserver = new ResizeObserver(() => {
                 clearTimeout(resizeTimer);
                 resizeTimer = setTimeout(() => {
-                    if (document.getElementById(containerId) === container) {
+                    if ($id(containerId) === container) {
                         this.render(containerId, activeProfile, onSelectProfile);
                     }
                 }, 150);
@@ -222,7 +203,7 @@ export class D3BenchmarkChart {
      * Actualiza el perfil activo en el gráfico existente sin reconstruir todo el SVG
      */
     static update(containerId, activeProfile) {
-        const container = document.getElementById(containerId);
+        const container = $id(containerId);
         if (!container) return;
 
         const svg = d3.select(container).select('svg');
@@ -291,7 +272,7 @@ export class D3BenchmarkChart {
             .attr('stroke', '#ffffff')
             .attr('stroke-width', 2);
 
-        const isPanicMode = document.body.classList.contains('engine-suspended');
+        const isPanicMode = $hasClass(document.body, 'engine-suspended');
         if (!isPanicMode) {
             pointer.append('circle')
                 .attr('r', 9)

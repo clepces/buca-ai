@@ -10,6 +10,7 @@ import GraphicsEngine from '@/core/engine/engine.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { renderPerformanceDashboardHTML } from './performance/performance-template.js';
 import { D3BenchmarkChart } from './performance/D3BenchmarkChart.js';
+import { $id, $$, $on, $text, $className, $mount } from '@/shared/utils/dom.js';
 
 export class PerformanceD3Dashboard {
     static currentProfile = 'balanced';
@@ -23,9 +24,9 @@ export class PerformanceD3Dashboard {
         const stored = PerformanceStorage.get();
         this.currentProfile = profile || stored.profile || 'balanced';
 
-        const pillsContainer = document.getElementById('perf-profile-pills');
+        const pillsContainer = $id('perf-profile-pills');
         if (pillsContainer) {
-            pillsContainer.addEventListener('click', (e) => {
+            $on(pillsContainer, 'click', (e) => {
                 const btn = e.target.closest('[data-profile]');
                 if (!btn) return;
                 const selected = btn.getAttribute('data-profile');
@@ -54,38 +55,38 @@ export class PerformanceD3Dashboard {
             console.warn('[PerformanceD3Dashboard] Error applying tier to GraphicsEngine:', e);
         }
 
-        const pills = document.querySelectorAll('#perf-profile-pills .perf-pill-btn');
+        const pills = $$('#perf-profile-pills .perf-pill-btn');
         pills.forEach(btn => {
             btn.classList.toggle('active', btn.getAttribute('data-profile') === profile);
         });
 
-        const tag = document.getElementById('perf-d3-active-tag');
-        if (tag) tag.textContent = data.tag;
+        const tag = $id('perf-d3-active-tag');
+        if (tag) $text(tag, data.tag);
 
-        const valLoad = document.getElementById('kpi-val-load');
-        if (valLoad) valLoad.innerHTML = `${data.avgLoadMs} <span class="unit">ms</span>`;
+        const valLoad = $id('kpi-val-load');
+        if (valLoad) $mount(valLoad, `${data.avgLoadMs} <span class="unit">ms</span>`);
 
-        const badgeLoad = document.getElementById('kpi-badge-load');
+        const badgeLoad = $id('kpi-badge-load');
         if (badgeLoad) {
-            badgeLoad.textContent = data.badgeText;
-            badgeLoad.className = `badge bg-${data.badgeType}-subtle text-${data.badgeType}`;
+            $text(badgeLoad, data.badgeText);
+            $className(badgeLoad, `badge bg-${data.badgeType}-subtle text-${data.badgeType}`);
         }
 
-        const valRam = document.getElementById('kpi-val-ram');
-        if (valRam) valRam.innerHTML = `${data.ramMb} <span class="unit">MB</span>`;
+        const valRam = $id('kpi-val-ram');
+        if (valRam) $mount(valRam, `${data.ramMb} <span class="unit">MB</span>`);
 
-        const valFps = document.getElementById('kpi-val-fps');
-        if (valFps) valFps.innerHTML = `${data.fps} <span class="unit">FPS</span>`;
+        const valFps = $id('kpi-val-fps');
+        if (valFps) $mount(valFps, `${data.fps} <span class="unit">FPS</span>`);
 
-        const valFidelity = document.getElementById('kpi-val-fidelity');
-        if (valFidelity) valFidelity.textContent = data.shaderFidelity;
+        const valFidelity = $id('kpi-val-fidelity');
+        if (valFidelity) $text(valFidelity, data.shaderFidelity);
 
-        const subDesc = document.getElementById('kpi-sub-desc');
-        if (subDesc) subDesc.textContent = data.desc;
+        const subDesc = $id('kpi-sub-desc');
+        if (subDesc) $text(subDesc, data.desc);
 
-        const impactText = document.getElementById('perf-impact-text');
+        const impactText = $id('perf-impact-text');
         if (impactText) {
-            impactText.innerHTML = `Perfil activo <strong>${data.label} (${data.tag})</strong>: ${data.desc}`;
+            $mount(impactText, `Perfil activo <strong>${data.label} (${data.tag})</strong>: ${data.desc}`);
         }
 
         this.updateD3Chart(profile);

@@ -2,6 +2,8 @@
  * @fileoverview ExperimentalDock - Implementación del Dock Magnético (Física Fluida)
  */
 import { Haptics } from '@/shared/utils/haptics.js';
+import { $id, $, $$, $on, $styleVar } from '@/shared/utils/dom.js';
+import { $onWindow, $offWindow } from '@/core/utils/system-helper.js';
 
 export class ExperimentalDock {
     constructor() {
@@ -36,15 +38,15 @@ export class ExperimentalDock {
     }
 
     init() {
-        const dock = document.getElementById('dock-experimental');
+        const dock = $id('dock-experimental');
         if (!dock) return;
 
-        this.dockElements = Array.from(dock.querySelectorAll('.dock-exp-item'));
+        this.dockElements = $$('.dock-exp-item', dock);
 
         this._onMouseMove = (e) => this.handleMouseMove(e);
-        window.addEventListener('mousemove', this._onMouseMove);
+        $onWindow('mousemove', this._onMouseMove);
         
-        dock.addEventListener('mouseleave', () => {
+        $on(dock, 'mouseleave', () => {
             this.resetScales();
             this.lastHoveredIndex = -1;
         });
@@ -79,23 +81,23 @@ export class ExperimentalDock {
                 const power = Math.exp(-Math.pow(distance / (this.range * 0.6), 2));
                 const scale = 1 + (this.maxScale - 1) * power;
                 
-                item.style.setProperty('--scale', scale);
+                $styleVar(item, '--scale', scale);
                 
                 // Efecto de expansión lateral dinámica
                 const widthOffset = (scale - 1) * 24;
-                item.style.width = `${this.baseWidth + widthOffset}px`;
+                $styleVar(item, 'width', `${this.baseWidth + widthOffset}px`);
                 
                 // Opacidad del tooltip basada en proximidad
-                const tip = item.querySelector('.exp-tooltip');
+                const tip = $('.exp-tooltip', item);
                 if (tip) {
-                    tip.style.opacity = power > 0.8 ? '1' : '0';
-                    tip.style.transform = `translateY(-${10 + power * 10}px) scale(${0.8 + power * 0.2})`;
+                    $styleVar(tip, 'opacity', power > 0.8 ? '1' : '0');
+                    $styleVar(tip, 'transform', `translateY(-${10 + power * 10}px) scale(${0.8 + power * 0.2})`);
                 }
             } else {
-                item.style.setProperty('--scale', 1);
-                item.style.width = `${this.baseWidth}px`;
-                const tip = item.querySelector('.exp-tooltip');
-                if (tip) tip.style.opacity = '0';
+                $styleVar(item, '--scale', 1);
+                $styleVar(item, 'width', `${this.baseWidth}px`);
+                const tip = $('.exp-tooltip', item);
+                if (tip) $styleVar(tip, 'opacity', '0');
             }
         });
 
@@ -109,21 +111,21 @@ export class ExperimentalDock {
 
     resetScales() {
         this.dockElements.forEach(item => {
-            item.style.setProperty('--scale', 1);
-            item.style.width = `${this.baseWidth}px`;
-            item.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            const tip = item.querySelector('.exp-tooltip');
-            if (tip) tip.style.opacity = '0';
+            $styleVar(item, '--scale', 1);
+            $styleVar(item, 'width', `${this.baseWidth}px`);
+            $styleVar(item, 'transition', 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)');
+            const tip = $('.exp-tooltip', item);
+            if (tip) $styleVar(tip, 'opacity', '0');
         });
         
         setTimeout(() => {
             this.dockElements.forEach(item => {
-                item.style.transition = 'width 0.15s ease-out, transform 0.1s ease-out';
+                $styleVar(item, 'transition', 'width 0.15s ease-out, transform 0.1s ease-out');
             });
         }, 400);
     }
 
     destroy() {
-        window.removeEventListener('mousemove', this._onMouseMove);
+        $offWindow('mousemove', this._onMouseMove);
     }
 }

@@ -5,6 +5,7 @@
  * =========================================================================
  */
 import { eventBus } from '@/core/eventBus/index.js';
+import { $id, $on, $mount } from '@/shared/utils/dom.js';
 
 export const TelemetryComponent = {
     _metrics: [
@@ -130,11 +131,11 @@ export const TelemetryComponent = {
     },
 
     init() {
-        const strip = document.getElementById('telemetry-strip');
+        const strip = $id('telemetry-strip');
         if (!strip || strip._bucaInit) return;
         strip._bucaInit = true;
 
-        strip.addEventListener('click', async (e) => {
+        $on(strip, 'click', async (e) => {
             const navBtn = e.target.closest('.tel-nav-btn');
             if (navBtn) {
                 const idx = parseInt(navBtn.dataset.index);
@@ -218,13 +219,13 @@ export const TelemetryComponent = {
     },
 
     refresh() {
-        const slot = document.getElementById('telemetry-strip');
+        const slot = $id('telemetry-strip');
         if (slot) {
-            slot.innerHTML = `
+            $mount(slot, `
                 <div class="row g-3">
                     ${this._metrics.map((m, i) => this.renderMetricCard(m, i)).join('')}
                 </div>
-            `;
+            `);
         }
     }
 };

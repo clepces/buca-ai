@@ -3,6 +3,7 @@
  * Refactorización Phase 5: Sincronización robusta vía EventBus y corrección de fuga de eventos.
  */
 import { eventBus } from '@/core/eventBus/index.js';
+import { $id, $, $on, $attr, $addClass, $removeClass, $styleVar } from '@/shared/utils/dom.js';
 
 export const SystemWidgets = {
     render() {
@@ -181,21 +182,21 @@ export const SystemWidgets = {
         `;
     },
     init() {
-        const section = document.getElementById('system-widgets-section');
+        const section = $id('system-widgets-section');
         if (!section || section._bucaInit) return;
         section._bucaInit = true;
 
         // Delegated click handler utilizing EventBus
-        section.addEventListener('click', (e) => {
+        $on(section, 'click', (e) => {
             const trigger = e.target.closest('[data-action="system:toggle_accordion"]');
             if (!trigger) return;
 
-            const targetId = trigger.getAttribute('data-target');
+            const targetId = $attr(trigger, 'data-target');
             const item = trigger.closest('.system-accordion-item');
             if (!item) return;
 
-            const content = item.querySelector('.accordion-body-content');
-            const chevron = item.querySelector('.accordion-chevron');
+            const content = $('.accordion-body-content', item);
+            const chevron = $('.accordion-chevron', item);
             if (!content) return;
 
             const isCurrentlyOpen = content.classList.contains('show');
@@ -204,33 +205,33 @@ export const SystemWidgets = {
             eventBus.emit('ui:accordion:toggle', { id: targetId, newState: !isCurrentlyOpen });
 
             if (isCurrentlyOpen) {
-                content.classList.remove('show');
-                trigger.setAttribute('aria-expanded', 'false');
-                if (chevron) chevron.style.transform = 'rotate(0deg)';
+                $removeClass(content, 'show');
+                $attr(trigger, 'aria-expanded', 'false');
+                if (chevron) $styleVar(chevron, 'transform', 'rotate(0deg)');
             } else {
-                content.classList.add('show');
-                trigger.setAttribute('aria-expanded', 'true');
-                if (chevron) chevron.style.transform = 'rotate(180deg)';
+                $addClass(content, 'show');
+                $attr(trigger, 'aria-expanded', 'true');
+                if (chevron) $styleVar(chevron, 'transform', 'rotate(180deg)');
             }
         });
 
         // External control support via EventBus (Single registration via guard)
         if (!this._eventBusBound) {
             eventBus.on('ui:accordion:set_state', ({ id, open }) => {
-                const item = document.querySelector(`.system-accordion-item[data-accordion-id="${id}"]`);
+                const item = $(`.system-accordion-item[data-accordion-id="${id}"]`);
                 if (!item) return;
-                const content = item.querySelector('.accordion-body-content');
-                const trigger = item.querySelector('[data-action="system:toggle_accordion"]');
-                const chevron = item.querySelector('.accordion-chevron');
+                const content = $('.accordion-body-content', item);
+                const trigger = $('[data-action="system:toggle_accordion"]', item);
+                const chevron = $('.accordion-chevron', item);
                 
                 if (open) {
-                    content.classList.add('show');
-                    trigger.setAttribute('aria-expanded', 'true');
-                    if (chevron) chevron.style.transform = 'rotate(180deg)';
+                    if (content) $addClass(content, 'show');
+                    if (trigger) $attr(trigger, 'aria-expanded', 'true');
+                    if (chevron) $styleVar(chevron, 'transform', 'rotate(180deg)');
                 } else {
-                    content.classList.remove('show');
-                    trigger.setAttribute('aria-expanded', 'false');
-                    if (chevron) chevron.style.transform = 'rotate(0deg)';
+                    if (content) $removeClass(content, 'show');
+                    if (trigger) $attr(trigger, 'aria-expanded', 'false');
+                    if (chevron) $styleVar(chevron, 'transform', 'rotate(0deg)');
                 }
             });
             this._eventBusBound = true;

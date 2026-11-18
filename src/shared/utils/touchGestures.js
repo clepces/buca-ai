@@ -3,6 +3,8 @@
  * @module shared/utils/touchGestures
  */
 
+import { $styleVar, $ } from '@/shared/utils/dom.js';
+
 export const initTouchGestures = (onClose) => {
     const THRESHOLD_RICH = 140;
     const THRESHOLD_SM = 110;
@@ -67,11 +69,11 @@ export const initTouchGestures = (onClose) => {
 
         // Si inició en área de scroll y hay desplazamiento interno, cancelar arrastre
         if (touchStartedInScrollable) {
-            const scrollArea = activePanel.querySelector('.buca-scroll-area, .panel-scroll-area, [class*="scroll-area"]');
+            const scrollArea = $('.buca-scroll-area, .panel-scroll-area, [class*="scroll-area"]', activePanel);
             if (scrollArea && scrollArea.scrollTop > 2) {
                 if (isDragging) {
-                    activePanel.style.transition = '';
-                    activePanel.style.transform = 'translateY(0)';
+                    $styleVar(activePanel, 'transition', '');
+                    $styleVar(activePanel, 'transform', 'translateY(0)');
                 }
                 activePanel = null;
                 isDragging = false;
@@ -83,14 +85,14 @@ export const initTouchGestures = (onClose) => {
         // Zona muerta de 16px para evitar activación accidental al hacer tap o scroll leve
         if (deltaY > 16) {
             isDragging = true;
-            activePanel.style.transition = 'none';
+            $styleVar(activePanel, 'transition', 'none');
             const drag = (deltaY - 16) * 0.6;
-            activePanel.style.transform = `translateY(${drag}px)`;
+            $styleVar(activePanel, 'transform', `translateY(${drag}px)`);
             if (e.cancelable) e.preventDefault();
         } else if (deltaY < -10) {
             if (isDragging) {
-                activePanel.style.transition = '';
-                activePanel.style.transform = 'translateY(0)';
+                $styleVar(activePanel, 'transition', '');
+                $styleVar(activePanel, 'transform', 'translateY(0)');
             }
             isDragging = false;
         }
@@ -113,19 +115,19 @@ export const initTouchGestures = (onClose) => {
         const threshold = isRich ? THRESHOLD_RICH : THRESHOLD_SM;
         const shouldClose = deltaY >= threshold || velocity >= VELOCITY_THRESHOLD;
 
-        activePanel.style.transition = 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
+        $styleVar(activePanel, 'transition', 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)');
         const panelRef = activePanel;
 
         if (shouldClose) {
-            panelRef.style.transform = 'translateY(100%)';
+            $styleVar(panelRef, 'transform', 'translateY(100%)');
             setTimeout(() => {
-                panelRef.style.transform = '';
+                $styleVar(panelRef, 'transform', '');
                 if (onClose) onClose();
             }, 300);
         } else {
-            panelRef.style.transform = 'translateY(0)';
+            $styleVar(panelRef, 'transform', 'translateY(0)');
             setTimeout(() => {
-                if (panelRef) panelRef.style.transition = '';
+                if (panelRef) $styleVar(panelRef, 'transition', '');
             }, 300);
         }
 
@@ -136,8 +138,8 @@ export const initTouchGestures = (onClose) => {
     const onTouchCancel = () => {
         detachMoveListener();
         if (activePanel) {
-            activePanel.style.transition = '';
-            activePanel.style.transform = 'translateY(0)';
+            $styleVar(activePanel, 'transition', '');
+            $styleVar(activePanel, 'transform', 'translateY(0)');
         }
         isDragging = false;
         activePanel = null;

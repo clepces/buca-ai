@@ -5,6 +5,8 @@
  * la Fase 2 de Autenticación. Optimizado para el bus de la ATI 4650.
  * =========================================================================
  */
+import { $create } from '../../shared/utils/dom.js';
+
 export const DeviceFingerprint = {
     /**
      * Genera un hash único basado en la configuración del navegador y hardware.
@@ -30,7 +32,7 @@ export const DeviceFingerprint = {
      * @private
      */
     _getCanvasFingerprint() {
-        const canvas = document.createElement('canvas');
+        const canvas = $create('canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = 200;
         canvas.height = 50;
@@ -53,7 +55,7 @@ export const DeviceFingerprint = {
      * @private
      */
     _getWebGLEngineInfo() {
-        const canvas = document.createElement('canvas');
+        const canvas = $create('canvas');
         const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
         if (!gl) return 'no-webgl';
         

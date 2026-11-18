@@ -20,6 +20,8 @@ import { AutoSleepGuard } from './services/AutoSleepGuard.js';
 import { CalibrationService } from './services/CalibrationService.js';
 import { DOMEffectsApplier } from './services/DOMEffectsApplier.js';
 import { PanicModeManager } from './services/PanicModeManager.js';
+import { $$, $on, $off } from '@/shared/utils/dom.js';
+import { $onWindow, $offWindow } from '@/core/utils/system-helper.js';
 
 export class GraphicsEngine {
     static #instance = null;
@@ -60,8 +62,8 @@ export class GraphicsEngine {
         this._visibilityHandler = this.#handleVisibilityChange.bind(this);
         this._resizeHandler = this.#handleResize.bind(this);
 
-        window.addEventListener('resize', this._resizeHandler);
-        document.addEventListener('visibilitychange', this._visibilityHandler);
+        $onWindow('resize', this._resizeHandler);
+        $on(document, 'visibilitychange', this._visibilityHandler);
 
         this.#initTelemetrySync();
 
@@ -221,7 +223,7 @@ export class GraphicsEngine {
     #getObjectCount() {
         const now = Date.now();
         if (now - this.#lastObjectCountTime > 5000) {
-            this.#cachedObjectCount = document.querySelectorAll('*').length;
+            this.#cachedObjectCount = $$('*').length;
             this.#lastObjectCountTime = now;
         }
         return this.#cachedObjectCount;
@@ -254,8 +256,8 @@ export class GraphicsEngine {
     }
 
     destroy() {
-        window.removeEventListener('resize', this._resizeHandler);
-        document.removeEventListener('visibilitychange', this._visibilityHandler);
+        $offWindow('resize', this._resizeHandler);
+        $off(document, 'visibilitychange', this._visibilityHandler);
 
         this.sleepGuard.destroy();
         this.assetOptimizer.destroy();

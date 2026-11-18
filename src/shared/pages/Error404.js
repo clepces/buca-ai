@@ -5,6 +5,7 @@
  */
 import { router } from '@/core/router/router.js';
 import SystemOverlay from '@/shared/ui/overlays/SystemOverlay.js';
+import { $, $on } from '@/shared/utils/dom.js';
 
 export const Error404 = {
     render: () => {
@@ -31,11 +32,11 @@ export const Error404 = {
     },
 
     init: () => {
-        const btnBack = document.querySelector('[data-overlay-action="back"]');
-        const btnHome = document.querySelector('[data-overlay-action="home"]');
+        const btnBack = $('[data-overlay-action="back"]');
+        const btnHome = $('[data-overlay-action="home"]');
 
         if (btnBack) {
-            btnBack.addEventListener('click', (e) => {
+            $on(btnBack, 'click', (e) => {
                 e.preventDefault();
                 if (window.history.length > 1) {
                     window.history.back();
@@ -46,7 +47,7 @@ export const Error404 = {
         }
 
         if (btnHome) {
-            btnHome.addEventListener('click', (e) => {
+            $on(btnHome, 'click', (e) => {
                 e.preventDefault();
                 router.navigate('/workspace');
             });

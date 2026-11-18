@@ -71,10 +71,6 @@ export const RegisterPage = {
                     const isPassword = pwdInput.type === 'password';
                     pwdInput.type = isPassword ? 'text' : 'password';
                     setButtonContent(togglePwd, '', `bi bi-eye${isPassword ? '-slash' : ''}`);
-                    togglePwd.textContent = '';
-                    const icon = document.createElement('i');
-                    icon.className = `bi bi-eye${isPassword ? '-slash' : ''}`;
-                    togglePwd.replaceChildren(icon);
                 });
             }
 

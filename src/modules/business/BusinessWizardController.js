@@ -15,9 +15,11 @@ import {
     $hide,
     $$,
     $on,
+    $removeClass,
     setButtonLoading,
     setButtonContent
 } from '@/shared/utils/dom.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const BusinessWizardController = {
     currentStep: 1,
@@ -148,14 +150,14 @@ export const BusinessWizardController = {
                     const bsModal = window.bootstrap.Modal.getInstance(modalEl);
                     if (bsModal) bsModal.hide();
                 } else if (modalEl) {
-                    modalEl.classList.remove('show');
+                    $removeClass(modalEl, 'show');
                     $hide(modalEl);
-                    document.body.classList.remove('modal-open', 'buca-modal-open');
+                    $removeClass(document.body, 'modal-open', 'buca-modal-open');
                 }
             }, 1200);
 
         } catch (err) {
-            console.error('[BusinessWizardController] Registration error:', err);
+            Logger.error('BusinessWizardController', 'Registration error:', err);
             this.showFeedback('Error al registrar el negocio en Supabase. Verifique su conexión.', 'error');
 
             setButtonLoading(submitBtn, false);

@@ -7,7 +7,8 @@ import { KeyboardShortcuts } from '@/core/services/KeyboardShortcuts.js';
 import { initTouchGestures } from '@/shared/utils/touchGestures.js';
 import { NotificationService } from '@/core/services/NotificationService.js';
 import { renderTopBar } from './topbar-template.js';
-import { $id, $, $$, $mount, $on, $addClass, $removeClass, $toggle, $text } from '@/shared/utils/dom.js';
+import { $id, $, $$, $mount, $on, $addClass, $removeClass, $toggle, $text, $className, $attr, $create, $appendTo } from '@/shared/utils/dom.js';
+import { getViewportWidth, isFullscreen, requestFullscreen, exitFullscreen } from '@/core/utils/system-helper.js';
 import { $onWindow } from '@/core/utils/index.js';
 
 /**
@@ -152,7 +153,7 @@ export const Header = {
 
         $addClass(panel, 'active');
         const overlay = $id('panel-overlay');
-        if (overlay && window.innerWidth <= 767) $addClass(overlay, 'active');
+        if (overlay && getViewportWidth() <= 767) $addClass(overlay, 'active');
     },
 
     closeAllPanels() {
@@ -178,16 +179,17 @@ export const Header = {
 
     _createOverlay() {
         if ($id('panel-overlay')) return;
-        const overlay = document.createElement('div');
-        overlay.id = 'panel-overlay';
-        overlay.className = 'panel-overlay';
+        const overlay = $create('div', {
+            id: 'panel-overlay',
+            className: 'panel-overlay'
+        });
         $on(overlay, 'click', () => this.closeAllPanels());
-        document.body.appendChild(overlay);
+        $appendTo(document.body, overlay);
     },
 
     toggleFullscreen() {
-        if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
-        else document.exitFullscreen().catch(() => {});
+        if (!isFullscreen()) requestFullscreen().catch(() => {});
+        else exitFullscreen().catch(() => {});
         this.closeAllPanels();
     },
 
@@ -196,7 +198,7 @@ export const Header = {
         const profileBadge = $id('profile-engine-badge');
         if (profileBadge) {
             $text(profileBadge, tierCode);
-            profileBadge.className = 'badge ' + this._getBadgeClassForTier(data.tier);
+            $className(profileBadge, 'badge ' + this._getBadgeClassForTier(data.tier));
         }
     },
 
@@ -213,17 +215,17 @@ export const Header = {
         const state = uiState.get();
 
         if (state.isSyncing || state.isConnecting) {
-            badge.className = 'action-capsule-btn btn-status-toggle connecting';
-            if (icon) icon.className = 'bi bi-wifi-2 status-icon-dot';
-            badge.title = 'Intentando conectar...';
+            $className(badge, 'action-capsule-btn btn-status-toggle connecting');
+            if (icon) $className(icon, 'bi bi-wifi-2 status-icon-dot');
+            $attr(badge, 'title', 'Intentando conectar...');
         } else if (isOnline) {
-            badge.className = 'action-capsule-btn btn-status-toggle online';
-            if (icon) icon.className = 'bi bi-wifi status-icon-dot';
-            badge.title = 'Conexión Estable';
+            $className(badge, 'action-capsule-btn btn-status-toggle online');
+            if (icon) $className(icon, 'bi bi-wifi status-icon-dot');
+            $attr(badge, 'title', 'Conexión Estable');
         } else {
-            badge.className = 'action-capsule-btn btn-status-toggle offline';
-            if (icon) icon.className = 'bi bi-wifi-off status-icon-dot';
-            badge.title = 'Sin Conexión';
+            $className(badge, 'action-capsule-btn btn-status-toggle offline');
+            if (icon) $className(icon, 'bi bi-wifi-off status-icon-dot');
+            $attr(badge, 'title', 'Sin Conexión');
         }
     }
 };

@@ -4,12 +4,15 @@
  */
 
 import { eventBus } from '@/core/eventBus/index.js';
-import { ModalService } from '@/shared/ui/services/ModalService.js';
+import { ModalService } from '@/shared/ui/overlays/ModalService.js';
 import { ModalTemplates } from '@/shared/ui/templates/ModalTemplates.js';
 import { router } from '@/core/router/router.js';
 import { NotificationService } from '@/core/services/NotificationService.js';
 import { NotificationTray } from '@/shared/ui/components/notifications/NotificationTray.js';
 import { Header } from '@/shared/ui/layouts/components/TopBar.js';
+import { $, $$, $on, $addClass, $removeClass } from '@/shared/utils/dom.js';
+import { Logger } from '@/shared/utils/logger.js';
+import { safeReload } from '@/core/utils/system-helper.js';
 
 export const ActionDispatcher = {
     _initialized: false,
@@ -18,10 +21,10 @@ export const ActionDispatcher = {
         if (this._initialized) return;
         this._initialized = true;
 
-        console.log('[ActionDispatcher] -> Conectando cables de interfaz (Global Click Delegation)');
+        Logger.info('ActionDispatcher', 'Conectando cables de interfaz (Global Click Delegation)');
 
         // Delegación Global de Clics
-        document.addEventListener('click', (e) => {
+        $on(document, 'click', (e) => {
             const actionEl = e.target.closest('[data-action]');
             if (actionEl) {
                 // Prevenir burbujeo si ya fue manejado por un componente interno con lógica específica
@@ -45,13 +48,13 @@ export const ActionDispatcher = {
                     const rawPayload = actionEl.getAttribute('data-payload');
                     if (rawPayload) Object.assign(payload, JSON.parse(rawPayload));
                 } catch (err) { 
-                    console.error('[ActionDispatcher] Error procesando payload:', err); 
+                    Logger.error('ActionDispatcher', 'Error procesando payload:', err); 
                 }
 
                 if (target) payload.target = target;
                 payload.trigger = actionEl;
 
-                console.log(`[ActionDispatcher] -> Dispatching: ${action}`, payload);
+                Logger.debug('ActionDispatcher', `Dispatching: ${action}`, payload);
                 eventBus.emit(action, payload);
             }
         });
@@ -111,6 +114,16 @@ export const ActionDispatcher = {
             ModalService.showSettingsModal();
         });
 
+        eventBus.on('settings:toggle_glass', ({ trigger }) => {
+            if (trigger) {
+                if (trigger.checked) {
+                    $removeClass(document.body, 'disable-glass');
+                } else {
+                    $addClass(document.body, 'disable-glass');
+                }
+            }
+        });
+
         // Exportar Reportes
         eventBus.on('ui:export_report', () => {
             ModalService.showExportReportModal();
@@ -144,16 +157,16 @@ export const ActionDispatcher = {
                 const { AuthService } = await import('@/modules/auth/services/AuthService.js');
                 await AuthService.logout();
             } catch (err) {
-                console.error('[ActionDispatcher] Logout error:', err);
+                Logger.error('ActionDispatcher', 'Logout error:', err);
                 try {
                     localStorage.clear();
                     sessionStorage.clear();
                 } catch (e) {
-                    console.warn('[ActionDispatcher] Silent logout cleanup:', e.message);
+                    Logger.warn('ActionDispatcher', 'Silent logout cleanup:', e.message);
                 }
                 setTimeout(() => {
                     ModalService.hideModal();
-                    window.location.href = '/';
+                    safeReload('/');
                 }, 800);
             }
         });
@@ -166,9 +179,9 @@ export const ActionDispatcher = {
         // Filtros de Contexto
         eventBus.on('workspace:filter_context', (data = {}) => {
             const context = data?.context || data?.target || 'all';
-            document.querySelectorAll('.context-pill').forEach(pill => pill.classList.remove('active'));
-            const activePill = document.querySelector(`[data-context="${context}"]`);
-            if (activePill) activePill.classList.add('active');
+            $$('.context-pill').forEach(pill => $removeClass(pill, 'active'));
+            const activePill = $(`[data-context="${context}"]`);
+            if (activePill) $addClass(activePill, 'active');
 
             if (context === 'directory') {
                 router.navigate('/workspaces');
