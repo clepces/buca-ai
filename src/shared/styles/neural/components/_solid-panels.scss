@@ -167,45 +167,6 @@
     }
 }
 
-/* ── NAV OVERFLOW (TOOLBAR & RIBBON) ─────────────────────────────────── */
-.nav-overflow {
-    .btn-nav-pill {
-        border: 1px solid transparent;
-        transition: all 0.2s ease;
-
-        &:hover {
-            background: rgba(0, 0, 0, 0.05);
-            color: var(--text-main) !important;
-
-            [data-theme="dark"] & {
-                background: rgba(255, 255, 255, 0.06);
-            }
-        }
-
-        &.active {
-            background: var(--primary-color) !important;
-            color: #fff !important;
-            border-color: var(--primary-color);
-        }
-    }
-}
-
-.ws-actions-dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    background: #fff;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    z-index: 1050;
-    min-width: 260px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-
-    [data-theme="dark"] & {
-        background: #0f172a;
-        border-color: rgba(255, 255, 255, 0.1);
-        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.4);
-    }
-}
 
 /* ── HEADER BUTTONS & TOOLBAR CONTROLS (Studio Style) ─────────────── */
 .header-divider {

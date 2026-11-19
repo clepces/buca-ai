@@ -1,11 +1,6 @@
 @use "@/shared/styles/neural/abstracts/variables" as v;
 @use "@/shared/styles/neural/abstracts/mixins" as m;
 
-/* ==========================================================================
-   BUCA AUTH - FORMS, INPUTS & ACTIONS
-   Aislamiento Modular Atómico: Controles de Formulario, Botonería y Alertas
-   ========================================================================== */
-
 .glass-form {
     display: flex;
     flex-direction: column;
@@ -24,9 +19,7 @@
             letter-spacing: 0.5px;
             margin-left: 4px;
 
-            @media (max-height: 750px) {
-                font-size: 0.7rem;
-            }
+            @media (max-height: 750px) { font-size: 0.7rem; }
         }
     }
 
@@ -158,41 +151,40 @@
     }
 }
 
-.btn-primary {
-    width: 100%;
-    height: 44px;
-    background: linear-gradient(to bottom, #2563eb, #1d4ed8);
-    color: white;
-    border: none;
-    border-radius: 16px;
-    font-weight: 800;
-    font-size: 1.05rem;
-    cursor: pointer;
-    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
+.auth-card,
+.glass-form {
+    .btn-primary {
+        width: 100%;
+        height: 44px;
+        background: linear-gradient(to bottom, #2563eb, #1d4ed8);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        font-weight: 800;
+        font-size: 1.05rem;
+        cursor: pointer;
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
 
-    &:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 35px rgba(37, 99, 235, 0.4);
-        filter: brightness(1.1);
+        &:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(37, 99, 235, 0.4);
+            filter: brightness(1.1);
 
-        @media (max-height: 750px) {
-            transform: translateY(-2px);
+            @media (max-height: 750px) { transform: translateY(-2px); }
         }
-    }
 
-    &:active {
-        transform: translateY(-1px);
-    }
+        &:active { transform: translateY(-1px); }
 
-    &:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-        transform: none;
+        &:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
     }
 }
 
@@ -200,8 +192,8 @@
     padding: 12px 24px;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: white;
     border-radius: 12px;
     font-weight: 600;
@@ -239,6 +231,7 @@
     }
 }
 
+[bne-perf="ignore"],
 [data-buca-perf="ignore"] {
     animation-play-state: running !important;
     opacity: 1 !important;
@@ -246,14 +239,10 @@
 }
 
 .buca-spinner {
+    &[bne-perf="ignore"],
     &[data-buca-perf="ignore"] {
         animation: spin 1s linear infinite !important;
     }
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
 }
 
 .auth-minimal-footer {
@@ -264,9 +253,7 @@
     display: flex;
     justify-content: center;
 
-    @media (max-height: 750px) {
-        padding-bottom: 1rem;
-    }
+    @media (max-height: 750px) { padding-bottom: 1rem; }
     
     .footer-legal {
         display: flex;
@@ -278,8 +265,8 @@
         background: rgba(255, 255, 255, 0.5);
         padding: 6px 18px;
         border-radius: 100px;
-        -webkit-backdrop-filter: blur(12px);
         backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.8);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 

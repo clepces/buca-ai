@@ -49,8 +49,8 @@ export function renderRibbonTemplate() {
 
                     <!-- Nav Overflow Tools Cluster (Direct Tools + Collapsible '... Más') -->
                     <div class="ws-tools-overflow nav-overflow d-flex align-items-center gap-1" data-bs-toggle="nav-overflow">
-                        <!-- Direct Action Tools (Desktop) -->
-                        <div class="ws-direct-tools d-none d-md-flex align-items-center gap-1">
+                        <!-- Direct Action Tools (Desktop XL+) -->
+                        <div class="ws-direct-tools d-none d-xl-flex align-items-center gap-1">
                             <button type="button" class="btn btn-sm action-mini-pill" title="Alternar Vista (Grid/Lista)" data-action="workspace:toggle_view_mode">
                                 <i class="bi bi-grid-fill"></i>
                             </button>
@@ -75,8 +75,8 @@ export function renderRibbonTemplate() {
                             <!-- Collapsible Operations Dropdown -->
                             <div class="ws-actions-dropdown shadow-xl rounded-3 border d-none" id="ws-actions-dropdown">
                                 <div class="p-2 buca-scroll-area max-h-360">
-                                    <!-- Herramientas Rápidas para móvil / tablet -->
-                                    <div class="d-md-none border-bottom pb-2 mb-2">
+                                    <!-- Herramientas Rápidas para móvil / tablet / laptop -->
+                                    <div class="d-xl-none border-bottom pb-2 mb-2">
                                         <span class="x-small fw-bold text-muted text-uppercase px-2.5 py-1 d-block">Herramientas Rápidas</span>
                                         <div class="d-flex align-items-center gap-1 px-2 pt-1">
                                             <button type="button" class="btn btn-sm btn-light border flex-fill py-1 px-2 d-flex align-items-center justify-content-center gap-1 text-muted x-small" data-action="workspace:toggle_view_mode">
