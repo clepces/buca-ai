@@ -11,9 +11,8 @@ import '@/shared/styles/main.scss';
 import kernel from '@/core/kernel.js';
 import '@/shared/ui/utils/ui-helper.js';
 import { Logger } from '@/shared/utils/logger.js';
-import { $id, $mount, $addClass } from '@/shared/utils/dom.js';
-import { $onWindow, setGlobal, getGlobal } from '@/core/utils/system-helper.js';
-import { $onReady } from '@/shared/utils/dom.js';
+import { $id, $mount, $addClass, $text, $on, $onReady } from '@/shared/utils/dom.js';
+import { $onWindow, setGlobal, getGlobal, safeReload } from '@/core/utils/system-helper.js';
 
 /**
  * @function bootstrap
@@ -41,8 +40,22 @@ import { $onReady } from '@/shared/utils/dom.js';
                     kernel.hideSplash();
                 }
                 const app = $id('app');
-                if (app && app.children.length === 0) {
-                    $mount(app, '<div class="u-center-pad-40"><h2>Error de Inicialización</h2><p>Por favor, recargue la página.</p></div>');
+                if (app) {
+                    $mount(app, `
+                        <div class="u-center-pad-40 text-center">
+                            <h2>Error de Inicialización</h2>
+                            <p class="text-muted" id="buca-error-detail"></p>
+                            <button type="button" class="btn btn-primary mt-3" id="buca-reload-btn">Recargar Sistema</button>
+                        </div>
+                    `);
+                    const detailEl = $id('buca-error-detail');
+                    if (detailEl) {
+                        $text(detailEl, 'Ocurrió un error inesperado al iniciar el sistema. Por favor, recargue la página.');
+                    }
+                    const reloadBtn = $id('buca-reload-btn');
+                    if (reloadBtn) {
+                        $on(reloadBtn, 'click', () => safeReload());
+                    }
                 }
             }
         };

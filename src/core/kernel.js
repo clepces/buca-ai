@@ -32,6 +32,7 @@ class BucaKernel {
     constructor() {
         this.isInitialized = false;
         this.currentLayoutMode = null;
+        this._cleanups = [];
     }
 
     /**
@@ -40,10 +41,6 @@ class BucaKernel {
      */
     async boot() {
         if (this.isInitialized) return;
-
-        const bootTimeout = setTimeout(() => {
-            if (!this.isInitialized) this._finalizeBoot();
-        }, 10000);
 
         const updateStatus = (pct, text) => {
             this.updateSplashProgress(pct);
@@ -68,8 +65,10 @@ class BucaKernel {
             updateStatus(30, 'Estableciendo Conexión con Supabase Cloud...');
 
             // 2. Conectividad Cloud y Servicios Base
-            try { initSupabase(); } catch (e) {
-                Logger.warn('Kernel', 'Supabase initialization deferred:', e.message);
+            try {
+                await initSupabase();
+            } catch (e) {
+                Logger.warn('Kernel', 'Supabase initialization deferred:', e?.message || e);
             }
 
             await ThemeManager.init();
@@ -124,11 +123,12 @@ class BucaKernel {
                 eventBus.emit('finance:sync-rates');
             }
 
-            eventBus.on('ui:toggle_theme', () => ThemeManager.toggle());
-            eventBus.on('engine:recalibrate', () => GraphicsEngine.calibrate());
-            eventBus.on('router:layout-sync-required', async ({ path }) => {
+            const offTheme = eventBus.on('ui:toggle_theme', () => ThemeManager.toggle());
+            const offRecalibrate = eventBus.on('engine:recalibrate', () => GraphicsEngine.calibrate());
+            const offLayoutSync = eventBus.on('router:layout-sync-required', async ({ path }) => {
                 await this.handleLayoutSync(path);
             });
+            this._cleanups.push(offTheme, offRecalibrate, offLayoutSync);
 
             updateStatus(95, 'Montando Vista Final & Componente de Ruta...');
 
@@ -139,12 +139,16 @@ class BucaKernel {
             this.isInitialized = true;
             PerformanceStorage.recordLoadTime(performance.now(), GraphicsEngine.profile);
             updateStatus(100, '¡Sistema Operativo Listo!');
+
+            this._finalizeBoot();
         } catch (err) {
             Logger.critical('Kernel', 'Fallo crítico durante el arranque:', err);
-        } finally {
-            clearTimeout(bootTimeout);
-            // El Splash Screen se oculta SOLO tras haber montado completamente la vista en el router
-            this._finalizeBoot();
+            try {
+                this.destroy();
+            } catch (cleanupErr) {
+                Logger.warn('Kernel', 'Error en teardown tras fallo de boot:', cleanupErr);
+            }
+            throw err;
         }
     }
 
@@ -214,7 +218,7 @@ class BucaKernel {
     }
 
     startTelemetry() {
-        uiState.subscribe((state) => {
+        const offTelemetry = uiState.subscribe((state) => {
             if (state.graphics) {
                 $$('[data-perf="profile-badge"]').forEach(b => {
                     $text(b, state.graphics.id);
@@ -222,6 +226,9 @@ class BucaKernel {
                 });
             }
         });
+        if (typeof offTelemetry === 'function') {
+            this._cleanups.push(offTelemetry);
+        }
     }
 
     updateSplashProgress(percent) {
@@ -234,15 +241,50 @@ class BucaKernel {
 
     destroy() {
         this.isInitialized = false;
-        try {
-            if (GraphicsEngine && typeof GraphicsEngine.destroy === 'function') {
-                GraphicsEngine.destroy();
+        this.currentLayoutMode = null;
+
+        // 1. Drenar cleanups registrados (eventBus.on, uiState.subscribe, etc.)
+        while (this._cleanups.length > 0) {
+            const cleanupFn = this._cleanups.pop();
+            try {
+                if (typeof cleanupFn === 'function') cleanupFn();
+            } catch (err) {
+                Logger.warn('Kernel', 'Error en cleanup de recurso registrado:', err);
             }
+        }
+
+        // 2. Destruir servicios de interfaz y core (cada uno en su propio try/catch)
+        const services = [
+            ['NotificationService', NotificationService],
+            ['ActivityLogService', ActivityLogService],
+            ['SearchService', SearchService],
+            ['ActionDispatcher', ActionDispatcher],
+            ['ModalService', ModalService],
+            ['TooltipService', TooltipService],
+        ];
+        for (const [name, svc] of services) {
+            try {
+                if (svc && typeof svc.destroy === 'function') svc.destroy();
+            } catch (e) {
+                Logger.warn('Kernel', `Error during ${name} teardown:`, e);
+            }
+        }
+
+        // 3. Destruir router y motor gráfico
+        try {
             if (router && typeof router.destroy === 'function') {
                 router.destroy();
             }
         } catch (e) {
-            Logger.warn('Kernel', 'Error during teardown:', e);
+            Logger.warn('Kernel', 'Error during router teardown:', e);
+        }
+
+        try {
+            if (GraphicsEngine && typeof GraphicsEngine.destroy === 'function') {
+                GraphicsEngine.destroy();
+            }
+        } catch (e) {
+            Logger.warn('Kernel', 'Error during GraphicsEngine teardown:', e);
         }
     }
 }

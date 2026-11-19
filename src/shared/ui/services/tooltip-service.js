@@ -6,13 +6,14 @@
  * detección de bordes (edge-clamping), soporte kbd y supresión nativa de title.
  * =========================================================================
  */
-import { $id, $mount } from '@/shared/utils/dom.js';
+import { $id, $mount, $on } from '@/shared/utils/dom.js';
 
 export class TooltipService {
     static isInitialized = false;
     static _tooltipEl = null;
     static _currentTarget = null;
     static _showTimeout = null;
+    static _cleanups = [];
 
     /**
      * Inicializa la delegación global de eventos de tooltips.
@@ -23,16 +24,33 @@ export class TooltipService {
 
         this._ensureContainer();
 
-        // Delegación de eventos en el documento
-        document.addEventListener('pointerover', (e) => this._onPointerOver(e), { passive: true });
-        document.addEventListener('pointerout', (e) => this._onPointerOut(e), { passive: true });
-        document.addEventListener('focusin', (e) => this._onFocusIn(e), { passive: true });
-        document.addEventListener('focusout', () => this.hide(), { passive: true });
+        // Delegación de eventos en document y window vía $on()
+        this._cleanups.push(
+            $on(document, 'pointerover', (e) => this._onPointerOver(e), { passive: true }),
+            $on(document, 'pointerout', (e) => this._onPointerOut(e), { passive: true }),
+            $on(document, 'focusin', (e) => this._onFocusIn(e), { passive: true }),
+            $on(document, 'focusout', () => this.hide(), { passive: true }),
+            $on(document, 'click', () => this.hide(), { passive: true }),
+            $on(window, 'scroll', () => this.hide(), { passive: true, capture: true }),
+            $on(window, 'resize', () => this.hide(), { passive: true })
+        );
+    }
 
-        // Ocultar de inmediato al scrollear o hacer clic
-        window.addEventListener('scroll', () => this.hide(), { passive: true, capture: true });
-        document.addEventListener('click', () => this.hide(), { passive: true });
-        window.addEventListener('resize', () => this.hide(), { passive: true });
+    static destroy() {
+        if (!this.isInitialized) return;
+
+        while (this._cleanups.length > 0) {
+            try { this._cleanups.pop()(); } catch { /* absorb */ }
+        }
+        clearTimeout(this._showTimeout);
+        this._showTimeout = null;
+        this._currentTarget = null;
+
+        if (this._tooltipEl && this._tooltipEl.parentNode) {
+            this._tooltipEl.parentNode.removeChild(this._tooltipEl);
+        }
+        this._tooltipEl = null;
+        this.isInitialized = false;
     }
 
     static _ensureContainer() {
@@ -133,14 +151,12 @@ export class TooltipService {
             if (position === 'bottom') {
                 top = targetRect.bottom + margin;
                 left = targetRect.left + (targetRect.width - tooltipRect.width) / 2;
-                // Si desborda abajo, voltear a top
                 if (top + tooltipRect.height > window.innerHeight - margin) {
                     top = targetRect.top - tooltipRect.height - margin;
                 }
             } else if (position === 'top') {
                 top = targetRect.top - tooltipRect.height - margin;
                 left = targetRect.left + (targetRect.width - tooltipRect.width) / 2;
-                // Si desborda arriba, voltear a bottom
                 if (top < margin) {
                     top = targetRect.bottom + margin;
                 }
