@@ -108,10 +108,12 @@ export class ModalService {
     }
 
     /**
-     * Oculta el modal activo y libera el bloqueo de pantalla.
+     * Oculta el modal activo, libera el bloqueo de pantalla y purga memoria (Load-Clear).
      */
     static hideModal() {
         const modalBase = $id('modal-base');
+        const modalContainer = $id('modal-container');
+
         if (modalBase) {
             const focusedInside = $(':focus', modalBase);
             if (focusedInside && typeof focusedInside.blur === 'function') {
@@ -119,6 +121,25 @@ export class ModalService {
             }
             $removeClass(modalBase, 'active');
             $attr(modalBase, 'aria-hidden', 'true');
+
+            // Garbage Collection / Load-Clear de slots de memoria tras el cierre
+            setTimeout(() => {
+                if (!this.isOpen()) {
+                    const slotIds = [
+                        'modal-header-left', 'modal-header-center', 'modal-header-right',
+                        'modal-body-content',
+                        'modal-footer-left', 'modal-footer-center', 'modal-footer-right'
+                    ];
+                    slotIds.forEach(id => {
+                        const el = $id(id);
+                        if (el) el.replaceChildren();
+                    });
+                    if (modalContainer) {
+                        const sizeClasses = ['modal-full', 'modal-xl', 'modal-lg', 'modal-md', 'modal-sm', 'modal-mini', 'modal-micro'];
+                        $removeClass(modalContainer, ...sizeClasses);
+                    }
+                }
+            }, 180);
         }
         ScrollManager.forceUnlock();
 

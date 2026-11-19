@@ -14,6 +14,11 @@
         padding-bottom: 0.5rem;
         scrollbar-width: none;
         &::-webkit-scrollbar { display: none; }
+
+        &.hub-grid-mode {
+            flex-wrap: wrap;
+            overflow-x: visible;
+        }
     }
 
     .hub-empty-state {

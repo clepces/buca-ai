@@ -154,19 +154,9 @@ export const ActionDispatcher = {
         });
 
         // Registro de Actividad (Auditoría)
-        eventBus.on('ui:open_activity_log', () => {
-            ModalService.showModal({
-                size: 'md',
-                header: ModalTemplates.buildHeader({
-                    icon: 'bi-clock-history',
-                    title: 'Auditoría de Actividad',
-                    subtitle: 'REGISTRO CRONOLÓGICO DE EVENTOS'
-                }),
-                body: ModalTemplates.notifications(), 
-                footer: {
-                    right: '<button type="button" class="btn btn-primary rounded-pill px-4" data-action="ui:close_modal">Cerrar</button>'
-                }
-            });
+        eventBus.on('ui:open_activity_log', async () => {
+            const { AuditTerminalModal } = await import('@/shared/ui/components/audit/audit-terminal-modal.js');
+            AuditTerminalModal.show();
         });
 
         // Logout
@@ -254,12 +244,9 @@ export const ActionDispatcher = {
         eventBus.on('ui:set_theme', (p) => { if (p?.theme) ThemeManager.setTheme(p.theme); });
 
         // Copilot / Asistente AI
-        eventBus.on('ui:open_ai_assistant', () => {
-            eventBus.emit('notifications:push', {
-                title: 'BUCA AI Copilot',
-                message: 'El asistente de inteligencia empresarial está en fase de despliegue.',
-                type: 'info'
-            });
+        eventBus.on('ui:open_ai_assistant', async () => {
+            const { AICopilotModal } = await import('@/shared/ui/components/ai-copilot/ai-copilot-modal.js');
+            AICopilotModal.show();
         });
 
         // Feedback & Ideas

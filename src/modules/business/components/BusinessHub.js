@@ -218,6 +218,7 @@ export const BusinessHub = {
             eventBus.on('workspace:business_created', () => { this._isLoading = true; this.loadBusinesses(); }),
             eventBus.on('business:registered', () => { this._isLoading = true; this.loadBusinesses(); }),
             eventBus.on('workspace:refresh_data', () => { this.loadBusinesses(); }),
+            eventBus.on('business:toggle_view', () => { this.toggleView(); }),
             eventBus.on('auth:login-success', () => { businessService.clearCache(); this._isLoading = true; this.loadBusinesses(); }),
             eventBus.on('workspace:filter_context', (payload = {}) => {
                 const filter = payload?.filter || payload?.context || 'all';
@@ -246,17 +247,7 @@ export const BusinessHub = {
                 ModalService.showModal({
                     size: 'lg',
                     header: {
-                        left: `
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="rounded-3 bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center u-box-36">
-                                    <i class="bi bi-buildings-fill fs-5"></i>
-                                </div>
-                                <div>
-                                    <h3 class="h6 fw-bold mb-0">Centro de Comando de Negocios</h3>
-                                    <span class="x-small text-muted text-uppercase">Gestión Global de Unidades</span>
-                                </div>
-                            </div>
-                        `,
+                        left: '<div class="d-flex align-items-center gap-2"><div class="rounded-3 bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center u-box-36"><i class="bi bi-buildings-fill fs-5"></i></div><div><h3 class="h6 fw-bold mb-0">Centro de Comando</h3><span class="x-small text-muted text-uppercase">Unidades</span></div></div>',
                         right: '<button type="button" class="btn-close" data-action="ui:close_modal" aria-label="Cerrar"></button>'
                     },
                     body: this.renderFullView(),
@@ -268,6 +259,13 @@ export const BusinessHub = {
         };
 
         $on(section, 'click', this._clickHandler);
+    },
+
+    toggleView() {
+        const container = this._sectionEl?.querySelector('#hub-scroll-container');
+        if (!container) return;
+        this._isGridMode = !this._isGridMode;
+        container.classList.toggle('hub-grid-mode', this._isGridMode);
     },
 
     /**
