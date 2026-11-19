@@ -20,7 +20,7 @@ export const BusinessModule = {
         // Escuchar eventos para solicitar apertura del Wizard
         eventBus.on('business:open_wizard', () => BusinessWizardController.init());
         eventBus.on('ui:open_create_business', () => {
-            import('@/shared/ui/overlays/ModalService.js').then(m => m.default.showCreateBusinessModal());
+            import('./components/business-wizard-modal.js').then(m => m.default.show());
         });
     },
 

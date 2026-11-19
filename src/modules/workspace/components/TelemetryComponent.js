@@ -154,7 +154,7 @@ export const TelemetryComponent = {
                 } else {
                     const [{ ModalTemplates }, { ModalService }] = await Promise.all([
                         import('@/shared/ui/templates/ModalTemplates.js'),
-                        import('@/shared/ui/overlays/ModalService.js')
+                        import('@/shared/ui/services/ModalService.js')
                     ]);
                     ModalService.showModal({
                         size: 'md',

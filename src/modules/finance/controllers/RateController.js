@@ -7,7 +7,7 @@
  */
 import { eventBus } from '@/core/eventBus/index.js';
 import { Validators as Validator } from '@/shared/utils/validators.js';
-import ModalService from '@/shared/ui/overlays/ModalService.js';
+import ModalService from '@/shared/ui/services/ModalService.js';
 import { ModalTemplates } from '@/shared/ui/templates/ModalTemplates.js';
 import { rateManagementTemplate } from '../components/RateManagementModal.js';
 import { ForexManager } from '@/core/services/forex/forex-manager.js';

@@ -52,7 +52,7 @@ export function renderTopBar() {
                 <div class="header-right d-flex align-items-center gap-1.5">
                     <!-- 1. Botón Feedback -->
                     <div class="dropdown-wrapper position-relative" id="dw-panel-feedback">
-                        <button type="button" class="btn btn-sm header-btn-feedback d-flex align-items-center gap-1.5 px-2.5 py-1" data-action="header:toggle_panel" data-target="panel-feedback" title="Compartir Feedback">
+                        <button type="button" class="btn btn-sm header-btn-feedback d-flex align-items-center gap-1.5 px-2.5 py-1" data-action="header:toggle_panel" data-target="panel-feedback" data-tooltip="Compartir Feedback">
                             <i class="bi bi-chat-square-text"></i>
                             <span class="d-none d-sm-inline">Feedback</span>
                         </button>
@@ -60,7 +60,7 @@ export function renderTopBar() {
                     </div>
 
                     <!-- 2. Botón Buscar (Command Palette) -->
-                    <button type="button" class="btn btn-sm header-btn-search d-flex align-items-center gap-2 px-2.5 py-1" data-action="ui:open_search_palette" title="Buscar o ejecutar comandos (Ctrl + K)">
+                    <button type="button" class="btn btn-sm header-btn-search d-flex align-items-center gap-2 px-2.5 py-1" data-action="ui:open_search_palette" data-tooltip="Buscar o comandos (Ctrl + K)">
                         <i class="bi bi-search"></i>
                         <span class="d-none d-md-inline">Buscar...</span>
                         <kbd class="d-none d-lg-inline-block px-1.5 py-0.2 rounded border x-small">Ctrl K</kbd>
@@ -71,7 +71,7 @@ export function renderTopBar() {
 
                     <!-- 3. Botón Ayuda (?) -->
                     <div class="dropdown-wrapper position-relative" id="dw-panel-help">
-                        <button type="button" class="btn btn-sm header-circle-btn" data-action="header:toggle_panel" data-target="panel-help" title="Centro de Ayuda & Documentación">
+                        <button type="button" class="btn btn-sm header-circle-btn" data-action="header:toggle_panel" data-target="panel-help" data-tooltip="Centro de Ayuda & Documentación">
                             <i class="bi bi-question-circle fs-6"></i>
                         </button>
                         ${HelpPanel.render()}
@@ -79,7 +79,7 @@ export function renderTopBar() {
 
                     <!-- 4. Botón Advisor Center (Bombillo / Campana) -->
                     <div class="dropdown-wrapper position-relative" id="dw-panel-advisor">
-                        <button type="button" class="btn btn-sm header-circle-btn position-relative" data-action="header:toggle_panel" data-target="panel-advisor" title="Centro de Asesoría y Diagnóstico (Advisor Center)">
+                        <button type="button" class="btn btn-sm header-circle-btn position-relative" data-action="header:toggle_panel" data-target="panel-advisor" data-tooltip="Advisor Center: Asesoría & Diagnóstico">
                             <i class="bi bi-lightbulb fs-6"></i>
                             <span class="position-absolute top-1 end-1 p-1 bg-warning rounded-circle notif-glow-dot"></span>
                         </button>
@@ -87,12 +87,12 @@ export function renderTopBar() {
                     </div>
 
                     <!-- 5. Botón Consola de Auditoría -->
-                    <button type="button" class="btn btn-sm header-circle-btn d-none d-sm-inline-flex" data-action="ui:open_activity_log" title="Consola & Auditoría de Actividad">
+                    <button type="button" class="btn btn-sm header-circle-btn d-none d-sm-inline-flex" data-action="ui:open_activity_log" data-tooltip="Consola de Auditoría en Tiempo Real">
                         <i class="bi bi-terminal fs-6"></i>
                     </button>
 
                     <!-- 6. Botón AI Assistant -->
-                    <button type="button" class="btn btn-sm header-circle-btn text-primary" data-action="ui:open_ai_assistant" title="BUCA AI Assistant">
+                    <button type="button" class="btn btn-sm header-circle-btn text-primary" data-action="ui:open_ai_assistant" data-tooltip="BUCA AI Copilot & Asistente">
                         <i class="bi bi-stars fs-6"></i>
                     </button>
 
@@ -101,7 +101,7 @@ export function renderTopBar() {
 
                     <!-- 7. Avatar & Account Settings -->
                     <div class="dropdown-wrapper position-relative ms-0.5" id="dw-panel-profile">
-                        <button type="button" class="btn btn-sm p-0 rounded-circle border-0 header-avatar-trigger" data-action="header:toggle_panel" data-target="panel-profile" title="Ajustes de Cuenta & Perfil">
+                        <button type="button" class="btn btn-sm p-0 rounded-circle border-0 header-avatar-trigger" data-action="header:toggle_panel" data-target="panel-profile" data-tooltip="Ajustes de Cuenta & Perfil">
                             <div class="user-avatar-circle bg-primary text-white d-flex align-items-center justify-content-center rounded-circle position-relative topbar-avatar">
                                 <span class="fw-bold x-small">${initials}</span>
                                 <span class="position-absolute bottom-0 end-0 profile-status-dot bg-success border rounded-circle"></span>

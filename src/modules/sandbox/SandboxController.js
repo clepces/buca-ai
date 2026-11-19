@@ -6,7 +6,7 @@ import { ExperimentalDock } from './components/ExperimentalDock.js';
 
 export class SandboxController {
     static async show() {
-        const { ModalService } = await import('@/shared/ui/overlays/ModalService.js');
+        const { ModalService } = await import('@/shared/ui/services/ModalService.js');
         const dock = new ExperimentalDock();
 
         ModalService.showModal({

@@ -5,7 +5,7 @@
  */
 
 import { escapeHTML } from '@/shared/utils/security.js';
-import ModalService from '@/shared/ui/overlays/ModalService.js';
+import ModalService from '@/shared/ui/services/ModalService.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { businessService } from '@/modules/workspace/services/BusinessService.js';
 import { $id, $mount, $on } from '@/shared/utils/dom.js';

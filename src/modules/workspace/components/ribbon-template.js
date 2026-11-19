@@ -42,7 +42,7 @@ export function renderRibbonTemplate() {
                 <!-- 3. RIGHT ZONE: ACTIONS & TOOLS NAV OVERFLOW SUITE -->
                 <div class="ws-ribbon-right d-flex align-items-center gap-2">
                     <!-- Primary CTA -->
-                    <button type="button" class="btn btn-sm ws-btn-primary shadow-xs" data-action="ui:open_create_business" title="Registrar Nueva Unidad de Negocio">
+                    <button type="button" class="btn btn-sm ws-btn-primary shadow-xs" data-action="ui:open_create_business" data-tooltip="Crear Nueva Unidad Comercial">
                         <i class="bi bi-plus-lg"></i>
                         <span class="ws-btn-label">Nueva Unidad</span>
                     </button>
@@ -51,23 +51,23 @@ export function renderRibbonTemplate() {
                     <div class="ws-tools-overflow nav-overflow d-flex align-items-center gap-1" data-bs-toggle="nav-overflow">
                         <!-- Direct Action Tools (Desktop XL+) -->
                         <div class="ws-direct-tools d-none d-xl-flex align-items-center gap-1">
-                            <button type="button" class="btn btn-sm action-mini-pill" title="Alternar Vista (Grid/Lista)" data-action="workspace:toggle_view_mode">
+                            <button type="button" class="btn btn-sm action-mini-pill" data-tooltip="Alternar Vista (Cuadrícula / Lista)" data-action="workspace:toggle_view_mode">
                                 <i class="bi bi-grid-fill"></i>
                             </button>
-                            <button type="button" class="btn btn-sm action-mini-pill" title="Sincronizar Datos Operativos" data-action="workspace:refresh_data">
+                            <button type="button" class="btn btn-sm action-mini-pill" data-tooltip="Sincronizar Datos Operativos" data-action="workspace:refresh_data">
                                 <i class="bi bi-arrow-clockwise"></i>
                             </button>
-                            <button type="button" class="btn btn-sm action-mini-pill" title="Exportar Reporte Mensual" data-action="ui:export_report">
+                            <button type="button" class="btn btn-sm action-mini-pill" data-tooltip="Exportar Reporte Maestro" data-action="ui:export_report">
                                 <i class="bi bi-cloud-arrow-down"></i>
                             </button>
-                            <button type="button" class="btn btn-sm action-mini-pill" title="Ajustes del Workspace" data-action="ui:open_settings">
+                            <button type="button" class="btn btn-sm action-mini-pill" data-tooltip="Ajustes del Workspace & BNE" data-action="ui:open_settings">
                                 <i class="bi bi-sliders2"></i>
                             </button>
                         </div>
 
                         <!-- Nav Overflow Trigger Button ('... Más') -->
                         <div class="dropdown-wrapper position-relative" id="dw-ws-nav-overflow">
-                            <button type="button" class="btn btn-sm action-more-pill" id="ws-nav-overflow-more-toggle" title="Centro de Operaciones y Herramientas">
+                            <button type="button" class="btn btn-sm action-more-pill" id="ws-nav-overflow-more-toggle" data-tooltip="Centro de Operaciones y Herramientas">
                                 <i class="bi bi-three-dots"></i>
                                 <span>Más</span>
                             </button>

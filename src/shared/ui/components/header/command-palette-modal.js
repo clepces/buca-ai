@@ -2,7 +2,7 @@
  * @fileoverview command-palette-modal - Paleta de Comandos y Buscador Global (Ctrl + K)
  * @module shared/ui/components/header/command-palette-modal
  */
-import { ModalService } from '@/shared/ui/overlays/ModalService.js';
+import { ModalService } from '@/shared/ui/services/ModalService.js';
 import { escapeHTML } from '@/shared/utils/security.js';
 import { $id, $on, $addClass, $removeClass } from '@/shared/utils/dom.js';
 

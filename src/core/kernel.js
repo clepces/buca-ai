@@ -21,7 +21,8 @@ import ModuleLoader from '@/core/ModuleLoader.js';
 import { router } from '@/core/router/router.js';
 import { routes } from '@/core/router/routes.js';
 import { storage } from '@/core/storage/StorageAdapter.js';
-import ModalService from '@/shared/ui/overlays/ModalService.js';
+import ModalService from '@/shared/ui/services/ModalService.js';
+import TooltipService from '@/shared/ui/services/tooltip-service.js';
 import { PerformanceStorage } from '@/core/storage/PerformanceStorage.js';
 import { SearchService } from '@/core/services/SearchService.js';
 import { getPath, replaceHistory } from '@/core/utils/index.js';
@@ -116,6 +117,7 @@ class BucaKernel {
             ModalService.init();
             ActionDispatcher.init();
             SearchService.init();
+            TooltipService.init();
 
             // Sincronización desacoplada de tasas mediante EventBus (cero importación de finance)
             if (isAuthenticated) {

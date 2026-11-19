@@ -6,7 +6,7 @@
  * 3. Emisión de claves de respaldo de emergencia descargables/imprimibles.
  * =========================================================================
  */
-import ModalService from '@/shared/ui/overlays/ModalService.js';
+import ModalService from '@/shared/ui/services/ModalService.js';
 import { AuthService } from '@/modules/auth/services/AuthService.js';
 import { SupabaseProvider } from '@/modules/auth/services/SupabaseProvider.js';
 import { CanvasQRRenderer } from '@/core/security/CanvasQRRenderer.js';

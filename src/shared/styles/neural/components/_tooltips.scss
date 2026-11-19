@@ -1,0 +1,70 @@
+/* =========================================================================
+   COMPONENTS: TOOLTIPS (Supabase & Vercel Inspired)
+   =========================================================================
+   Micro-componente flotante universal para ayuda contextual e iconografía.
+   ========================================================================= */
+
+@use "../abstracts" as *;
+
+.buca-tooltip {
+    position: fixed;
+    z-index: 99990;
+    pointer-events: none;
+    box-sizing: border-box;
+    display: none;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-2px);
+    transition: opacity 0.12s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+
+    padding: 4px 8px;
+    background: #0f172a;
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1.25;
+    white-space: nowrap;
+    text-align: center;
+
+    [data-theme="dark"] & {
+        background: #1e293b;
+        color: #f1f5f9;
+        border-color: rgba(255, 255, 255, 0.16);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+    }
+
+    &.buca-tooltip--visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Hotkey Kbd Tag embebido */
+    .buca-tooltip-kbd {
+        display: inline-block;
+        padding: 1px 4px;
+        margin-left: 6px;
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: #e2e8f0;
+        line-height: 1;
+        box-shadow: none;
+    }
+}
+
+/* ── Fallback L0 Eco Performance ────────────────────────────────────────── */
+[data-buca-perf="L0"] .buca-tooltip,
+[bne-perf="L0"] .buca-tooltip {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+}

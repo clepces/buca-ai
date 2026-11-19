@@ -4,7 +4,7 @@
  */
 
 import { eventBus } from '@/core/eventBus/index.js';
-import { ModalService } from '@/shared/ui/overlays/ModalService.js';
+import { ModalService } from '@/shared/ui/services/ModalService.js';
 import { ModalTemplates } from '@/shared/ui/templates/ModalTemplates.js';
 import { router } from '@/core/router/router.js';
 import { NotificationService } from '@/core/services/NotificationService.js';
@@ -110,35 +110,31 @@ export const ActionDispatcher = {
         // eventBus.on('ui:open_rate', ...) delegado al FinanceModule (RateController)
 
         // Gestor de Rendimiento / Telemetría Gráfica D3
-        const openPerformanceModal = () => {
-            import('@/modules/workspace/components/PerformanceModal.js').then((module) => {
-                const perfModal = module.default;
-                if (perfModal && typeof perfModal.show === 'function') {
-                    perfModal.show();
-                }
-            }).catch(err => console.error('[ActionDispatcher] Error abriendo Gestor de Rendimiento:', err));
+        const openPerformanceModal = async () => {
+            const { PerformanceModal } = await import('@/modules/workspace/components/PerformanceModal.js');
+            PerformanceModal.show();
         };
         eventBus.on('ui:open_performance', openPerformanceModal);
         eventBus.on('ui:open_perf', openPerformanceModal);
 
-        // Perfil de Usuario (Full-Screen Modal conectado a Supabase)
-        eventBus.on('ui:open_profile', (payload) => {
-            ModalService.showProfileModal(payload?.tab || 'general');
+        // Perfil de Usuario y Seguridad
+        eventBus.on('ui:open_profile', async (p) => {
+            const { ProfileModal } = await import('@/modules/profile/components/profile-modal.js');
+            ProfileModal.show(p?.tab || 'general');
         });
-
-        // Seguridad PIN y Dispositivos
-        eventBus.on('ui:open_security', () => {
-            ModalService.showProfileModal('security');
+        eventBus.on('ui:open_security', async () => {
+            const { ProfileModal } = await import('@/modules/profile/components/profile-modal.js');
+            ProfileModal.show('security');
         });
-
-        // Facturación y Planes
-        eventBus.on('ui:open_billing', () => {
-            ModalService.showProfileModal('subscription');
+        eventBus.on('ui:open_billing', async () => {
+            const { ProfileModal } = await import('@/modules/profile/components/profile-modal.js');
+            ProfileModal.show('subscription');
         });
 
         // Ajustes (Settings)
-        eventBus.on('ui:open_settings', () => {
-            ModalService.showSettingsModal();
+        eventBus.on('ui:open_settings', async () => {
+            const { PerformanceModal } = await import('@/modules/workspace/components/PerformanceModal.js');
+            PerformanceModal.show();
         });
 
         eventBus.on('settings:toggle_glass', ({ trigger }) => {
@@ -152,8 +148,9 @@ export const ActionDispatcher = {
         });
 
         // Exportar Reportes
-        eventBus.on('ui:export_report', () => {
-            ModalService.showExportReportModal();
+        eventBus.on('ui:export_report', async () => {
+            const { ExportReportModal } = await import('@/modules/workspace/components/export-report-modal.js');
+            ExportReportModal.show();
         });
 
         // Registro de Actividad (Auditoría)
@@ -230,28 +227,22 @@ export const ActionDispatcher = {
         });
 
         // Creación de Negocio
-        eventBus.on('ui:open_create_business', () => {
-            ModalService.showCreateBusinessModal();
+        eventBus.on('ui:open_create_business', async () => {
+            const { BusinessWizardModal } = await import('@/modules/business/components/business-wizard-modal.js');
+            BusinessWizardModal.show();
         });
 
-        // Navegación Genérica
-        eventBus.on('router:navigate', (payload) => {
-            if (payload && payload.path) router.navigate(payload.path);
-        });
-
-        // Modales Genéricos
-        eventBus.on('ui:open_modal', (payload) => {
+        // Navegación Genérica y Modales
+        eventBus.on('router:navigate', (p) => { if (p?.path) router.navigate(p.path); });
+        eventBus.on('ui:open_modal', (p) => {
             ModalService.showModal({
-                size: payload.size || 'md',
-                header: { left: `<h3>${payload.title || 'Información'}</h3>` },
-                body: payload.body || '<p>Contenido no disponible.</p>',
+                size: p.size || 'md',
+                header: { left: `<h3>${p.title || 'Información'}</h3>` },
+                body: p.body || '<p>Contenido no disponible.</p>',
                 footer: { right: '<button type="button" class="btn btn-primary rounded-pill px-4" data-action="ui:close_modal">Entendido</button>' }
             });
         });
-
-        eventBus.on('ui:close_modal', () => {
-            ModalService.hideModal();
-        });
+        eventBus.on('ui:close_modal', () => ModalService.hideModal());
 
         // Command Palette (Buscador Ctrl + K)
         eventBus.on('ui:open_search_palette', async () => {
@@ -260,9 +251,7 @@ export const ActionDispatcher = {
         });
 
         // Selector Directo de Tema
-        eventBus.on('ui:set_theme', (payload) => {
-            if (payload?.theme) ThemeManager.setTheme(payload.theme);
-        });
+        eventBus.on('ui:set_theme', (p) => { if (p?.theme) ThemeManager.setTheme(p.theme); });
 
         // Copilot / Asistente AI
         eventBus.on('ui:open_ai_assistant', () => {
@@ -293,7 +282,7 @@ export const ActionDispatcher = {
             ModalService.showModal({
                 size: 'lg',
                 header: { left: '<span class="fw-bold small text-muted text-uppercase"><i class="bi bi-grid-3x3-gap me-1"></i> Ecosistema Modular BUCA AI</span>' },
-                body: '<div class="p-3"><p class="text-muted">Plataforma ERP modular con 5 dominios centrales activos: <strong>Auth</strong> (MFA/TOTP), <strong>Workspace</strong> (Dashboard/Telemetría), <strong>Business</strong> (Multi-Tenant Hub), <strong>Finance</strong> (Forex/BCV Sync) y <strong>Profile</strong> (Talento & Ficha). Próximamente: POS e Inventario.</p></div>',
+                body: '<div class="p-3"><p class="text-muted mb-0">ERP modular con 5 dominios activos: <strong>Auth</strong>, <strong>Workspace</strong>, <strong>Business</strong>, <strong>Finance</strong> y <strong>Profile</strong>.</p></div>',
                 footer: { right: '<button type="button" class="btn btn-sm btn-primary rounded-pill px-3" data-action="ui:close_modal">Cerrar</button>' }
             });
         });
@@ -301,8 +290,8 @@ export const ActionDispatcher = {
         eventBus.on('ui:open_changelog_modal', () => {
             ModalService.showModal({
                 size: 'md',
-                header: { left: '<span class="fw-bold small text-muted text-uppercase"><i class="bi bi-clock-history me-1"></i> Registro de Cambios (Changelog)</span>' },
-                body: '<div class="p-3"><h6 class="fw-bold text-main">Versión v1.1.20-alpha</h6><ul class="small text-muted mb-0 ps-3"><li>Rediseño de Header y Toolbar estilo Supabase Studio.</li><li>Command Palette global con atajo Ctrl + K.</li><li>Navegación SPA fluida y eliminación del storm de sesión.</li><li>Módulo de Perfil: Pestaña Trabajador con Talento y Ficha CRUD.</li><li>Sincronización en vivo de tasas monetarias sin datos quemados.</li></ul></div>',
+                header: { left: '<span class="fw-bold small text-muted text-uppercase"><i class="bi bi-clock-history me-1"></i> Registro de Cambios</span>' },
+                body: '<div class="p-3"><h6 class="fw-bold text-main">Versión v1.1.23-alpha</h6><ul class="small text-muted mb-0 ps-3"><li>Breakpoints BUCA v6 (lg:1024, xl:1280, 2xl:1536, 3xl:1920, 4xl:2560).</li><li>Command Palette global Ctrl + K.</li><li>Tooltips Neural reactivos con edge detection.</li><li>Refactor modular de modales desacoplados.</li></ul></div>',
                 footer: { right: '<button type="button" class="btn btn-sm btn-primary rounded-pill px-3" data-action="ui:close_modal">Cerrar</button>' }
             });
         });
