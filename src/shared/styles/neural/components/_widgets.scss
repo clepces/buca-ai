@@ -14,17 +14,17 @@
         grid-template-columns: repeat(2, 1fr);
     }
 
-    @media screen and (min-width: 992px) {
+    @media screen and (min-width: 1024px) {
         grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     }
 
-    @media screen and (min-width: 1400px) {
+    @media screen and (min-width: 1536px) {
         grid-template-columns: repeat(4, 1fr);
     }
 }
 
 /* Desktop wide */
-@media screen and (min-width: 1200px) {
+@media screen and (min-width: 1280px) {
     .glass-grid { 
         grid-template-columns: repeat(4, 1fr); 
     }
@@ -198,7 +198,7 @@
         grid-template-columns: repeat(2, 1fr);
     }
     
-    @media screen and (min-width: 1200px) {
+    @media screen and (min-width: 1280px) {
         grid-template-columns: repeat(4, 1fr);
         grid-auto-rows: minmax(180px, auto);
     }

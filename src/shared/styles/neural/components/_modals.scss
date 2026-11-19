@@ -126,7 +126,7 @@ body.buca-modal-open {
     /* ── TAMAÑOS RESPONSIVOS ESTANDARIZADOS ─────────────── */
     &.modal-full {
         width: 96vw !important;
-        max-width: 1400px !important;
+        max-width: 1536px !important;
         height: 92vh !important;
         max-height: 92vh !important;
 
@@ -794,7 +794,7 @@ body.buca-modal-open {
     box-sizing: border-box !important;
     margin-bottom: 20px !important;
 
-    @media screen and (max-width: 991px) {
+    @media screen and (max-width: 1023px) {
         overflow-x: auto !important;
         white-space: nowrap !important;
         scrollbar-width: none !important;

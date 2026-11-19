@@ -42,7 +42,7 @@ export function renderRibbonTemplate() {
                 <!-- 3. RIGHT ZONE: ACTIONS & TOOLS NAV OVERFLOW SUITE -->
                 <div class="ws-ribbon-right d-flex align-items-center gap-2">
                     <!-- Primary CTA -->
-                    <button type="button" class="btn btn-sm btn-primary ws-btn-primary shadow-xs" data-action="ui:open_create_business" title="Registrar Nueva Unidad de Negocio">
+                    <button type="button" class="btn btn-sm ws-btn-primary shadow-xs" data-action="ui:open_create_business" title="Registrar Nueva Unidad de Negocio">
                         <i class="bi bi-plus-lg"></i>
                         <span class="ws-btn-label">Nueva Unidad</span>
                     </button>

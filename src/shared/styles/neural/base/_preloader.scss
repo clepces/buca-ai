@@ -364,7 +364,7 @@ html[data-theme="dark"] .buca-skeleton-view {
     gap: 14px;
 }
 
-@media screen and (max-width: 991px) {
+@media screen and (max-width: 1023px) {
     .sk-telemetry-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -391,7 +391,7 @@ html[data-theme="dark"] .buca-skeleton-view {
     margin-top: 14px;
 }
 
-@media screen and (max-width: 991px) {
+@media screen and (max-width: 1023px) {
     .sk-hub-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -417,7 +417,7 @@ html[data-theme="dark"] .buca-skeleton-view {
     gap: 18px;
 }
 
-@media screen and (max-width: 991px) {
+@media screen and (max-width: 1023px) {
     .sk-two-columns { grid-template-columns: 1fr; }
 }
 

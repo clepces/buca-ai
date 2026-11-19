@@ -41,14 +41,14 @@ $z-index: (
     @return null;
 }
 
-/* ── BREAKPOINTS ESTÁNDAR (BUCA RESPONSIVE SYSTEM) ──────── */
+/* ── BREAKPOINTS ESTÁNDAR (BUCA RESPONSIVE SYSTEM v6) ──── */
 $breakpoints: (
     'xs': 0,
     'sm': 576px,
     'md': 768px,
-    'lg': 992px,
-    'xl': 1200px,
-    'xxl': 1400px,
+    'lg': 1024px,
+    'xl': 1280px,
+    '2xl': 1536px,
     '3k': 1920px,
     '4k': 2560px
 );
@@ -118,7 +118,7 @@ $breakpoints: (
     --ui-glass-blur: 16px;
     --header-height: var(--header-total-height); /* Compatibilidad legado */
     --panel-overlay-bg: rgba(0, 0, 0, 0.35);
-    --max-width: 1400px;
+    --max-width: 1536px;
     --ws-fade-color: transparent;
 
     /* Responsive Overrides (Low Height Viewports) */

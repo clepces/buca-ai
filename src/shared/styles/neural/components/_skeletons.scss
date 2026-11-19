@@ -200,7 +200,7 @@ html[data-theme="dark"] {
     grid-template-columns: repeat(4, 1fr);
     gap: 14px;
 
-    @media screen and (max-width: 991px) {
+    @media screen and (max-width: 1023px) {
         grid-template-columns: repeat(2, 1fr);
     }
 
@@ -226,7 +226,7 @@ html[data-theme="dark"] {
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
 
-    @media screen and (max-width: 991px) {
+    @media screen and (max-width: 1023px) {
         grid-template-columns: repeat(2, 1fr);
     }
 
@@ -252,7 +252,7 @@ html[data-theme="dark"] {
     grid-template-columns: 1.4fr 1fr;
     gap: 18px;
 
-    @media screen and (max-width: 991px) {
+    @media screen and (max-width: 1023px) {
         grid-template-columns: 1fr;
     }
 }

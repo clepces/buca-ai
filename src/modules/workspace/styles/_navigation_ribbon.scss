@@ -46,7 +46,7 @@
         height: 100%;
         min-width: 0;
 
-        @media (min-width: 992px) {
+        @media (min-width: 1024px) {
             padding-left: 1.5rem !important;
             padding-right: 1.5rem !important;
         }
@@ -153,6 +153,11 @@
                 }
             }
 
+            .pill-text {
+                font-size: 0.75rem;
+                font-weight: 600;
+            }
+
             .pill-count {
                 background: rgba(37, 99, 235, 0.12);
                 color: #2563eb;
@@ -203,7 +208,7 @@
 
         &:active { transform: scale(0.97); }
 
-        @media (max-width: 1199px) {
+        @media (max-width: 1279px) {
             .ws-btn-label { display: none; }
 
             padding: 0;
@@ -213,7 +218,22 @@
         }
     }
 
-    .ws-tools-overflow {
+    .ws-ribbon-center {
+        min-width: 0;
+    }
+
+    .ws-tools-overflow,
+    .nav-overflow {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        flex-shrink: 0;
+    }
+
+    .ws-direct-tools {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
         flex-shrink: 0;
     }
 

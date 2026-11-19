@@ -16,7 +16,7 @@
 
 /**
  * respond-to($breakpoint) — Media query min-width (Mobile-First)
- * @param {String} $breakpoint - Nombre del breakpoint (sm, md, lg, xl, xxl)
+ * @param {String} $breakpoint - Nombre del breakpoint (sm, md, lg, xl, 2xl)
  */
 @mixin respond-to($breakpoint) {
     @if map-has-key($breakpoints, $breakpoint) {
@@ -63,7 +63,7 @@
 
 @mixin laptop    { @include respond-to('xl') { @content; } }
 
-@mixin desktop   { @include respond-to('xxl') { @content; } }
+@mixin desktop   { @include respond-to('2xl') { @content; } }
 
 @mixin ultra-hd   { @include respond-to('4k') { @content; } }
 
@@ -155,7 +155,7 @@
     grid-column: span $cols;
     grid-row: span $rows;
 
-    @media screen and (max-width: 991px) {
+    @media screen and (max-width: 1023px) {
         grid-column: span 1;
         grid-row: span 1;
     }
