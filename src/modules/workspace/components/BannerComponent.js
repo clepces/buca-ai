@@ -1,158 +1,192 @@
 /**
- * BannerComponent - Branded Enterprise Banner with Fan-out (Abanico) Interactive Cards
+ * BannerComponent - Branded Enterprise Banner with Modular Accordion & Service Badges
  * =========================================================================
- * Refactorización Phase 5: Robustez de eventos y delegación.
+ * Clean Core Architecture: Vanilla JS (ES6+), Bootstrap Grid & BNE Standards
  * =========================================================================
  */
-import { $id, $, $$, $on, $off, $addClass, $removeClass } from '@/shared/utils/dom.js';
+import { $id, $$, $on, $off, $addClass, $removeClass } from '@/shared/utils/dom.js';
+
+const APP_SERVICES = [
+    { id: 'pos', name: 'Facturación / POS', icon: 'bi-receipt-cutoff', note: 'Emisión fiscal y caja rápida' },
+    { id: 'inventory', name: 'Inventario', icon: 'bi-boxes', note: 'Control de stock y almacén' },
+    { id: 'finance', name: 'Tasas & Divisas', icon: 'bi-currency-exchange', note: 'BCV y USDT en vivo' },
+    { id: 'ai', name: 'Agentes IA', icon: 'bi-stars', note: 'Analítica predictiva de negocio' },
+    { id: 'security', name: 'Cloud Secure', icon: 'bi-shield-lock-fill', note: 'Aislamiento RLS AES-256' },
+    { id: 'crm', name: 'Clientes & CRM', icon: 'bi-people-fill', note: 'Directorio y fidelización' }
+];
+
+const ACCORDION_ITEMS = [
+    {
+        id: 'acc-bne',
+        theme: 'blue',
+        icon: 'bi-cpu-fill',
+        title: 'Motor BNE v5.4',
+        subtitle: 'Renderizado Nativo & GPU Direct',
+        chip: '60 FPS OK',
+        chipClass: 'chip-blue',
+        desc: 'Aceleración gráfica directa por hardware con pipelines de ultra-baja latencia (1.2ms) y perfiles adaptativos L0 a L3 para máxima fluidez.',
+        tags: [
+            { icon: 'bi-speedometer2', label: '1.2ms Latencia' },
+            { icon: 'bi-gpu-card', label: 'GPU Direct' },
+            { icon: 'bi-check-circle-fill', label: 'Estado: Óptimo', status: 'success' }
+        ],
+        initiallyExpanded: true
+    },
+    {
+        id: 'acc-ai',
+        theme: 'purple',
+        icon: 'bi-stars',
+        title: 'IA Predictiva Autónoma',
+        subtitle: 'Red Neuronal de Negocio',
+        chip: '3 Agentes',
+        chipClass: 'chip-purple',
+        desc: 'Modelos autónomos de proyección de demanda, estimación de flujo de caja y detección proactiva de anomalías comerciales.',
+        tags: [
+            { icon: 'bi-robot', label: '3 Agentes Activos' },
+            { icon: 'bi-graph-up-arrow', label: '98.4% Precisión' },
+            { icon: 'bi-lightning-charge-fill', label: 'Auto-Decisión', status: 'primary' }
+        ],
+        initiallyExpanded: false
+    },
+    {
+        id: 'acc-security',
+        theme: 'green',
+        icon: 'bi-shield-lock-fill',
+        title: 'Cloud Secure & Multitenant',
+        subtitle: 'Aislamiento Estricto & Respaldo Continuo',
+        chip: 'AES-256',
+        chipClass: 'chip-green',
+        desc: 'Seguridad perimetral con cifrado integral en tránsito y reposo. Políticas RLS estrictas en PostgreSQL que garantizan aislamiento absoluto por empresa.',
+        tags: [
+            { icon: 'bi-lock-fill', label: 'Cifrado AES-256' },
+            { icon: 'bi-database-fill-check', label: 'RLS Isolation' },
+            { icon: 'bi-shield-check', label: '99.98% SLA', status: 'info' }
+        ],
+        initiallyExpanded: false
+    },
+    {
+        id: 'acc-forex',
+        theme: 'amber',
+        icon: 'bi-currency-exchange',
+        title: 'Tasa Multi-Divisa en Vivo',
+        subtitle: 'Sincronización BCV & USDT',
+        chip: 'BCV + USDT',
+        chipClass: 'chip-amber',
+        desc: 'Conexión en tiempo real con cotizaciones oficiales del BCV (USD/EUR) y feeds P2P. Aplica Snapshot Pattern para preservar el valor histórico de cada transacción.',
+        tags: [
+            { icon: 'bi-bank', label: 'BCV Oficial' },
+            { icon: 'bi-currency-bitcoin', label: 'USDT P2P' },
+            { icon: 'bi-camera-fill', label: 'Snapshot Lock', status: 'warning' }
+        ],
+        initiallyExpanded: false
+    },
+    {
+        id: 'acc-audit',
+        theme: 'pink',
+        icon: 'bi-journal-check',
+        title: 'Audit Trail & Cumplimiento',
+        subtitle: 'Trazabilidad Inalterable',
+        chip: 'ISO 27001',
+        chipClass: 'chip-pink',
+        desc: 'Registro inmutable cronológico de auditoría con identificadores UUID y protección contra manipulación para control total corporativo.',
+        tags: [
+            { icon: 'bi-fingerprint', label: 'UUID Safety' },
+            { icon: 'bi-file-earmark-lock-fill', label: 'Append-Only' },
+            { icon: 'bi-patch-check-fill', label: 'ISO Verificado', status: 'danger' }
+        ],
+        initiallyExpanded: false
+    }
+];
 
 export const BannerComponent = {
     render(displayName = 'Usuario') {
+        const servicesHtml = APP_SERVICES.map(service => `
+            <div class="banner-service-pill" title="${service.note}" data-service="${service.id}">
+                <div class="service-pill-icon">
+                    <i class="bi ${service.icon}"></i>
+                </div>
+                <span class="service-pill-label">${service.name}</span>
+            </div>
+        `).join('');
+
+        const accordionHtml = ACCORDION_ITEMS.map((item) => `
+            <div class="banner-accordion-item ${item.initiallyExpanded ? 'is-expanded' : ''}" data-accordion-id="${item.id}">
+                <button type="button" class="banner-accordion-header" data-action="accordion:toggle" aria-expanded="${item.initiallyExpanded}">
+                    <div class="acc-header-info">
+                        <div class="acc-icon-box acc-icon-box--${item.theme}">
+                            <i class="bi ${item.icon}"></i>
+                        </div>
+                        <div class="acc-text-meta">
+                            <span class="acc-title">${item.title}</span>
+                            <span class="acc-subtitle">${item.subtitle}</span>
+                        </div>
+                    </div>
+                    <div class="acc-header-actions">
+                        <span class="acc-status-chip ${item.chipClass}">${item.chip}</span>
+                        <i class="bi bi-chevron-down acc-chevron"></i>
+                    </div>
+                </button>
+                <div class="banner-accordion-body">
+                    <div class="acc-body-content">
+                        <p class="acc-description">${item.desc}</p>
+                        <div class="acc-tags-row">
+                            ${item.tags.map(tag => `
+                                <span class="acc-tag-badge ${tag.status ? 'acc-tag-badge--' + tag.status : ''}">
+                                    <i class="bi ${tag.icon}"></i> ${tag.label}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
         return `
-            <div class="ws-branded-banner p-4 p-md-5 rounded-4 mb-4 position-relative text-white shadow-lg overflow-visible" id="banner-container">
-                <div class="banner-glow-effect"></div>
+            <div class="ws-branded-banner p-3 p-sm-4 p-xl-5 rounded-4 mb-4 position-relative text-white shadow-lg overflow-hidden" id="banner-container">
+                <div class="banner-ambient-glow"></div>
+                <div class="banner-grid-overlay"></div>
                 
-                <div class="row align-items-center g-5 position-relative z-1">
-                    <!-- Left Column: Brand & Greeting -->
-                    <div class="col-12 col-lg-5 d-flex flex-column gap-3">
+                <div class="row align-items-center g-4 g-xl-5 position-relative z-1">
+                    <!-- Left Column: Branding, Greeting & Service Badges -->
+                    <div class="col-12 col-lg-5 col-xl-5 d-flex flex-column gap-3">
                         <div class="animate__animated animate__fadeInLeft">
+                            <div class="d-inline-flex align-items-center gap-2 banner-status-pill px-2.5 py-1 rounded-pill mb-2">
+                                <span class="banner-pulse-dot"></span>
+                                <span class="banner-status-text">SISTEMA EN VIVO • BNE v5.4</span>
+                                <span class="banner-status-badge">SLA 99.98%</span>
+                            </div>
+                            
                             <h1 class="h2 fw-bold text-white mb-1 banner-title-hero">
                                 BUCA <span class="banner-ai-accent">AI</span>
                             </h1>
                             <p class="text-white text-opacity-75 text-uppercase fw-semibold mb-2 banner-tagline-hero">
                                 Inteligencia Empresarial Aplicada
                             </p>
-                            <p class="text-white text-opacity-95 mb-0 small banner-desc-hero">
-                                Bienvenido, <strong class="text-white fw-bold">${displayName}</strong>. Su ecosistema de gestión corporativa está sincronizado y operando bajo el motor BNE v5.4.
+                            <p class="text-white text-opacity-90 mb-0 small banner-desc-hero">
+                                Bienvenido, <strong class="text-white fw-bold">${displayName}</strong>. Su ecosistema de gestión corporativa está sincronizado y operando con latencia ultra-baja.
                             </p>
                         </div>
                         
-                        <div class="border-top border-white border-opacity-15 my-1"></div>
+                        <div class="banner-divider my-1"></div>
 
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <span class="badge px-2.5 py-1.5 rounded-2 shadow-sm d-flex align-items-center gap-1.5 banner-badge-dark">
-                                <i class="bi bi-shield-fill-check text-primary"></i> <span>BUCA AI</span>
-                            </span>
-                            <span class="badge px-2.5 py-1.5 rounded-2 shadow-sm d-flex align-items-center gap-1.5 banner-badge-sync">
-                                <i class="bi bi-circle-fill text-white dot-sync-micro"></i> <span>SYNC EN VIVO</span>
-                            </span>
+                        <!-- App Services Badges with Custom Borders -->
+                        <div class="banner-services-block">
+                            <div class="banner-services-header mb-2 d-flex align-items-center justify-content-between">
+                                <span class="banner-services-caption">SERVICIOS DEL ECOSISTEMA</span>
+                                <span class="banner-services-count"><i class="bi bi-shield-check text-info"></i> 6 Módulos Conectados</span>
+                            </div>
+                            <div class="banner-services-grid">
+                                ${servicesHtml}
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Right Column: Fan-out 3D Stacked Cards (5 Cards with 3D Flip) -->
-                    <div class="col-12 col-lg-7 d-flex justify-content-center py-4">
-                        <div class="banner-fan-stack" id="banner-fan-stack">
-                            
-                            <!-- Card 1: Motor BNE -->
-                            <div class="fan-card fan-theme-blue" data-fan-index="0">
-                                <div class="card-flipper">
-                                    <div class="card-front">
-                                        <div class="card-icon-box">
-                                            <i class="bi bi-cpu-fill fs-5"></i>
-                                        </div>
-                                        <div class="card-content">
-                                            <div class="card-title">Motor BNE</div>
-                                            <div class="card-status">60 FPS OK</div>
-                                        </div>
-                                    </div>
-                                    <div class="card-back">
-                                        <div class="card-expanded-info">
-                                            <h6 class="small fw-bold mb-1 text-white"><i class="bi bi-cpu me-1 text-info"></i> Motor BNE v5.4</h6>
-                                            <p class="x-small text-white-50 mb-2">Aceleración por hardware con latencia de 1.2ms.</p>
-                                            <div class="badge bg-success bg-opacity-25 text-success w-100 py-1 fan-badge-micro">ESTADO: ÓPTIMO</div>
-                                        </div>
-                                    </div>
-                                </div>
+                    <!-- Right Column: Interactive Accordion (Legacy Cards Redesigned) -->
+                    <div class="col-12 col-lg-7 col-xl-7">
+                        <div class="banner-accordion-wrapper" id="banner-accordion-root">
+                            <div class="banner-accordion">
+                                ${accordionHtml}
                             </div>
-
-                            <!-- Card 2: IA Predictiva -->
-                            <div class="fan-card fan-theme-purple" data-fan-index="1">
-                                <div class="card-flipper">
-                                    <div class="card-front">
-                                        <div class="card-icon-box">
-                                            <i class="bi bi-stars fs-5"></i>
-                                        </div>
-                                        <div class="card-content">
-                                            <div class="card-title">IA Predictiva</div>
-                                            <div class="card-status">3 Agentes</div>
-                                        </div>
-                                    </div>
-                                    <div class="card-back">
-                                        <div class="card-expanded-info">
-                                            <h6 class="small fw-bold mb-1 text-white"><i class="bi bi-stars me-1 text-purple"></i> IA Autónoma</h6>
-                                            <p class="x-small text-white-50 mb-2">Predicción de demanda y flujo de caja diario.</p>
-                                            <div class="badge bg-primary bg-opacity-25 text-primary w-100 py-1 fan-badge-micro">PRECISIÓN: 98.4%</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Card 3: Cloud Secure -->
-                            <div class="fan-card fan-theme-green" data-fan-index="2">
-                                <div class="card-flipper">
-                                    <div class="card-front">
-                                        <div class="card-icon-box">
-                                            <i class="bi bi-shield-lock-fill fs-5"></i>
-                                        </div>
-                                        <div class="card-content">
-                                            <div class="card-title">Cloud Secure</div>
-                                            <div class="card-status">AES-256</div>
-                                        </div>
-                                    </div>
-                                    <div class="card-back">
-                                        <div class="card-expanded-info">
-                                            <h6 class="small fw-bold mb-1 text-white"><i class="bi bi-shield-lock-fill me-1 text-success"></i> Cifrado AES-256</h6>
-                                            <p class="x-small text-white-50 mb-2">Aislamiento multitenant y backup continuo.</p>
-                                            <div class="badge bg-info bg-opacity-25 text-info w-100 py-1 fan-badge-micro">99.98% SLA</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Card 4: Tasa Multi-Divisa -->
-                            <div class="fan-card fan-theme-amber" data-fan-index="3">
-                                <div class="card-flipper">
-                                    <div class="card-front">
-                                        <div class="card-icon-box">
-                                            <i class="bi bi-currency-exchange fs-5"></i>
-                                        </div>
-                                        <div class="card-content">
-                                            <div class="card-title">Tasa Multi-Divisa</div>
-                                            <div class="card-status">BCV + USDT</div>
-                                        </div>
-                                    </div>
-                                    <div class="card-back">
-                                        <div class="card-expanded-info">
-                                            <h6 class="small fw-bold mb-1 text-white"><i class="bi bi-currency-exchange me-1 text-warning"></i> Sincro en Vivo</h6>
-                                            <p class="x-small text-white-50 mb-2">BCV USD/EUR y Binance P2P actualizados.</p>
-                                            <div class="badge bg-warning bg-opacity-25 text-warning w-100 py-1 fan-badge-micro">EN VIVO</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Card 5: Audit Trail -->
-                            <div class="fan-card fan-theme-pink" data-fan-index="4">
-                                <div class="card-flipper">
-                                    <div class="card-front">
-                                        <div class="card-icon-box">
-                                            <i class="bi bi-journal-check fs-5"></i>
-                                        </div>
-                                        <div class="card-content">
-                                            <div class="card-title">Audit Trail</div>
-                                            <div class="card-status">ISO 27001</div>
-                                        </div>
-                                    </div>
-                                    <div class="card-back">
-                                        <div class="card-expanded-info">
-                                            <h6 class="small fw-bold mb-1 text-white"><i class="bi bi-journal-check me-1 text-danger"></i> Auditoría ISO</h6>
-                                            <p class="x-small text-white-50 mb-2">Trazabilidad inalterable de cada transacción.</p>
-                                            <div class="badge bg-danger bg-opacity-25 text-danger w-100 py-1 fan-badge-micro">VERIFICADO</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
                     </div>
                 </div>
@@ -165,37 +199,47 @@ export const BannerComponent = {
         if (!container || container._bucaInit) return;
         container._bucaInit = true;
 
-        const stack = $('#banner-fan-stack', container);
-        if (!stack) return;
+        const accordionRoot = $id('banner-accordion-root');
+        if (!accordionRoot) return;
 
-        $on(stack, 'click', (e) => {
-            const card = e.target.closest('.fan-card');
-            if (!card) return;
+        this._clickHandler = (e) => {
+            const headerBtn = e.target.closest('[data-action="accordion:toggle"]');
+            if (!headerBtn) return;
 
-            e.stopPropagation();
-            const isFlipped = card.classList.contains('flipped');
-            
-            // Cerrar otras
-            $$('.fan-card', stack).forEach(c => $removeClass(c, 'flipped', 'active'));
-            
-            if (!isFlipped) {
-                $addClass(card, 'flipped', 'active');
-            }
-        });
+            e.preventDefault();
+            const currentItem = headerBtn.closest('.banner-accordion-item');
+            if (!currentItem) return;
 
-        // Cerrar al hacer clic fuera con referencia desmontable
-        this._outsideClickHandler = (e) => {
-            if (!stack.contains(e.target)) {
-                $$('.fan-card', stack).forEach(c => $removeClass(c, 'flipped', 'active'));
+            const isCurrentlyExpanded = currentItem.classList.contains('is-expanded');
+            const allItems = $$('.banner-accordion-item', accordionRoot);
+
+            // Collapse all siblings for a unified accordion feel
+            allItems.forEach(item => {
+                if (item !== currentItem) {
+                    $removeClass(item, 'is-expanded');
+                    const btn = item.querySelector('.banner-accordion-header');
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            // Toggle current item
+            if (isCurrentlyExpanded) {
+                $removeClass(currentItem, 'is-expanded');
+                headerBtn.setAttribute('aria-expanded', 'false');
+            } else {
+                $addClass(currentItem, 'is-expanded');
+                headerBtn.setAttribute('aria-expanded', 'true');
             }
         };
-        $on(document, 'click', this._outsideClickHandler);
+
+        $on(accordionRoot, 'click', this._clickHandler);
     },
 
     destroy() {
-        if (this._outsideClickHandler) {
-            $off(document, 'click', this._outsideClickHandler);
-            this._outsideClickHandler = null;
+        const accordionRoot = $id('banner-accordion-root');
+        if (accordionRoot && this._clickHandler) {
+            $off(accordionRoot, 'click', this._clickHandler);
+            this._clickHandler = null;
         }
         const container = $id('banner-container');
         if (container) container._bucaInit = false;
