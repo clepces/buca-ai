@@ -65,7 +65,11 @@
 
 @mixin desktop   { @include respond-to('2xl') { @content; } }
 
-@mixin ultra-hd   { @include respond-to('4k') { @content; } }
+@mixin desktop-3xl { @include respond-to('3xl') { @content; } }
+
+@mixin desktop-4xl { @include respond-to('4xl') { @content; } }
+
+@mixin ultra-hd   { @include respond-to('4xl') { @content; } }
 
 /* Mixins de Orientación */
 @mixin landscape { @media screen and (orientation: landscape) { @content; } }

@@ -34,8 +34,8 @@
    HIGH RESOLUTION & ULTRA-WIDE (Phase 5)
    ───────────────────────────────────────────────────────── */
 
-/* 4K / Ultra-Wide Displays */
-@media screen and (min-width: 1920px) {
+/* 3XL / Ultra-Wide Displays (1920px+) */
+@include respond-to('3xl') {
     html {
         font-size: 18px;
     }
@@ -49,12 +49,19 @@
     }
 
     .container-max {
-        max-width: 1600px;
+        max-width: 1800px;
     }
 
     .dock {
         max-width: 55vw;
         gap: 15px;
+    }
+}
+
+/* 4XL Displays (2560px+) */
+@include respond-to('4xl') {
+    .container-max {
+        max-width: 2400px;
     }
 }
 
