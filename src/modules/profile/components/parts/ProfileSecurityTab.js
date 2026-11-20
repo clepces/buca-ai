@@ -89,7 +89,10 @@ export const ProfileSecurityTab = (data = {}) => {
                                     </label>
                                     <span class="small text-muted profile-subtext-micro">Autenticación por aplicación RFC 6238 ($0 costo).</span>
                                 </div>
-                                <input class="form-check-input ms-2" type="checkbox" id="profile-2fa-toggle" ${twoFactor ? 'checked' : ''}>
+                                <input class="form-check-input ms-2" type="checkbox" id="profile-2fa-toggle" ${twoFactor ? 'checked' : ''} disabled title="Estado gestionado por autenticador TOTP">
+                            </div>
+                            <div class="form-text text-muted profile-subtext-micro mb-2">
+                                <i class="bi bi-info-circle me-1"></i>Solo lectura: El estado 2FA se valida directamente contra factores verificados en Supabase Auth.
                             </div>
 
                             <!-- Botón para Vincular Google Authenticator -->

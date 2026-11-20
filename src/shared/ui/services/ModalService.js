@@ -78,6 +78,17 @@ export class ModalService {
             return;
         }
 
+        // Si ya hay un modal abierto con callback de cierre, invocarlo antes de reemplazar
+        if (typeof this._currentOnClose === 'function') {
+            const prevClose = this._currentOnClose;
+            this._currentOnClose = null;
+            try {
+                prevClose();
+            } catch (err) {
+                Logger.warn('ModalService', 'Error en onClose previo al reemplazar modal:', err);
+            }
+        }
+
         // 1. Limpiar clases de tamaño previas y aplicar la nueva
         const sizeClasses = ['modal-full', 'modal-xl', 'modal-lg', 'modal-md', 'modal-sm', 'modal-mini', 'modal-micro'];
         $removeClass(modalContainer, ...sizeClasses);

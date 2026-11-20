@@ -56,9 +56,28 @@ export const AuthModule = {
                         // Mantener rol previo o fallback seguro
                     }
 
+                    let aal = null;
                     try {
-                        const aal = await SupabaseProvider.getAssuranceLevel();
+                        aal = await SupabaseProvider.getAssuranceLevel();
                         if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+                            // Si el usuario no estaba autenticado o es un login inicial, retener sesión para MFA
+                            if (!currentSession.isAuthenticated || currentSession.user?.uid !== user.id) {
+                                sessionState.set({
+                                    isAuthenticated: false,
+                                    mfaPending: true,
+                                    isAAL2Verified: false,
+                                    user: null,
+                                    currentRole: 'guest'
+                                });
+                                Logger.warn('AuthModule', 'Sesión retenida: AAL2 pendiente de verificación TOTP.');
+                                return;
+                            }
+                            // Si ya estaba plenamente autenticado (reautenticación interna), mantener identidad
+                            Logger.info('AuthModule', 'Reautenticación de usuario activo con factor MFA registrado.');
+                        }
+                    } catch (aalErr) {
+                        Logger.error('AuthModule', 'Fallo evaluando AAL (Fail-Closed):', aalErr.message);
+                        if (!currentSession.isAuthenticated || currentSession.user?.uid !== user.id) {
                             sessionState.set({
                                 isAuthenticated: false,
                                 mfaPending: true,
@@ -66,25 +85,15 @@ export const AuthModule = {
                                 user: null,
                                 currentRole: 'guest'
                             });
-                            Logger.warn('AuthModule', 'Sesión retenida: AAL2 pendiente de verificación TOTP.');
                             return;
                         }
-                    } catch (aalErr) {
-                        Logger.error('AuthModule', 'Fallo evaluando AAL (Fail-Closed):', aalErr.message);
-                        sessionState.set({
-                            isAuthenticated: false,
-                            mfaPending: true,
-                            isAAL2Verified: false,
-                            user: null,
-                            currentRole: 'guest'
-                        });
-                        return;
                     }
 
+                    const isAAL2 = aal?.currentLevel === 'aal2';
                     sessionState.set({
                         isAuthenticated: true,
                         mfaPending: false,
-                        isAAL2Verified: true,
+                        isAAL2Verified: isAAL2,
                         user: {
                             uid: user.id,
                             email: user.email,

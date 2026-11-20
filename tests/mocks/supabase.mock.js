@@ -250,6 +250,9 @@ export function createMockSupabaseClient() {
                     return { data: null, error: { message: 'Código TOTP incorrecto.' } };
                 }
                 return { data: { user: { id: 'mock_uid_1' } }, error: null };
+            },
+            async unenroll({ factorId }) {
+                return { data: { id: factorId }, error: null };
             }
         }
     };

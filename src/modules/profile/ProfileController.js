@@ -6,6 +6,7 @@
  * =========================================================================
  */
 import userService from '@/modules/auth/services/UserService.js';
+import { SupabaseProvider } from '@/modules/auth/services/SupabaseProvider.js';
 import { sessionState } from '@/core/state/session.js';
 import { MFAEnrollmentModal } from './components/MFAEnrollmentModal.js';
 import { eventBus } from '@/core/eventBus/index.js';
@@ -128,24 +129,35 @@ export const ProfileController = {
             $on(btnSetupTotp, 'click', () => MFAEnrollmentModal.show());
         }
 
-        eventBus.on('profile:mfa-enrolled', () => {
-            if (toggle2FA) toggle2FA.checked = true;
+        const markMFAActive = () => {
+            if (toggle2FA) {
+                toggle2FA.checked = true;
+                toggle2FA.disabled = true;
+            }
             if (btnSetupTotp) {
                 $removeClass(btnSetupTotp, 'btn-outline-primary');
                 $addClass(btnSetupTotp, 'btn-outline-success');
                 setButtonContent(btnSetupTotp, 'Google Authenticator Activo (AAL2)', 'bi bi-shield-check');
             }
-        });
+        };
 
-        if (toggle2FA) {
-            $on(toggle2FA, 'change', async () => {
-                try {
-                    await userService.updateSecurity({ two_factor_enabled: toggle2FA.checked });
-                } catch (e) {
-                    Logger.warn('ProfileController', 'Error guardando estado 2FA:', e);
+        eventBus.on('profile:mfa-enrolled', markMFAActive);
+
+        // Validar estado real de factores en Supabase al cargar
+        SupabaseProvider.mfaListFactors()
+            .then(factors => {
+                const verified = (factors?.totp || factors?.all || []).some(f => f.status === 'verified');
+                if (verified) {
+                    markMFAActive();
+                } else if (toggle2FA) {
+                    toggle2FA.checked = false;
+                    toggle2FA.disabled = true;
                 }
+            })
+            .catch(err => {
+                Logger.warn('ProfileController', 'Error consultando factores MFA:', err);
+                if (toggle2FA) toggle2FA.disabled = true;
             });
-        }
     }
 };
 
