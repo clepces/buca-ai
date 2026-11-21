@@ -14,6 +14,9 @@ class SessionState extends BaseState {
             device: null,
             permissions: [],
             isAuthenticated: false,
+            mfaPending: false,
+            isAAL2Verified: false,
+            isPasswordRecovery: false,
             tenantId: null,
             currentRole: 'guest'
         });
@@ -39,6 +42,9 @@ class SessionState extends BaseState {
             device: null,
             permissions: [],
             isAuthenticated: false,
+            mfaPending: false,
+            isAAL2Verified: false,
+            isPasswordRecovery: false,
             tenantId: null,
             currentRole: 'guest'
         });

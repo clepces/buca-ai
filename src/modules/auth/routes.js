@@ -4,6 +4,7 @@
 import LoginPage from './pages/LoginPage.js';
 import RegisterPage from './pages/RegisterPage.js';
 import RecoveryPage from './pages/RecoveryPage.js';
+import PasswordResetPage from './pages/password-reset-page.js';
 import ProfilePage from './pages/ProfilePage.js';
 import SettingsPage from './pages/SettingsPage.js';
 
@@ -22,6 +23,11 @@ export const authRoutes = [
         path: '/auth/recovery',
         component: RecoveryPage,
         title: 'Recuperar Acceso'
+    },
+    {
+        path: '/password-reset',
+        component: PasswordResetPage,
+        title: 'Restablecer Contraseña'
     },
     {
         path: '/auth/profile',

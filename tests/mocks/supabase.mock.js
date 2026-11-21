@@ -96,30 +96,19 @@ export class MockTableQueryBuilder {
         const tableRows = this.store.get(this.tableName) || [];
         const sessionUser = this.auth?._session?.user || null;
 
-        // RLS Mock: profiles update - bloquear cambio de platform_role si no es super_admin
-        if (this.tableName === 'profiles' && this._pendingAction === 'update') {
-            if (this._actionPayload?.platform_role && sessionUser?.platform_role !== 'super_admin') {
-                return resolve({ data: null, error: { message: 'No está autorizado para modificar platform_role.' } });
-            }
+        // RLS Mocks
+        if (this.tableName === 'profiles' && this._pendingAction === 'update' && this._actionPayload?.platform_role && sessionUser?.platform_role !== 'super_admin') {
+            return resolve({ data: null, error: { message: 'No está autorizado para modificar platform_role.' } });
         }
-
-        // RLS Mock: profiles insert - bloquear autoasignación de platform_role si no es super_admin
         if (this.tableName === 'profiles' && this._pendingAction === 'insert') {
             const hasUnauthorizedRole = this._actionPayload.some(r => r.platform_role && r.platform_role !== 'user');
             if (hasUnauthorizedRole && sessionUser?.platform_role !== 'super_admin') {
                 return resolve({ data: null, error: { message: 'Violación RLS: platform_role en inserción debe ser user.' } });
             }
         }
-
-        // RLS Mock: activity_log insert - prohibir anónimos
-        if (this.tableName === 'activity_log' && this._pendingAction === 'insert') {
-            const hasAnonymous = this._actionPayload.some(r => !r.user_id || !sessionUser);
-            if (hasAnonymous) {
-                return resolve({ data: null, error: { message: 'Violación RLS: activity_log exige user_id autenticado.' } });
-            }
+        if (this.tableName === 'activity_log' && this._pendingAction === 'insert' && this._actionPayload.some(r => !r.user_id || !sessionUser)) {
+            return resolve({ data: null, error: { message: 'Violación RLS: activity_log exige user_id autenticado.' } });
         }
-
-        // RLS Mock: notifications update - revocado en favor de la RPC mark_notification_read
         if (this.tableName === 'notifications' && this._pendingAction === 'update') {
             return resolve({ data: null, error: { message: 'permission denied: direct UPDATE on notifications revoked. Use mark_notification_read RPC.' } });
         }
@@ -223,8 +212,23 @@ export function createMockSupabaseClient() {
             this._session = null;
             return { error: null };
         },
+        _listeners: [],
         onAuthStateChange(cb) {
-            return { data: { subscription: { unsubscribe: () => {} } } };
+            this._listeners.push(cb);
+            return { data: { subscription: { unsubscribe: () => { this._listeners = this._listeners.filter(l => l !== cb); } } } };
+        },
+        _triggerAuth(event, session) {
+            for (const cb of this._listeners) cb(event, session);
+        },
+        async resetPasswordForEmail(email, options = {}) {
+            this._lastResetRequest = { email, options };
+            return { data: {}, error: null };
+        },
+        async updateUser({ password }) {
+            if (!this._session) {
+                return { data: null, error: { message: 'Auth session missing!' } };
+            }
+            return { data: { user: this._session.user }, error: null };
         },
         mfa: {
             async getAuthenticatorAssuranceLevel() {

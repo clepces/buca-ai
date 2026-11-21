@@ -7,6 +7,7 @@
  */
 import { getSupabase, supabase } from '@/core/config/supabase.js';
 import { Logger } from '@/shared/utils/logger.js';
+import { getValidatedOrigin } from '@/core/utils/system-helper.js';
 
 export const SupabaseProvider = {
     _getClient() {
@@ -63,24 +64,44 @@ export const SupabaseProvider = {
     },
 
     /**
-     * Envía correo de recuperación de contraseña.
+     * Envía correo de recuperación de contraseña con URL de retorno validada.
      * @param {string} email 
      */
     async recoverPassword(email) {
         Logger.info('SupabaseProvider', 'Enviando recuperación...');
         const client = this._getClient();
-        const { error } = await client.auth.resetPasswordForEmail(email);
+        const origin = getValidatedOrigin();
+        const { error } = await client.auth.resetPasswordForEmail(email, {
+            redirectTo: `${origin}/password-reset`
+        });
         if (error) throw error;
         return true;
     },
 
     /**
+     * Actualiza la contraseña del usuario en una sesión activa o de recuperación.
+     * @param {string} newPassword 
+     */
+    async updateUserPassword(newPassword) {
+        Logger.info('SupabaseProvider', 'Actualizando contraseña de usuario...');
+        const client = this._getClient();
+        const { data, error } = await client.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        return data;
+    },
+
+    /**
      * Cierra la sesión activa.
+     * @returns {Promise<{ success: boolean, error?: string }>}
      */
     async logout() {
         const client = this._getClient();
         const { error } = await client.auth.signOut();
-        if (error) console.warn('[SupabaseProvider] Logout warning:', error.message);
+        if (error) {
+            Logger.warn('SupabaseProvider', `Logout warning: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+        return { success: true };
     },
 
     /**

@@ -30,6 +30,32 @@ export const AuthModule = {
         // Escuchar cambios de autenticación nativos de Supabase
         try {
             SupabaseProvider.onAuthStateChange(async (_event, session) => {
+                if (_event === 'PASSWORD_RECOVERY') {
+                    Logger.info('AuthModule', 'Evento PASSWORD_RECOVERY detectado. Aislando sesión de recuperación.');
+                    try {
+                        if (typeof sessionStorage !== 'undefined') {
+                            sessionStorage.setItem('buca_recovery_flow', 'true');
+                        }
+                    } catch { /* ignore */ }
+                    sessionState.set({
+                        isAuthenticated: false,
+                        mfaPending: false,
+                        isAAL2Verified: false,
+                        isPasswordRecovery: true,
+                        user: null,
+                        currentRole: 'guest'
+                    });
+                    eventBus.emit('auth:password-recovery', { session });
+                    return;
+                }
+
+                // Aislar eventos regulares si el flujo de recuperación está activo en la pestaña
+                const isRecoveryFlow = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('buca_recovery_flow') === 'true';
+                if (isRecoveryFlow) {
+                    Logger.debug('AuthModule', `Aislando evento [${_event}] mientras el flujo de recuperación esté activo.`);
+                    return;
+                }
+
                 if (session && session.user) {
                     const user = session.user;
                     const currentSession = sessionState.get();
@@ -105,13 +131,20 @@ export const AuthModule = {
                     Logger.info('AuthModule', `Sesión sincronizada [${_event || 'SYNC'}]: ${user.email}`);
                 } else {
                     const currentSession = sessionState.get();
-                    if (currentSession.isAuthenticated) {
+                    if (currentSession.isAuthenticated || currentSession.isPasswordRecovery) {
                         sessionState.set({
                             isAuthenticated: false,
+                            mfaPending: false,
                             isAAL2Verified: false,
+                            isPasswordRecovery: false,
                             user: null,
                             currentRole: 'guest'
                         });
+                        try {
+                            if (typeof sessionStorage !== 'undefined') {
+                                sessionStorage.removeItem('buca_recovery_flow');
+                            }
+                        } catch { /* ignore */ }
                         Logger.info('AuthModule', 'Sesión cerrada o invalidada en Supabase.');
                     }
                 }

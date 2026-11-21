@@ -188,19 +188,55 @@ export const AuthService = {
         }
     },
 
-    async logout() {
+    /**
+     * Actualiza la contraseña del usuario autenticado o en recuperación.
+     * @param {string} newPassword 
+     * @returns {Promise<{ success: boolean, user?: object, error?: string }>}
+     */
+    async updatePassword(newPassword) {
+        Logger.info('AuthService', 'Ejecutando cambio de contraseña...');
         try {
-            await SupabaseProvider.logout();
+            const data = await SupabaseProvider.updateUserPassword(newPassword);
+            eventBus.emit('auth:password-updated', { user: data?.user });
+            return { success: true, user: data?.user };
+        } catch (error) {
+            Logger.error('AuthService', 'Fallo al actualizar contraseña:', error.message);
+            return { success: false, error: error.message };
+        }
+    },
+
+    /**
+     * Cierra la sesión activa con opción de redirección controlada.
+     * @param {Object} [options]
+     * @param {boolean} [options.redirect=true]
+     * @param {string} [options.redirectTo='/']
+     * @returns {Promise<{ success: boolean, error?: string }>}
+     */
+    async logout({ redirect = true, redirectTo = '/' } = {}) {
+        let remoteSuccess = false;
+        let remoteError = null;
+        try {
+            const result = await SupabaseProvider.logout();
+            remoteSuccess = Boolean(result?.success);
+            if (!remoteSuccess && result?.error) {
+                remoteError = result.error;
+            }
+        } catch (error) {
+            Logger.error('AuthService', 'Error al cerrar sesión remota:', error.message);
+            remoteError = error.message;
+        } finally {
             sessionState.clear();
             try {
-                localStorage.removeItem('buca_supabase_auth');
+                if (typeof sessionStorage !== 'undefined') {
+                    sessionStorage.removeItem('buca_recovery_flow');
+                }
             } catch { /* ignore */ }
-            eventBus.emit('auth:logout-success');
-        } catch (error) {
-            Logger.error('AuthService', 'Error al cerrar sesión:', error);
-        } finally {
-            setTimeout(() => { window.location.href = '/'; }, 500);
+            eventBus.emit('auth:logout-success', { remoteSuccess, remoteError });
+            if (redirect && typeof window !== 'undefined' && window.location) {
+                setTimeout(() => { window.location.href = redirectTo; }, 500);
+            }
         }
+        return { success: remoteSuccess, error: remoteError };
     },
 
     async _loadOrCreateProfile(user, optionalName = '') {

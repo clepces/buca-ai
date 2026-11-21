@@ -100,7 +100,7 @@ const mockWindow = {
     innerHeight: 720,
     document: mockDocument,
     navigator: { onLine: true, serviceWorker: undefined },
-    location: { pathname: '/', search: '', hash: '' },
+    location: { pathname: '/', search: '', hash: '', origin: 'http://localhost:3000', hostname: 'localhost', href: 'http://localhost:3000/' },
     history: { pushState: noop, replaceState: noop },
     requestAnimationFrame: (fn) => fn(),
     setTimeout: globalThis.setTimeout,
