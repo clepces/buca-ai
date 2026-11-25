@@ -18,8 +18,8 @@
     "test": "node --experimental-websocket --import ./tests/loader-alias.js --test tests/supabase-storage.test.js tests/mfa-enrollment.test.js tests/mfa-lifecycle.test.js tests/database-security.test.js tests/offline-eventbus.test.js tests/finance-sync.test.js tests/forex-adapters.test.js tests/kernel-lifecycle.test.js tests/kernel-boot.test.js tests/password-reset.test.js"
   },
   "devDependencies": {
-    "@emnapi/core": "^2.0.0-beta.2",
-    "@emnapi/runtime": "^2.0.0-beta.2",
+    "@emnapi/core": "^2.0.0-beta.3",
+    "@emnapi/runtime": "^2.0.0-beta.3",
     "@eslint/js": "^10.0.1",
     "@markuplint/html-parser": "^4.0.0",
     "@markuplint/html-spec": "^4.0.0",
