@@ -56,7 +56,7 @@ class BucaKernel {
             try {
                 engineResponse = await GraphicsEngine.init();
             } catch (engineErr) {
-                Logger.warn('Kernel', 'GraphicsEngine fallback init:', engineErr);
+                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '⚠️', message: 'GraphicsEngine fallback init', data: engineErr });
                 engineResponse = { tier: 'L2', profile: 'balanced' };
             }
             storage.init(engineResponse?.tier || 'L2');
@@ -68,7 +68,7 @@ class BucaKernel {
             try {
                 await initSupabase();
             } catch (e) {
-                Logger.warn('Kernel', 'Supabase initialization deferred:', e?.message || e);
+                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '⚠️', message: 'Supabase initialization deferred', data: e?.message || e });
             }
 
             await ThemeManager.init();
@@ -142,11 +142,11 @@ class BucaKernel {
 
             this._finalizeBoot();
         } catch (err) {
-            Logger.critical('Kernel', 'Fallo crítico durante el arranque:', err);
+            Logger.critical({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '🚨', message: 'Fallo crítico durante el arranque', data: err });
             try {
                 this.destroy();
             } catch (cleanupErr) {
-                Logger.warn('Kernel', 'Error en teardown tras fallo de boot:', cleanupErr);
+                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '⚠️', message: 'Error en teardown tras fallo de boot', data: cleanupErr });
             }
             throw err;
         }
@@ -249,7 +249,7 @@ class BucaKernel {
             try {
                 if (typeof cleanupFn === 'function') cleanupFn();
             } catch (err) {
-                Logger.warn('Kernel', 'Error en cleanup de recurso registrado:', err);
+                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '⚠️', message: 'Error en cleanup de recurso registrado', data: err });
             }
         }
 
@@ -266,7 +266,7 @@ class BucaKernel {
             try {
                 if (svc && typeof svc.destroy === 'function') svc.destroy();
             } catch (e) {
-                Logger.warn('Kernel', `Error during ${name} teardown:`, e);
+                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '⚠️', message: `Error during ${name} teardown`, data: e });
             }
         }
 
@@ -276,7 +276,7 @@ class BucaKernel {
                 router.destroy();
             }
         } catch (e) {
-            Logger.warn('Kernel', 'Error during router teardown:', e);
+            Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '⚠️', message: 'Error during router teardown', data: e });
         }
 
         try {
@@ -284,7 +284,7 @@ class BucaKernel {
                 GraphicsEngine.destroy();
             }
         } catch (e) {
-            Logger.warn('Kernel', 'Error during GraphicsEngine teardown:', e);
+            Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '⚠️', message: 'Error during GraphicsEngine teardown', data: e });
         }
     }
 }

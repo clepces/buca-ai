@@ -53,6 +53,7 @@
 * **Serial ID:** `buca:mod:profile:core`
 * **Ruta:** `/profile`
 * **Capacidades:**
-  - Edición de perfil sincronizado con `public.profiles`.
-  - Gestión de credenciales, cambio de contraseña y enrolamiento MFA.
-  - Monitoreo de actividad y registros de auditoría (`activity_log`).
+  - Edición de datos generales de perfil (`username`, `first_name`, `last_name`, `phone`, `tax_id`, `fiscal_address`, `city_state`, `timezone`, `preferred_currency`) sincronizado en tiempo real con `public.profiles`.
+  - Gestión de perfil laboral dinámico (`worker_profile`) desacoplado mediante persistencia en `public.app_storage` (`worker_profile_<uid>`) con validación Zod (`job_title`, `department`, `shift_preference`, `skills`, `availability_status`, `experience_cards`).
+  - Gestión de credenciales, cambio de contraseña y enrolamiento MFA TOTP AAL2 con QR nativo en HTML5 Canvas.
+  - Monitoreo de actividad, dispositivos de confianza (`trusted_devices`) y registros de auditoría (`activity_log`).

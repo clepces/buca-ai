@@ -5,6 +5,8 @@
  * Propósito: Emitir señales para que el fetch/API layer (http.js en el core) pause
  * peticiones no críticas cuando el motor visual está sobrecargado.
  */
+import { Logger } from '@/shared/utils/logger.js';
+
 export class ResourceThrottle {
     constructor(engine) {
         this.engine = engine;
@@ -29,14 +31,14 @@ export class ResourceThrottle {
 
     enableThrottling(isCritical = false) {
         this.isThrottling = true;
-        console.debug(`[ResourceThrottler] Reducción de tráfico de red activada. Crítico: ${isCritical}`);
+        Logger.debug({ layer: 'ENGINE', role: 'CLASS', target: 'ResourceThrottle', icon: '🛡️', message: `Reducción de tráfico de red activada (Crítico: ${isCritical})` });
         // El verdadero NetworkService o http.js del core escuchará esto:
         window.dispatchEvent(new CustomEvent('buca:drp_pause_polling', { detail: { critical: isCritical } }));
     }
 
     disableThrottling() {
         this.isThrottling = false;
-        console.debug('[ResourceThrottler] Tráfico restaurado. Levantando DRP.');
+        Logger.debug({ layer: 'ENGINE', role: 'CLASS', target: 'ResourceThrottle', icon: '✅', message: 'Tráfico de red restaurado (DRP desactivado)' });
         window.dispatchEvent(new CustomEvent('buca:drp_resume_polling'));
     }
 

@@ -6,6 +6,7 @@
  * =========================================================================
  */
 import { CryptoWrapper } from '../../security/CryptoWrapper.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export class LocalDriver {
     constructor(prefix = 'buca') {
@@ -35,7 +36,7 @@ export class LocalDriver {
             const decryptedData = CryptoWrapper.decrypt(encryptedData);
             return JSON.parse(decryptedData);
         } catch {
-            console.warn(`[LocalDriver] Failed to parse decrypted data for key: ${key}`);
+            Logger.warn({ layer: 'STORAGE', role: 'DRIVER', target: 'LocalDriver', icon: '⚠️', message: `Fallo al parsear datos descifrados para la clave: ${key}` });
             return null;
         }
     }

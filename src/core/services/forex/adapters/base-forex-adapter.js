@@ -50,7 +50,7 @@ export class BaseForexAdapter {
      * @param {number} year
      * @returns {Promise<Array>}
      */
-    async fetchHistory(year) {
+    async fetchHistory(_year) {
         return [];
     }
 }

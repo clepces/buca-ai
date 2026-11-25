@@ -13,6 +13,8 @@ import { SupabaseProvider } from '../services/SupabaseProvider.js';
 import { AuthService } from '../services/AuthService.js';
 
 export const PasswordResetPage = {
+    _redirectTimer: null,
+
     render() {
         return `
             <div class="auth-view-content" id="password-reset-view">
@@ -22,8 +24,8 @@ export const PasswordResetPage = {
                         Establece tu nueva credencial de acceso para proteger tu cuenta corporativa.
                     </p>
 
-                    <div id="reset-feedback" class="alert alert-danger d-none animate__animated animate__fadeIn py-2 small mb-4"></div>
-                    <div id="reset-success-feedback" class="alert alert-success d-none animate__animated animate__fadeIn py-2 small mb-4"></div>
+                    <div id="reset-feedback" role="alert" aria-live="polite" class="alert alert-danger d-none animate__animated animate__fadeIn py-2 small mb-4"></div>
+                    <div id="reset-success-feedback" role="alert" aria-live="polite" class="alert alert-success d-none animate__animated animate__fadeIn py-2 small mb-4"></div>
 
                     <!-- Estado de Validación Inicial -->
                     <div id="reset-validating" class="text-center py-4">
@@ -37,7 +39,7 @@ export const PasswordResetPage = {
                             <i class="bi bi-shield-exclamation fs-1"></i>
                         </div>
                         <h3 class="h6 fw-bold mb-2">Enlace no válido o expirado</h3>
-                        <p class="text-muted small mb-4">
+                        <p class="text-muted small mb-4" id="reset-invalid-message">
                             El enlace no es válido, ha caducado o no se detectó un flujo de recuperación activo.
                         </p>
                         <a href="/auth/recovery" class="btn btn-primary w-100 py-2 d-flex justify-content-center align-items-center gap-2">
@@ -53,6 +55,9 @@ export const PasswordResetPage = {
                             <div class="input-wrapper">
                                 <i class="bi bi-key"></i>
                                 <input type="password" id="reset-new-password" class="glass-input" placeholder="••••••••" required autocomplete="new-password">
+                                <button class="btn-toggle-password" type="button" id="btn-toggle-new-password" aria-label="Mostrar u ocultar nueva contraseña">
+                                    <i class="bi bi-eye"></i>
+                                </button>
                             </div>
                             <div class="form-text small text-muted" style="font-size: 0.75rem;">
                                 Mínimo 8 caracteres, una mayúscula, un número y un símbolo.
@@ -64,6 +69,9 @@ export const PasswordResetPage = {
                             <div class="input-wrapper">
                                 <i class="bi bi-shield-lock"></i>
                                 <input type="password" id="reset-confirm-password" class="glass-input" placeholder="••••••••" required autocomplete="new-password">
+                                <button class="btn-toggle-password" type="button" id="btn-toggle-confirm-password" aria-label="Mostrar u ocultar confirmación de contraseña">
+                                    <i class="bi bi-eye"></i>
+                                </button>
                             </div>
                         </div>
 
@@ -107,40 +115,54 @@ export const PasswordResetPage = {
     },
 
     async init() {
+        this.destroy();
         const validatingEl = $id('reset-validating');
         const invalidEl = $id('reset-invalid');
         const formEl = $id('password-reset-form');
         const feedbackEl = $id('reset-feedback');
         const successFeedbackEl = $id('reset-success-feedback');
 
-        // 1. Verificar contexto de recuperación
-        const hasRecoveryFlag = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('buca_recovery_flow') === 'true';
-        const isRecoveryState = Boolean(sessionState.get().isPasswordRecovery);
-
-        if (!hasRecoveryFlag && !isRecoveryState) {
-            Logger.warn('PasswordResetPage', 'Acceso directo a /password-reset sin flujo de recuperación activo.');
-            $hide(validatingEl);
-            $show(invalidEl);
-            return;
-        }
-
-        // 2. Validación criptográfica con el servidor Supabase
+        // 1. Validación criptográfica y de origen recovery con el SDK de Supabase
         try {
             const user = await SupabaseProvider.getUser();
-            if (!user || !user.id) {
-                throw new Error('Sesión de recuperación no encontrada o revocada.');
+            const isRecovery = await SupabaseProvider.isRecoverySession();
+            if (!user || !user.id || !isRecovery) {
+                throw new Error('Sesión de recuperación no válida, expirada o ausente.');
             }
             $hide(validatingEl);
+            $hide(invalidEl);
             $show(formEl);
         } catch (err) {
-            Logger.warn('PasswordResetPage', 'Validación de sesión fallida:', err.message);
+            Logger.warn('PasswordResetPage', 'Validación de recuperación fallida:', err.message);
+            const hash = typeof window !== 'undefined' && window.location ? window.location.hash : '';
+            const invalidMsgEl = $id('reset-invalid-message');
+            if (invalidMsgEl && /error_code=otp_expired|error=access_denied/i.test(hash)) {
+                invalidMsgEl.textContent = 'El enlace de recuperación ya fue utilizado o ha expirado. Solicita un nuevo enlace.';
+            }
             try {
                 if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem('buca_recovery_flow');
             } catch { /* ignore */ }
+            if (sessionState.get().isPasswordRecovery) {
+                sessionState.set({ isPasswordRecovery: false });
+            }
             $hide(validatingEl);
+            $hide(formEl);
             $show(invalidEl);
             return;
         }
+
+        const bindVisibilityToggle = (btnId, inputId) => {
+            const toggleBtn = $id(btnId);
+            const inputEl = $id(inputId);
+            if (!toggleBtn || !inputEl) return;
+            $on(toggleBtn, 'click', () => {
+                const isPwd = inputEl.type === 'password';
+                inputEl.type = isPwd ? 'text' : 'password';
+                setButtonContent(toggleBtn, '', `bi bi-eye${isPwd ? '-slash' : ''}`);
+            });
+        };
+        bindVisibilityToggle('btn-toggle-new-password', 'reset-new-password');
+        bindVisibilityToggle('btn-toggle-confirm-password', 'reset-confirm-password');
 
         // 3. Listener de envío de formulario
         $on(formEl, 'submit', async (e) => {
@@ -188,7 +210,8 @@ export const PasswordResetPage = {
                     successFeedbackEl.textContent = 'Contraseña actualizada. No se pudo confirmar el cierre en el servidor. Por seguridad, inicia sesión nuevamente.';
                 }
 
-                setTimeout(() => {
+                this._redirectTimer = setTimeout(() => {
+                    this._redirectTimer = null;
                     window.location.href = '/auth/login';
                 }, 2000);
             } catch (err) {
@@ -198,6 +221,13 @@ export const PasswordResetPage = {
                 setButtonContent(btn, 'GUARDAR CONTRASEÑA', 'bi bi-check2-circle');
             }
         });
+    },
+
+    destroy() {
+        if (this._redirectTimer) {
+            clearTimeout(this._redirectTimer);
+            this._redirectTimer = null;
+        }
     }
 };
 

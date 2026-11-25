@@ -25,9 +25,10 @@ export const authRoutes = [
         title: 'Recuperar Acceso'
     },
     {
-        path: '/password-reset',
+        path: '/auth/recovery/reset-password',
         component: PasswordResetPage,
-        title: 'Restablecer Contraseña'
+        title: 'Restablecer Contraseña',
+        layout: 'auth'
     },
     {
         path: '/auth/profile',

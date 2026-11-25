@@ -5,7 +5,7 @@
  * Independiente del MainLayout para evitar conflictos de scroll y UI.
  * SessionDashboard se inyecta desacoplado vía EventBus desde el módulo auth.
  */
-import { $id, $, $on, $mount, $addClass } from '@/shared/utils/dom.js';
+import { $, $on, $addClass } from '@/shared/utils/dom.js';
 import { eventBus } from '@/core/eventBus/index.js';
 
 export const AuthLayout = {

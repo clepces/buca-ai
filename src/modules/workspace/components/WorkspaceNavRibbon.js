@@ -32,7 +32,7 @@ export const WorkspaceNavRibbon = {
                 $$('.pill-count', ribbon).forEach(el => {
                     $text(el, count);
                 });
-            } catch (err) {
+            } catch (_err) {
                 // Silencioso en caso de inicio sin conexión
             }
         };

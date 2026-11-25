@@ -9,7 +9,7 @@ import { escapeHTML } from '@/shared/utils/security.js';
 import { ActivityLogService } from '@/core/services/ActivityLogService.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { sessionState } from '@/core/state/session.js';
-import { $id, $mount, $on, $off, $show, $hide, $toggle, $addClass, $removeClass, $$ } from '@/shared/utils/dom.js';
+import { $id, $mount, $on, $off, $show, $hide, $addClass, $removeClass, $$ } from '@/shared/utils/dom.js';
 
 export const RecentActivity = {
     _items: [],

@@ -17,6 +17,24 @@ export const AuthService = {
                 return { isAuthenticated: false };
             }
 
+            const isRecovery = await SupabaseProvider.isRecoverySession();
+            if (isRecovery) {
+                try {
+                    if (typeof sessionStorage !== 'undefined') {
+                        sessionStorage.setItem('buca_recovery_flow', 'true');
+                    }
+                } catch { /* ignore */ }
+                sessionState.set({
+                    isAuthenticated: false,
+                    mfaPending: false,
+                    isAAL2Verified: false,
+                    isPasswordRecovery: true,
+                    user: null,
+                    currentRole: 'guest'
+                });
+                return { isAuthenticated: false, isPasswordRecovery: true };
+            }
+
             const user = session.user;
             try {
                 const aal = await SupabaseProvider.getAssuranceLevel();
@@ -55,6 +73,15 @@ export const AuthService = {
         try {
             const data = await SupabaseProvider.login(email, password);
             const user = data.user;
+
+            try {
+                if (typeof sessionStorage !== 'undefined') {
+                    sessionStorage.removeItem('buca_recovery_flow');
+                }
+            } catch { /* ignore */ }
+            if (sessionState.get().isPasswordRecovery) {
+                sessionState.set({ isPasswordRecovery: false });
+            }
 
             try {
                 const aal = await SupabaseProvider.getAssuranceLevel();
@@ -182,20 +209,30 @@ export const AuthService = {
     async recoverPassword(email) {
         try {
             await SupabaseProvider.recoverPassword(email);
+            Logger.info('AuthService', 'Flujo de recuperación despachado correctamente.');
             return { success: true };
         } catch (error) {
-            return { success: false, error: error.message };
+            const rawMsg = typeof error?.message === 'string' ? error.message.trim() : '';
+            const safeError = (!rawMsg || rawMsg === '{}')
+                ? 'No se pudo procesar la solicitud de recuperación.'
+                : rawMsg;
+            Logger.error('AuthService', `Fallo al solicitar recuperación (status: ${error?.status ?? 'N/A'}):`, safeError);
+            return { success: false, status: error?.status, error: safeError };
         }
     },
 
     /**
-     * Actualiza la contraseña del usuario autenticado o en recuperación.
+     * Actualiza la contraseña del usuario únicamente con contexto de recuperación verificado.
      * @param {string} newPassword 
      * @returns {Promise<{ success: boolean, user?: object, error?: string }>}
      */
     async updatePassword(newPassword) {
         Logger.info('AuthService', 'Ejecutando cambio de contraseña...');
         try {
+            const isRecovery = await SupabaseProvider.isRecoverySession();
+            if (!isRecovery) {
+                throw new Error('Se requiere una sesión de recuperación válida para restablecer la contraseña.');
+            }
             const data = await SupabaseProvider.updateUserPassword(newPassword);
             eventBus.emit('auth:password-updated', { user: data?.user });
             return { success: true, user: data?.user };

@@ -22,7 +22,7 @@ export const ActivityLogService = {
         if (this._initialized) return;
         this._initialized = true;
 
-        Logger.info('ActivityLogService', 'Inicializando auditoría inmutable en Supabase...');
+        Logger.info({ layer: 'SERVICE', role: 'CLASS', target: 'ActivityLog', icon: '🛡️', message: 'Auditoría inmutable inicializada (Supabase)' });
 
         // Escuchar eventos sensibles para auto-registro
         this._cleanups.push(
@@ -81,14 +81,14 @@ export const ActivityLogService = {
                 .single();
 
             if (error) {
-                Logger.warn('ActivityLogService', 'Advertencia al persistir log:', error.message);
+                Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'ActivityLog', icon: '⚠️', message: 'Advertencia al persistir log', data: error.message });
                 return null;
             }
 
             eventBus.emit('activity:logged', data || payload);
             return data || payload;
         } catch (err) {
-            Logger.warn('ActivityLogService', 'Error al registrar actividad:', err.message);
+            Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'ActivityLog', icon: '⚠️', message: 'Error al registrar actividad', data: err.message });
             return null;
         }
     },
@@ -111,12 +111,12 @@ export const ActivityLogService = {
 
             const { data, error } = await query;
             if (error) {
-                Logger.warn('ActivityLogService', 'Error al consultar actividades:', error.message);
+                Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'ActivityLog', icon: '⚠️', message: 'Error al consultar actividades', data: error.message });
                 return [];
             }
             return data || [];
         } catch (err) {
-            Logger.warn('ActivityLogService', 'Error recuperando actividades:', err.message);
+            Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'ActivityLog', icon: '⚠️', message: 'Error recuperando actividades', data: err.message });
             return [];
         }
     }

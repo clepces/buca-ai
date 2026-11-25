@@ -17,9 +17,20 @@ globalThis.SVGElement = globalThis.SVGElement || class SVGElement extends global
 const createMockElement = () => {
     const el = Object.create(globalThis.HTMLElement?.prototype || {});
     const elListeners = new Map();
+    const classSet = new Set();
     Object.assign(el, {
-        id: '', className: '', style: { setProperty: noop },
-        classList: { add: noop, remove: noop, contains: () => false, toggle: noop },
+        id: '', className: '', dataset: {}, style: { setProperty: noop },
+        classList: {
+            add: (...cls) => { cls.forEach(c => { if (c) classSet.add(c); }); },
+            remove: (...cls) => { cls.forEach(c => classSet.delete(c)); },
+            contains: (c) => classSet.has(c),
+            toggle: (c, force) => {
+                if (force === true) { classSet.add(c); return true; }
+                if (force === false) { classSet.delete(c); return false; }
+                if (classSet.has(c)) { classSet.delete(c); return false; }
+                classSet.add(c); return true;
+            }
+        },
         setAttribute: noop, getAttribute: () => null, removeAttribute: noop,
         hasAttribute: () => false, closest: () => null,
         appendChild: noop, replaceChildren: noop, remove: noop,
@@ -54,6 +65,7 @@ const mockDocument = {
     querySelector: () => null,
     querySelectorAll: () => [],
     createElement: createMockElement,
+    createTextNode: (text = '') => ({ nodeType: 3, textContent: String(text) }),
     createRange: () => ({
         createContextualFragment: () => ({ childNodes: [] }),
     }),

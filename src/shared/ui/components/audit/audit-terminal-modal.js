@@ -13,7 +13,6 @@ import { $id, $on } from '@/shared/utils/dom.js';
 
 export const AuditTerminalModal = {
     async show() {
-        const user = sessionState.get()?.user;
         const tenant = sessionState.get()?.tenantId || 'global';
         const recentLogs = await ActivityLogService.getRecentActivities(10);
 

@@ -9,6 +9,7 @@
 import LocalDriver from './drivers/LocalDriver.js';
 import IndexedDBDriver from './drivers/IndexedDBDriver.js';
 import SupabaseDriver from './drivers/SupabaseDriver.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 class StorageAdapter {
     constructor() {
@@ -34,10 +35,10 @@ class StorageAdapter {
 
         if (isAdvancedTier) {
             this.driver = new IndexedDBDriver();
-            console.log('[Storage] -> Motor Avanzado Activado (IndexedDB)');
+            Logger.info({ layer: 'STORAGE', role: 'ADAPTER', target: 'IndexedDB', icon: '⚡', message: 'Motor avanzado activado' });
         } else {
             this.driver = new LocalDriver();
-            console.log('[Storage] -> Motor Ligero Activado (LocalStorage)');
+            Logger.info({ layer: 'STORAGE', role: 'ADAPTER', target: 'LocalStorage', icon: '⚡', message: 'Motor ligero activado' });
         }
 
         this._currentTier = tier;

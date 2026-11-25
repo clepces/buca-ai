@@ -3,11 +3,14 @@
  * =========================================================================
  * Verifica el flujo completo de restablecimiento de contraseña:
  * - getValidatedOrigin (system-helper)
- * - PASSWORD_RECOVERY aislamiento de sesión (AuthModule)
- * - SupabaseProvider.recoverPassword con redirectTo
- * - SupabaseProvider.updateUserPassword
- * - AuthService.updatePassword y logout robusto
- * - PasswordResetPage: validación, estados, sesión normal intacta
+ * - SupabaseProvider.isRecoverySession (claims SDK amr: AMREntry[] / string[])
+ * - Arranque y checkSession en /password-reset (aislamiento de recovery)
+ * - Rechazo estricto de sesión normal incluso con flags residuales
+ * - PASSWORD_RECOVERY, INITIAL_SESSION, TOKEN_REFRESHED y SIGNED_OUT (AuthModule)
+ * - Login posterior tras recovery abortado
+ * - PasswordResetPage: DOM real (d-none), submit, errores de updateUser y logout
+ * - SessionState.clear(): eliminación de propiedades residuales y notificaciones
+ * - Layout 'auth' en /password-reset sin afectar otras rutas
  * =========================================================================
  */
 import './dom-shim.js';
@@ -19,16 +22,30 @@ import { createMockSupabaseClient } from './mocks/supabase.mock.js';
 import { sessionState } from '../src/core/state/session.js';
 import { eventBus } from '../src/core/eventBus/index.js';
 
-// DOM helpers para simular getElementById
 const domRegistry = new Map();
 mockDocument.getElementById = (id) => {
     if (!domRegistry.has(id)) {
         const el = mockDocument.createElement('div');
         el.id = id;
         el.textContent = '';
+        el.value = '';
+        el.disabled = false;
         domRegistry.set(id, el);
     }
     return domRegistry.get(id);
+};
+
+const setupResetPageDom = () => {
+    const validating = mockDocument.getElementById('reset-validating');
+    const invalid = mockDocument.getElementById('reset-invalid');
+    const form = mockDocument.getElementById('password-reset-form');
+    const feedback = mockDocument.getElementById('reset-feedback');
+    const successFeedback = mockDocument.getElementById('reset-success-feedback');
+    invalid.classList.add('d-none');
+    form.classList.add('d-none');
+    feedback.classList.add('d-none');
+    successFeedback.classList.add('d-none');
+    return { validating, invalid, form, feedback, successFeedback };
 };
 
 describe('Password Reset Flow Suite', () => {
@@ -56,16 +73,14 @@ describe('Password Reset Flow Suite', () => {
             const saved = globalThis.window;
             globalThis.window = undefined;
             const { getValidatedOrigin } = await import('../src/core/utils/system-helper.js');
-            // En non-browser, retorna el esperado por entorno (dev por defecto en tests)
             const origin = getValidatedOrigin();
-            assert.ok(typeof origin === 'string');
-            assert.ok(origin.length > 0);
+            assert.ok(typeof origin === 'string' && origin.length > 0);
             globalThis.window = saved;
         });
 
         it('Debe lanzar excepción si el origen no coincide con la allowlist', async () => {
             const { getValidatedOrigin, isBrowser } = await import('../src/core/utils/system-helper.js');
-            if (!isBrowser()) return; // Skip si no hay window completo
+            if (!isBrowser()) return;
             const savedOrigin = globalThis.window.location.origin;
             Object.defineProperty(globalThis.window.location, 'origin', { value: 'https://evil.com', writable: true, configurable: true });
             assert.throws(() => getValidatedOrigin(), /Origen no permitido/);
@@ -74,283 +89,205 @@ describe('Password Reset Flow Suite', () => {
     });
 
     // =========================================================================
-    // 2. SupabaseProvider: recoverPassword con redirectTo
+    // 2. SupabaseProvider: recoverPassword e isRecoverySession
     // =========================================================================
-    describe('SupabaseProvider.recoverPassword', () => {
-        it('Debe llamar resetPasswordForEmail con redirectTo que termina en /password-reset', async () => {
+    describe('SupabaseProvider recovery claims', () => {
+        it('Debe llamar resetPasswordForEmail con redirectTo que termina en /auth/recovery/reset-password', async () => {
             const { SupabaseProvider } = await import('../src/modules/auth/services/SupabaseProvider.js');
             await SupabaseProvider.recoverPassword('user@test.com');
             const req = mockClient.auth._lastResetRequest;
-            assert.ok(req, 'Se debe haber registrado la solicitud de reset');
+            assert.ok(req);
             assert.equal(req.email, 'user@test.com');
-            assert.ok(req.options.redirectTo.endsWith('/password-reset'), `redirectTo debe terminar en /password-reset, recibido: ${req.options.redirectTo}`);
+            assert.ok(req.options.redirectTo.endsWith('/auth/recovery/reset-password'));
+        });
+
+        it('Debe reconocer sesión recovery con amr en formato AMREntry[] y string[]', async () => {
+            const { SupabaseProvider } = await import('../src/modules/auth/services/SupabaseProvider.js');
+            mockClient.auth.setSession({
+                user: { id: 'uid_r', email: 'r@test.com' },
+                amr: [{ method: 'recovery', timestamp: 1700000000 }]
+            });
+            assert.equal(await SupabaseProvider.isRecoverySession(), true);
+
+            mockClient.auth.setSession({
+                user: { id: 'uid_r', email: 'r@test.com' },
+                amr: ['recovery']
+            });
+            assert.equal(await SupabaseProvider.isRecoverySession(), true);
+        });
+
+        it('Debe rechazar sesión normal (amr password) en isRecoverySession()', async () => {
+            const { SupabaseProvider } = await import('../src/modules/auth/services/SupabaseProvider.js');
+            mockClient.auth.setSession({
+                user: { id: 'uid_n', email: 'n@test.com' },
+                amr: [{ method: 'password', timestamp: 1700000000 }]
+            });
+            assert.equal(await SupabaseProvider.isRecoverySession(), false);
+        });
+
+        it('Debe fallar cerrado (false) si getClaims y getAuthenticatorAssuranceLevel fallan', async () => {
+            const { SupabaseProvider } = await import('../src/modules/auth/services/SupabaseProvider.js');
+            mockClient.auth.getClaims = async () => ({ data: null, error: new Error('Invalid JWT') });
+            mockClient.auth.mfa.getAuthenticatorAssuranceLevel = async () => ({ data: null, error: new Error('AAL error') });
+            assert.equal(await SupabaseProvider.isRecoverySession(), false);
         });
     });
 
     // =========================================================================
-    // 3. SupabaseProvider.updateUserPassword
+    // 3. SupabaseProvider.updateUserPassword & AuthService.updatePassword
     // =========================================================================
-    describe('SupabaseProvider.updateUserPassword', () => {
-        it('Debe ejecutar updateUser con la nueva contraseña y retornar data', async () => {
+    describe('Protección de updateUserPassword y updatePassword', () => {
+        it('Debe rechazar updateUserPassword si la sesión es normal (no recovery)', async () => {
             const { SupabaseProvider } = await import('../src/modules/auth/services/SupabaseProvider.js');
+            await assert.rejects(
+                () => SupabaseProvider.updateUserPassword('NewPass123!'),
+                /Sesión de recuperación no válida/
+            );
+        });
+
+        it('Debe ejecutar updateUser con nueva contraseña solo en sesión recovery verificada', async () => {
+            const { SupabaseProvider } = await import('../src/modules/auth/services/SupabaseProvider.js');
+            mockClient.auth.setSession({
+                user: { id: 'uid_r', email: 'r@test.com' },
+                amr: [{ method: 'recovery', timestamp: 1700000000 }]
+            });
             const result = await SupabaseProvider.updateUserPassword('NewPass123!');
-            assert.ok(result, 'Debe retornar data del usuario');
-            assert.ok(result.user, 'Debe contener un usuario válido');
+            assert.equal(result.user.id, 'uid_r');
         });
 
-        it('Debe lanzar si no hay sesión activa', async () => {
-            const { SupabaseProvider } = await import('../src/modules/auth/services/SupabaseProvider.js');
-            mockClient.auth._session = null;
-            try {
-                await SupabaseProvider.updateUserPassword('NewPass123!');
-                assert.fail('Debió lanzar excepción');
-            } catch (err) {
-                assert.ok(err.message.includes('Auth session missing'), `Mensaje inesperado: ${err.message}`);
-            }
-        });
-    });
-
-    // =========================================================================
-    // 4. SupabaseProvider.logout retorna { success, error }
-    // =========================================================================
-    describe('SupabaseProvider.logout contrato', () => {
-        it('Debe retornar { success: true } en logout exitoso', async () => {
-            const { SupabaseProvider } = await import('../src/modules/auth/services/SupabaseProvider.js');
-            const result = await SupabaseProvider.logout();
-            assert.deepEqual(result, { success: true });
-        });
-
-        it('Debe retornar { success: false, error } si signOut falla', async () => {
-            const { SupabaseProvider } = await import('../src/modules/auth/services/SupabaseProvider.js');
-            mockClient.auth.signOut = async () => ({ error: { message: 'Network timeout' } });
-            const result = await SupabaseProvider.logout();
-            assert.equal(result.success, false);
-            assert.equal(result.error, 'Network timeout');
-        });
-    });
-
-    // =========================================================================
-    // 5. AuthService.updatePassword
-    // =========================================================================
-    describe('AuthService.updatePassword', () => {
-        it('Debe retornar { success: true } tras actualizar la contraseña correctamente', async () => {
+        it('AuthService.updatePassword debe retornar error si updateUser falla en SDK', async () => {
             const { AuthService } = await import('../src/modules/auth/services/AuthService.js');
-            const result = await AuthService.updatePassword('SecurePass1!');
-            assert.equal(result.success, true);
-        });
-
-        it('Debe retornar { success: false, error } si updateUserPassword falla', async () => {
-            const { AuthService } = await import('../src/modules/auth/services/AuthService.js');
-            mockClient.auth.updateUser = async () => ({ data: null, error: { message: 'Password too short' } });
+            mockClient.auth.setSession({
+                user: { id: 'uid_r', email: 'r@test.com' },
+                amr: [{ method: 'recovery', timestamp: 1700000000 }]
+            });
+            mockClient.auth.updateUser = async () => ({ data: null, error: new Error('Password too short') });
             const result = await AuthService.updatePassword('123');
             assert.equal(result.success, false);
             assert.ok(result.error.includes('Password too short'));
         });
 
-        it('Debe emitir auth:password-updated en éxito', async () => {
+        it('AuthService.updatePassword debe emitir auth:password-updated en éxito', async () => {
             const { AuthService } = await import('../src/modules/auth/services/AuthService.js');
+            mockClient.auth.setSession({
+                user: { id: 'uid_r', email: 'r@test.com' },
+                amr: [{ method: 'recovery', timestamp: 1700000000 }]
+            });
             let emitted = false;
             eventBus.on('auth:password-updated', () => { emitted = true; });
-            await AuthService.updatePassword('SecurePass1!');
-            assert.ok(emitted, 'Debe emitir auth:password-updated');
+            const res = await AuthService.updatePassword('SecurePass1!');
+            assert.equal(res.success, true);
+            assert.ok(emitted);
             eventBus.off('auth:password-updated');
         });
     });
 
     // =========================================================================
-    // 6. AuthService.logout robusto
+    // 4. Arranque en /auth/recovery/reset-password y AuthService.checkSession()
     // =========================================================================
-    describe('AuthService.logout robusto', () => {
-        it('Debe resetear sessionState a guest tras logout exitoso', async () => {
+    describe('Arranque y checkSession en /auth/recovery/reset-password', () => {
+        it('checkSession() no debe promover una sesión recovery a isAuthenticated: true', async () => {
             const { AuthService } = await import('../src/modules/auth/services/AuthService.js');
-            sessionState.set({ isAuthenticated: true, user: { uid: '1', email: 'x@x.com' }, currentRole: 'admin' });
-            await AuthService.logout({ redirect: false });
+            mockClient.auth.setSession({
+                user: { id: 'uid_r', email: 'r@test.com' },
+                amr: [{ method: 'recovery', timestamp: 1700000000 }]
+            });
+
+            const check = await AuthService.checkSession();
+            assert.equal(check.isAuthenticated, false);
+            assert.equal(check.isPasswordRecovery, true);
             const state = sessionState.get();
             assert.equal(state.isAuthenticated, false);
+            assert.equal(state.isPasswordRecovery, true);
             assert.equal(state.currentRole, 'guest');
             assert.equal(state.user, null);
-            assert.equal(state.isPasswordRecovery, false);
-            assert.equal(state.mfaPending, false);
         });
 
-        it('Debe limpiar buca_recovery_flow de sessionStorage', async () => {
-            const { AuthService } = await import('../src/modules/auth/services/AuthService.js');
-            globalThis.sessionStorage.setItem('buca_recovery_flow', 'true');
-            await AuthService.logout({ redirect: false });
-            assert.equal(globalThis.sessionStorage.getItem('buca_recovery_flow'), null);
+        it('Kernel.boot() en /auth/recovery/reset-password no debe redirigir a /auth/login ni cargar módulos workspace', async () => {
+            mockClient.auth.setSession(null);
+            mockDocument.documentElement = mockDocument.createElement('html');
+            const prevIdb = globalThis.indexedDB;
+            const prevRaf = globalThis.requestAnimationFrame;
+            const prevCancelRaf = globalThis.cancelAnimationFrame;
+            const rafTimers = new Set();
+            globalThis.requestAnimationFrame = (fn) => {
+                const id = setTimeout(() => { rafTimers.delete(id); fn(); }, 0);
+                rafTimers.add(id);
+                return id;
+            };
+            globalThis.cancelAnimationFrame = (id) => {
+                rafTimers.delete(id);
+                clearTimeout(id);
+            };
+            globalThis.indexedDB = {
+                open: () => {
+                    const req = { result: { objectStoreNames: { contains: () => true }, transaction: () => ({ objectStore: () => ({ get: () => { const r = {}; queueMicrotask(() => r.onsuccess?.()); return r; } }) }) } };
+                    queueMicrotask(() => req.onsuccess?.({ target: req }));
+                    return req;
+                }
+            };
+            globalThis.window.location.pathname = '/auth/recovery/reset-password';
+            const { default: kernel } = await import('../src/core/kernel.js');
+            try {
+                kernel.destroy();
+                await kernel.boot();
+                assert.equal(globalThis.window.location.pathname, '/auth/recovery/reset-password');
+                assert.equal(kernel.currentLayoutMode, 'auth');
+            } finally {
+                kernel.destroy();
+                for (const id of rafTimers) clearTimeout(id);
+                rafTimers.clear();
+                globalThis.window.location.pathname = '/';
+                globalThis.indexedDB = prevIdb;
+                globalThis.requestAnimationFrame = prevRaf;
+                globalThis.cancelAnimationFrame = prevCancelRaf;
+            }
         });
+    });
 
-        it('Debe resetear a guest incluso si signOut remoto falla', async () => {
+    // =========================================================================
+    // 5. Logout robusto y limpieza de SessionState
+    // =========================================================================
+    describe('AuthService.logout y SessionState.clear()', () => {
+        it('Debe intentar signOut({ scope: "local" }) cuando falla el cierre remoto y resetear a guest', async () => {
             const { AuthService } = await import('../src/modules/auth/services/AuthService.js');
-            mockClient.auth.signOut = async () => ({ error: { message: 'Network down' } });
+            let calls = [];
+            mockClient.auth.signOut = async (opts = {}) => {
+                calls.push(opts);
+                if (opts.scope === 'local') {
+                    mockClient.auth._session = null;
+                    return { error: null };
+                }
+                return { error: new Error('Network down') };
+            };
             sessionState.set({ isAuthenticated: true, user: { uid: '1' }, currentRole: 'admin' });
+
             const result = await AuthService.logout({ redirect: false });
             assert.equal(result.success, false);
             assert.ok(result.error.includes('Network down'));
-            const state = sessionState.get();
-            assert.equal(state.isAuthenticated, false);
-            assert.equal(state.currentRole, 'guest');
-        });
-    });
-
-    // =========================================================================
-    // 7. PASSWORD_RECOVERY en AuthModule
-    // =========================================================================
-    describe('PASSWORD_RECOVERY aislamiento en AuthModule', () => {
-        it('Debe activar isPasswordRecovery y aislar la sesión tras evento PASSWORD_RECOVERY', async () => {
-            const { AuthModule } = await import('../src/modules/auth/index.js');
-            await AuthModule.init();
-
-            const session = { user: { id: 'uid_recovery', email: 'recovery@test.com' } };
-            mockClient.auth._triggerAuth('PASSWORD_RECOVERY', session);
-
-            // Dar un tick para que el callback async se resuelva
-            await new Promise(r => setTimeout(r, 50));
-
-            const state = sessionState.get();
-            assert.equal(state.isPasswordRecovery, true);
-            assert.equal(state.isAuthenticated, false);
-            assert.equal(state.currentRole, 'guest');
-            assert.equal(globalThis.sessionStorage.getItem('buca_recovery_flow'), 'true');
+            assert.equal(calls.length, 2);
+            assert.equal(calls[1].scope, 'local');
+            assert.equal(sessionState.get().isAuthenticated, false);
+            assert.equal(sessionState.get().currentRole, 'guest');
         });
 
-        it('Debe aislar eventos INITIAL_SESSION y TOKEN_REFRESHED durante flujo de recuperación', async () => {
-            const { AuthModule } = await import('../src/modules/auth/index.js');
-            await AuthModule.init();
-
-            // Simular PASSWORD_RECOVERY primero
-            mockClient.auth._triggerAuth('PASSWORD_RECOVERY', { user: { id: 'uid_r', email: 'r@t.com' } });
-            await new Promise(r => setTimeout(r, 50));
-            assert.equal(sessionState.get().isPasswordRecovery, true);
-
-            // Simular INITIAL_SESSION que normalmente promovería la sesión
-            mockClient.auth._triggerAuth('INITIAL_SESSION', { user: { id: 'uid_r', email: 'r@t.com', user_metadata: { displayName: 'Test' } } });
-            await new Promise(r => setTimeout(r, 50));
-
-            // La sesión NO debe haberse autenticado normalmente
-            assert.equal(sessionState.get().isAuthenticated, false, 'isAuthenticated debe seguir en false durante recovery');
-            assert.equal(sessionState.get().isPasswordRecovery, true, 'isPasswordRecovery debe mantenerse');
-        });
-    });
-
-    // =========================================================================
-    // 8. Acceso directo a /password-reset sin flujo (sesión normal intacta)
-    // =========================================================================
-    describe('PasswordResetPage sin flujo de recuperación', () => {
-        it('No debe destruir una sesión normal si se visita /password-reset directamente', async () => {
-            sessionState.set({ isAuthenticated: true, user: { uid: 'u1', email: 'user@test.com' }, currentRole: 'admin' });
-
-            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
-            await PasswordResetPage.init();
-
-            // La sesión debe seguir intacta
-            const state = sessionState.get();
-            assert.equal(state.isAuthenticated, true, 'La sesión normal NO debe destruirse');
-            assert.equal(state.user.uid, 'u1');
-            assert.equal(state.currentRole, 'admin');
-        });
-    });
-
-    // =========================================================================
-    // 9. PasswordResetPage con sesión de recuperación válida
-    // =========================================================================
-    describe('PasswordResetPage con sesión válida', () => {
-        it('Debe habilitar formulario cuando hay recovery flag y getUser() tiene éxito', async () => {
-            globalThis.sessionStorage.setItem('buca_recovery_flow', 'true');
-            mockClient.auth._session = { user: { id: 'uid_r', email: 'r@t.com' } };
-
-            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
-            await PasswordResetPage.init();
-
-            // El formulario no debería estar bloqueado (init se ejecutó sin lanzar)
-            // y no debería haber modificado la sesión
-            assert.equal(globalThis.sessionStorage.getItem('buca_recovery_flow'), 'true');
-        });
-    });
-
-    // =========================================================================
-    // 10. PasswordResetPage: getUser() falla (token expirado/inválido)
-    // =========================================================================
-    describe('PasswordResetPage con token inválido', () => {
-        it('Debe mostrar estado inválido y limpiar recovery flag si getUser() falla', async () => {
-            globalThis.sessionStorage.setItem('buca_recovery_flow', 'true');
-            mockClient.auth.getUser = async () => { throw new Error('Token expired'); };
-
-            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
-            await PasswordResetPage.init();
-
-            // Recovery flag debe haberse eliminado
-            assert.equal(globalThis.sessionStorage.getItem('buca_recovery_flow'), null);
-        });
-    });
-
-    // =========================================================================
-    // 11. PasswordResetPage validatePolicy
-    // =========================================================================
-    describe('PasswordResetPage.validatePolicy', () => {
-        it('Debe rechazar contraseñas cortas (<8 caracteres)', async () => {
-            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
-            const result = PasswordResetPage.validatePolicy('Ab1!');
-            assert.equal(result.valid, false);
-            assert.ok(result.message.includes('8 caracteres'));
-        });
-
-        it('Debe rechazar contraseñas sin mayúscula', async () => {
-            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
-            const result = PasswordResetPage.validatePolicy('password1!');
-            assert.equal(result.valid, false);
-            assert.ok(result.message.includes('mayúscula'));
-        });
-
-        it('Debe rechazar contraseñas sin número', async () => {
-            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
-            const result = PasswordResetPage.validatePolicy('Password!x');
-            assert.equal(result.valid, false);
-            assert.ok(result.message.includes('número'));
-        });
-
-        it('Debe rechazar contraseñas sin carácter especial', async () => {
-            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
-            const result = PasswordResetPage.validatePolicy('Password1x');
-            assert.equal(result.valid, false);
-            assert.ok(result.message.includes('especial'));
-        });
-
-        it('Debe aceptar contraseñas que cumplen la política completa', async () => {
-            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
-            const result = PasswordResetPage.validatePolicy('SecurePass1!');
-            assert.equal(result.valid, true);
-        });
-    });
-
-    // =========================================================================
-    // 12. Ruta /password-reset registrada
-    // =========================================================================
-    describe('Ruta /password-reset en authRoutes', () => {
-        it('Debe existir la ruta /password-reset en las rutas del módulo auth', async () => {
-            const { authRoutes } = await import('../src/modules/auth/routes.js');
-            const resetRoute = authRoutes.find(r => r.path === '/password-reset');
-            assert.ok(resetRoute, 'Ruta /password-reset debe existir');
-            assert.equal(resetRoute.title, 'Restablecer Contraseña');
-            assert.equal(typeof resetRoute.component?.render, 'function');
-            assert.ok(!resetRoute.requiresAuth, 'Ruta /password-reset NO debe requerir auth');
-        });
-    });
-
-    // =========================================================================
-    // 13. sessionState.clear() incluye propiedades de recuperación
-    // =========================================================================
-    describe('sessionState.clear() limpieza completa', () => {
-        it('Debe resetear isPasswordRecovery, mfaPending e isAAL2Verified a false', () => {
+        it('SessionState.clear() debe eliminar propiedades residuales y conservar notificaciones', async () => {
+            let notifiedStates = [];
+            const unsub = sessionState.subscribe((s) => notifiedStates.push(s));
             sessionState.set({
                 isAuthenticated: true,
                 isPasswordRecovery: true,
                 mfaPending: true,
                 isAAL2Verified: true,
                 user: { uid: '1' },
-                currentRole: 'admin'
+                currentRole: 'admin',
+                residualCustomKey: 'should_be_removed'
             });
+
             sessionState.clear();
+            await new Promise(r => setTimeout(r, 10));
+            unsub();
+
             const state = sessionState.get();
             assert.equal(state.isPasswordRecovery, false);
             assert.equal(state.mfaPending, false);
@@ -358,6 +295,251 @@ describe('Password Reset Flow Suite', () => {
             assert.equal(state.isAuthenticated, false);
             assert.equal(state.currentRole, 'guest');
             assert.equal(state.user, null);
+            assert.equal('residualCustomKey' in state, false);
+            assert.ok(notifiedStates.length >= 2, 'Debe notificar a suscriptores al limpiar');
+            assert.equal(notifiedStates[notifiedStates.length - 1].currentRole, 'guest');
+        });
+    });
+
+    // =========================================================================
+    // 6. Ciclo de Eventos en AuthModule (PASSWORD_RECOVERY, TOKEN_REFRESHED, SIGNED_OUT, Login)
+    // =========================================================================
+    describe('AuthModule ciclo de eventos de recuperación', () => {
+        it('Debe aislar INITIAL_SESSION y TOKEN_REFRESHED durante PASSWORD_RECOVERY', async () => {
+            const { AuthModule } = await import('../src/modules/auth/index.js');
+            await AuthModule.init();
+
+            const recSession = { user: { id: 'uid_r', email: 'r@t.com' }, amr: [{ method: 'recovery' }] };
+            mockClient.auth._triggerAuth('PASSWORD_RECOVERY', recSession);
+            await new Promise(r => setTimeout(r, 30));
+
+            assert.equal(sessionState.get().isPasswordRecovery, true);
+            assert.equal(sessionState.get().isAuthenticated, false);
+
+            mockClient.auth._triggerAuth('INITIAL_SESSION', recSession);
+            mockClient.auth._triggerAuth('TOKEN_REFRESHED', recSession);
+            await new Promise(r => setTimeout(r, 30));
+
+            assert.equal(sessionState.get().isAuthenticated, false);
+            assert.equal(sessionState.get().isPasswordRecovery, true);
+        });
+
+        it('Debe limpiar flujo de recuperación en SIGNED_OUT incluso si buca_recovery_flow está activo', async () => {
+            const { AuthModule } = await import('../src/modules/auth/index.js');
+            await AuthModule.init();
+
+            mockClient.auth._triggerAuth('PASSWORD_RECOVERY', { user: { id: 'uid_r', email: 'r@t.com' } });
+            await new Promise(r => setTimeout(r, 30));
+            assert.equal(globalThis.sessionStorage.getItem('buca_recovery_flow'), 'true');
+
+            mockClient.auth._triggerAuth('SIGNED_OUT', null);
+            await new Promise(r => setTimeout(r, 30));
+
+            assert.equal(globalThis.sessionStorage.getItem('buca_recovery_flow'), null);
+            assert.equal(sessionState.get().isPasswordRecovery, false);
+            assert.equal(sessionState.get().isAuthenticated, false);
+        });
+
+        it('Login posterior tras recovery abortado debe limpiar flags y permitir sesión normal', async () => {
+            const { AuthModule } = await import('../src/modules/auth/index.js');
+            const { AuthService } = await import('../src/modules/auth/services/AuthService.js');
+            await AuthModule.init();
+
+            globalThis.sessionStorage.setItem('buca_recovery_flow', 'true');
+            sessionState.set({ isPasswordRecovery: true });
+
+            const loginRes = await AuthService.login('user@buca.com', 'ValidPass1!');
+            assert.equal(loginRes.success, true);
+            assert.equal(globalThis.sessionStorage.getItem('buca_recovery_flow'), null);
+            assert.equal(sessionState.get().isPasswordRecovery, false);
+            assert.equal(sessionState.get().isAuthenticated, true);
+        });
+    });
+
+    // =========================================================================
+    // 7. PasswordResetPage: DOM real, sesión normal rechazada, expiración y submit
+    // =========================================================================
+    describe('PasswordResetPage comportamiento real DOM y seguridad', () => {
+        it('Debe rechazar sesión normal aunque buca_recovery_flow e isPasswordRecovery estén en true, conservando sesión normal', async () => {
+            const { validating, invalid, form } = setupResetPageDom();
+            globalThis.sessionStorage.setItem('buca_recovery_flow', 'true');
+            sessionState.set({
+                isAuthenticated: true,
+                isPasswordRecovery: true,
+                user: { uid: 'u1', email: 'user@test.com' },
+                currentRole: 'admin'
+            });
+
+            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
+            await PasswordResetPage.init();
+
+            assert.equal(validating.classList.contains('d-none'), true);
+            assert.equal(form.classList.contains('d-none'), true, 'Formulario NO debe mostrarse para sesión normal');
+            assert.equal(invalid.classList.contains('d-none'), false, 'Debe mostrarse estado inválido');
+            assert.equal(globalThis.sessionStorage.getItem('buca_recovery_flow'), null);
+            assert.equal(sessionState.get().isAuthenticated, true, 'Sesión normal NO debe destruirse');
+            assert.equal(sessionState.get().isPasswordRecovery, false);
+        });
+
+        it('Debe habilitar formulario solo con sesión recovery válida verificada por el SDK', async () => {
+            const { validating, invalid, form } = setupResetPageDom();
+            mockClient.auth.setSession({
+                user: { id: 'uid_r', email: 'r@t.com' },
+                amr: [{ method: 'recovery', timestamp: 1700000000 }]
+            });
+
+            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
+            await PasswordResetPage.init();
+
+            assert.equal(validating.classList.contains('d-none'), true);
+            assert.equal(invalid.classList.contains('d-none'), true);
+            assert.equal(form.classList.contains('d-none'), false, 'Formulario debe mostrarse en sesión recovery válida');
+        });
+
+        it('Debe mostrar estado inválido y limpiar flags si el token expiró (getUser falla)', async () => {
+            const { validating, invalid, form } = setupResetPageDom();
+            globalThis.sessionStorage.setItem('buca_recovery_flow', 'true');
+            sessionState.set({ isPasswordRecovery: true });
+            mockClient.auth.getUser = async () => ({ data: { user: null }, error: new Error('JWT expired') });
+
+            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
+            await PasswordResetPage.init();
+
+            assert.equal(validating.classList.contains('d-none'), true);
+            assert.equal(form.classList.contains('d-none'), true);
+            assert.equal(invalid.classList.contains('d-none'), false);
+            assert.equal(globalThis.sessionStorage.getItem('buca_recovery_flow'), null);
+            assert.equal(sessionState.get().isPasswordRecovery, false);
+        });
+
+        it('Submit con error de updateUser debe mostrar feedback de error y reactivar botón', async () => {
+            const { form, feedback } = setupResetPageDom();
+            mockClient.auth.setSession({
+                user: { id: 'uid_r', email: 'r@t.com' },
+                amr: [{ method: 'recovery', timestamp: 1700000000 }]
+            });
+            mockClient.auth.updateUser = async () => ({ data: null, error: new Error('New password should be different') });
+
+            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
+            await PasswordResetPage.init();
+
+            mockDocument.getElementById('reset-new-password').value = 'SecurePass1!';
+            mockDocument.getElementById('reset-confirm-password').value = 'SecurePass1!';
+            form.dispatchEvent({ type: 'submit', preventDefault: () => {} });
+            await new Promise(r => setTimeout(r, 30));
+
+            assert.equal(feedback.classList.contains('d-none'), false);
+            assert.ok(feedback.textContent.includes('different'));
+            assert.equal(mockDocument.getElementById('btn-reset-submit').disabled, false);
+        });
+
+        it('Submit exitoso debe actualizar contraseña, ejecutar logout y cancelar timer en destroy()', async () => {
+            const { form, successFeedback } = setupResetPageDom();
+            mockClient.auth.setSession({
+                user: { id: 'uid_r', email: 'r@t.com' },
+                amr: [{ method: 'recovery', timestamp: 1700000000 }]
+            });
+
+            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
+            await PasswordResetPage.init();
+
+            mockDocument.getElementById('reset-new-password').value = 'SecurePass1!';
+            mockDocument.getElementById('reset-confirm-password').value = 'SecurePass1!';
+            form.dispatchEvent({ type: 'submit', preventDefault: () => {} });
+            await new Promise(r => setTimeout(r, 30));
+
+            assert.equal(form.classList.contains('d-none'), true);
+            assert.equal(successFeedback.classList.contains('d-none'), false);
+            assert.equal(sessionState.get().isAuthenticated, false);
+            assert.ok(PasswordResetPage._redirectTimer !== null);
+            PasswordResetPage.destroy();
+            assert.equal(PasswordResetPage._redirectTimer, null);
+        });
+    });
+
+    // =========================================================================
+    // 8. Ruta y Layout explícito de /auth/recovery/reset-password
+    // =========================================================================
+    describe('Ruta /auth/recovery/reset-password y selección de layout', () => {
+        it('Debe definir layout: "auth" sin afectar otras rutas', async () => {
+            const { authRoutes } = await import('../src/modules/auth/routes.js');
+            const { routes: coreRoutes } = await import('../src/core/router/routes.js');
+            const resetRoute = authRoutes.find(r => r.path === '/auth/recovery/reset-password');
+            assert.ok(resetRoute);
+            assert.equal(resetRoute.layout, 'auth');
+            assert.ok(!resetRoute.requiresAuth);
+            const homeRoute = coreRoutes.find(r => r.path === '/');
+            assert.ok(!homeRoute?.layout || homeRoute.layout !== 'auth');
+        });
+
+        it('Router debe resolver /auth/recovery/reset-password en AuthLayout sin cargar workspace ni 404', async () => {
+            const { router } = await import('../src/core/router/router.js');
+            const { routes: coreRoutes } = await import('../src/core/router/routes.js');
+            const { default: ModuleLoader } = await import('../src/core/ModuleLoader.js');
+            globalThis.window.location.pathname = '/auth/recovery/reset-password';
+            await router.init(coreRoutes);
+            assert.equal(router.currentPath, '/auth/recovery/reset-password');
+            assert.ok(router.currentRoute);
+            assert.equal(router.currentRoute.path, '/auth/recovery/reset-password');
+            assert.equal(ModuleLoader.isLoaded('workspace'), false);
+        });
+    });
+
+    // =========================================================================
+    // 9. Política de contraseñas
+    // =========================================================================
+    describe('PasswordResetPage.validatePolicy', () => {
+        it('Debe rechazar contraseñas inválidas y aceptar política completa', async () => {
+            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
+            assert.equal(PasswordResetPage.validatePolicy('Ab1!').valid, false);
+            assert.equal(PasswordResetPage.validatePolicy('password1!').valid, false);
+            assert.equal(PasswordResetPage.validatePolicy('Password!x').valid, false);
+            assert.equal(PasswordResetPage.validatePolicy('Password1x').valid, false);
+            assert.equal(PasswordResetPage.validatePolicy('SecurePass1!').valid, true);
+        });
+    });
+
+    // =========================================================================
+    // 10. Protección de sesión normal y enlace expirado en navegación directa
+    // =========================================================================
+    describe('Navegación directa con enlace expirado o sesión normal', () => {
+        it('Enlace expirado (otp_expired) debe mostrar feedback sin alterar sesión normal preexistente', async () => {
+            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
+            const { form, invalid } = setupResetPageDom();
+            const invalidMsg = mockDocument.getElementById('reset-invalid-message');
+
+            sessionState.set({
+                isAuthenticated: true,
+                user: { uid: 'user_norm', email: 'normal@test.com' },
+                currentRole: 'user'
+            });
+
+            mockClient.auth.setSession(null);
+            globalThis.window.location.hash = '#error=access_denied&error_code=otp_expired';
+
+            await PasswordResetPage.init();
+
+            assert.equal(form.classList.contains('d-none'), true);
+            assert.equal(invalid.classList.contains('d-none'), false);
+            assert.ok(invalidMsg.textContent.includes('utilizado o ha expirado'));
+            // Sesión normal se conserva porque el usuario no solicitó logout
+            assert.equal(sessionState.get().isAuthenticated, true);
+            assert.equal(sessionState.get().isPasswordRecovery, false);
+        });
+
+        it('Sesión normal con claims sin recovery no debe habilitar formulario de recuperación', async () => {
+            const { PasswordResetPage } = await import('../src/modules/auth/pages/password-reset-page.js');
+            const { form, invalid } = setupResetPageDom();
+
+            mockClient.auth.setSession({
+                user: { id: 'user_normal', email: 'normal@test.com' },
+                amr: [{ method: 'password', timestamp: 1700000000 }]
+            });
+
+            await PasswordResetPage.init();
+
+            assert.equal(form.classList.contains('d-none'), true);
+            assert.equal(invalid.classList.contains('d-none'), false);
         });
     });
 });

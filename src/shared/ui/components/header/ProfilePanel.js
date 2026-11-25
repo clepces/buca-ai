@@ -6,7 +6,7 @@ import { sessionState } from '@/core/state/session.js';
 import { escapeHTML } from '@/shared/utils/security.js';
 
 export const ProfilePanel = {
-    render: (tierCode = 'L1') => {
+    render: (_tierCode = 'L1') => {
         const user = sessionState.get().user || {};
         const email = user.email || '';
         const displayName = user.displayName || user.username || (email ? email.split('@')[0] : 'Usuario');

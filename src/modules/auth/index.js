@@ -17,6 +17,8 @@ import { getSupabase } from '@/core/config/supabase.js';
 import { Logger } from '@/shared/utils/logger.js';
 
 export const AuthModule = {
+    _authSubscription: null,
+
     /**
      * Inicializa los listeners del módulo.
      */
@@ -27,9 +29,13 @@ export const AuthModule = {
         }
         this.setupListeners();
 
-        // Escuchar cambios de autenticación nativos de Supabase
+        // Escuchar cambios de autenticación nativos de Supabase (sin duplicar suscripciones)
         try {
-            SupabaseProvider.onAuthStateChange(async (_event, session) => {
+            if (this._authSubscription && typeof this._authSubscription.unsubscribe === 'function') {
+                this._authSubscription.unsubscribe();
+                this._authSubscription = null;
+            }
+            this._authSubscription = SupabaseProvider.onAuthStateChange(async (_event, session) => {
                 if (_event === 'PASSWORD_RECOVERY') {
                     Logger.info('AuthModule', 'Evento PASSWORD_RECOVERY detectado. Aislando sesión de recuperación.');
                     try {
@@ -49,8 +55,32 @@ export const AuthModule = {
                     return;
                 }
 
+                const isRecoveryFlow = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('buca_recovery_flow') === 'true')
+                    || Boolean(sessionState.get().isPasswordRecovery);
+
+                // Procesar SIGNED_OUT o sesión nula antes del aislamiento para garantizar limpieza completa
+                if (!session || !session.user || _event === 'SIGNED_OUT') {
+                    const currentSession = sessionState.get();
+                    if (currentSession.isAuthenticated || currentSession.isPasswordRecovery || isRecoveryFlow) {
+                        sessionState.set({
+                            isAuthenticated: false,
+                            mfaPending: false,
+                            isAAL2Verified: false,
+                            isPasswordRecovery: false,
+                            user: null,
+                            currentRole: 'guest'
+                        });
+                        try {
+                            if (typeof sessionStorage !== 'undefined') {
+                                sessionStorage.removeItem('buca_recovery_flow');
+                            }
+                        } catch { /* ignore */ }
+                        Logger.info('AuthModule', 'Sesión cerrada o invalidada en Supabase.');
+                    }
+                    return;
+                }
+
                 // Aislar eventos regulares si el flujo de recuperación está activo en la pestaña
-                const isRecoveryFlow = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('buca_recovery_flow') === 'true';
                 if (isRecoveryFlow) {
                     Logger.debug('AuthModule', `Aislando evento [${_event}] mientras el flujo de recuperación esté activo.`);
                     return;
@@ -129,24 +159,6 @@ export const AuthModule = {
                         currentRole: role
                     });
                     Logger.info('AuthModule', `Sesión sincronizada [${_event || 'SYNC'}]: ${user.email}`);
-                } else {
-                    const currentSession = sessionState.get();
-                    if (currentSession.isAuthenticated || currentSession.isPasswordRecovery) {
-                        sessionState.set({
-                            isAuthenticated: false,
-                            mfaPending: false,
-                            isAAL2Verified: false,
-                            isPasswordRecovery: false,
-                            user: null,
-                            currentRole: 'guest'
-                        });
-                        try {
-                            if (typeof sessionStorage !== 'undefined') {
-                                sessionStorage.removeItem('buca_recovery_flow');
-                            }
-                        } catch { /* ignore */ }
-                        Logger.info('AuthModule', 'Sesión cerrada o invalidada en Supabase.');
-                    }
                 }
             });
         } catch (err) {

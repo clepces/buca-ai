@@ -34,7 +34,7 @@ import { $onWindow, setGlobal, getGlobal, safeReload } from '@/core/utils/system
             try {
                 await kernel.boot();
             } catch (err) {
-                Logger.critical('Bootstrap', 'Fallo crítico durante el arranque:', err);
+                Logger.critical({ layer: 'KERNEL', role: 'FN', target: 'bootstrap', icon: '🚨', message: 'Fallo crítico durante el arranque', data: err });
                 $addClass(document.body, 'app-ready');
                 if (kernel && typeof kernel.hideSplash === 'function') {
                     kernel.hideSplash();
@@ -69,12 +69,12 @@ import { $onWindow, setGlobal, getGlobal, safeReload } from '@/core/utils/system
                     kernel.destroy();
                 }
             } catch (e) {
-                Logger.warn('Bootstrap', 'Limpieza al cerrar ventana:', e);
+                Logger.warn({ layer: 'KERNEL', role: 'FN', target: 'bootstrap', icon: '⚠️', message: 'Error en limpieza al cerrar ventana', data: e });
             }
         }, { once: true });
 
     } catch (error) {
-        Logger.critical('Bootstrap', 'Error no controlado en bootstrap:', error);
+        Logger.critical({ layer: 'KERNEL', role: 'FN', target: 'bootstrap', icon: '🚨', message: 'Error no controlado en bootstrap', data: error });
     }
 })();
 
@@ -87,23 +87,23 @@ function _setupNetworkAndPWA() {
     $onWindow('load', () => {
         navigator.serviceWorker.register('/sw.js')
             .then(reg => {
-                Logger.info('PWA', `Controlador de servicio activo: ${reg.scope}`);
+                Logger.info({ layer: 'KERNEL', role: 'EVENT', target: 'ServiceWorker', icon: '🔌', message: `Controlador activo (${reg.scope})` });
             })
             .catch(err => {
-                Logger.warn('PWA', 'El registro del Service Worker falló:', err);
+                Logger.warn({ layer: 'KERNEL', role: 'EVENT', target: 'ServiceWorker', icon: '⚠️', message: 'El registro del Service Worker falló', data: err });
             });
     }, { once: true });
 
     const handleOnline = async () => {
         const { uiState } = await import('@/core/state/ui.js');
         uiState.set({ isOnline: true });
-        Logger.info('Network', 'Conectividad reestablecida (Online)');
+        Logger.info({ layer: 'KERNEL', role: 'EVENT', target: 'Network', icon: '✅', message: 'Conectividad reestablecida (Online)' });
     };
 
     const handleOffline = async () => {
         const { uiState } = await import('@/core/state/ui.js');
         uiState.set({ isOnline: false });
-        Logger.warn('Network', 'Conexión perdida (Offline)');
+        Logger.warn({ layer: 'KERNEL', role: 'EVENT', target: 'Network', icon: '⚠️', message: 'Conexión perdida (Offline)' });
     };
 
     $onWindow('online', handleOnline);

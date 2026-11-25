@@ -196,19 +196,44 @@ export class MockTableQueryBuilder {
 export function createMockSupabaseClient() {
     const memoryStore = new Map();
     const authState = {
-        _session: { user: { id: 'mock_uid_1', email: 'tester@buca.com', platform_role: 'super_admin' } },
+        _session: {
+            user: { id: 'mock_uid_1', email: 'tester@buca.com', platform_role: 'super_admin' },
+            amr: [{ method: 'password', timestamp: 1700000000 }]
+        },
+        _lastSignOutCalls: [],
         setSession(s) { this._session = s; },
         async getSession() {
             return { data: { session: this._session }, error: null };
         },
         async getUser() {
-            return { data: { user: this._session?.user || null }, error: null };
-        },
-        async signInWithPassword({ email }) {
-            this._session = { user: { id: 'mock_uid_1', email, platform_role: 'super_admin' } };
+            if (!this._session?.user) {
+                return { data: { user: null }, error: new Error('Auth session missing!') };
+            }
             return { data: { user: this._session.user }, error: null };
         },
-        async signOut() {
+        async getClaims() {
+            if (!this._session?.user) {
+                return { data: null, error: new Error('Auth session missing!') };
+            }
+            return {
+                data: {
+                    claims: {
+                        sub: this._session.user.id,
+                        amr: this._session.amr || [{ method: 'password', timestamp: 1700000000 }]
+                    }
+                },
+                error: null
+            };
+        },
+        async signInWithPassword({ email }) {
+            this._session = {
+                user: { id: 'mock_uid_1', email, platform_role: 'super_admin' },
+                amr: [{ method: 'password', timestamp: Math.floor(Date.now() / 1000) }]
+            };
+            return { data: { user: this._session.user }, error: null };
+        },
+        async signOut(options = {}) {
+            this._lastSignOutCalls.push(options);
             this._session = null;
             return { error: null };
         },
@@ -226,13 +251,14 @@ export function createMockSupabaseClient() {
         },
         async updateUser({ password }) {
             if (!this._session) {
-                return { data: null, error: { message: 'Auth session missing!' } };
+                return { data: null, error: new Error('Auth session missing!') };
             }
             return { data: { user: this._session.user }, error: null };
         },
         mfa: {
             async getAuthenticatorAssuranceLevel() {
-                return { data: { currentLevel: 'aal1', nextLevel: 'aal1' }, error: null };
+                const amr = authState._session?.amr || [{ method: 'password', timestamp: 1700000000 }];
+                return { data: { currentLevel: 'aal1', nextLevel: 'aal1', currentAuthenticationMethods: amr }, error: null };
             },
             async listFactors() {
                 return { data: { totp: [], all: [] }, error: null };

@@ -4,7 +4,7 @@
  * Panel unificado para configurar cuenta y aplicación según roles
  * (super_admin, admin, owner).
  */
-import { $id, $show, $hide } from '@/shared/utils/dom.js';
+import { $show, $hide } from '@/shared/utils/dom.js';
 import { safeReload } from '@/core/utils/system-helper.js';
 
 export const SettingsPage = {

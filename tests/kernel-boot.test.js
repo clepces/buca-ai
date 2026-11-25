@@ -220,7 +220,7 @@ describe('main.js Error Screen UI & Telemetry Contract', () => {
 
         // 1. Debe registrar el detalle con Logger.critical
         assert.ok(
-            mainSrc.includes("Logger.critical('Bootstrap', 'Fallo crítico durante el arranque:', err)"),
+            mainSrc.includes("Logger.critical({ layer: 'KERNEL', role: 'FN', target: 'bootstrap', icon: '🚨', message: 'Fallo crítico durante el arranque', data: err })"),
             'main.js debe registrar el error completo en Logger.critical'
         );
 

@@ -37,7 +37,7 @@ export const NotificationService = {
         this._epoch++;
         const currentEpoch = this._epoch;
 
-        Logger.info('NotificationService', 'Initializing Real-Time Sync (Supabase)...');
+        Logger.info({ layer: 'SERVICE', role: 'CLASS', target: 'Notification', icon: '🔄', message: 'Sincronización en tiempo real iniciada (Supabase)' });
 
         this._cleanups.push(
             eventBus.on('notifications:push', (data) => this.addNotification(data)),
@@ -77,7 +77,7 @@ export const NotificationService = {
             if (!this._initialized || this._epoch !== epoch) return;
 
             if (error) {
-                Logger.warn('NotificationService', 'Advertencia cargando notificaciones:', error.message);
+                Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'Notification', icon: '⚠️', message: 'Advertencia cargando notificaciones', data: error.message });
                 return;
             }
 
@@ -96,7 +96,7 @@ export const NotificationService = {
             }
         } catch (err) {
             if (!this._initialized || this._epoch !== epoch) return;
-            Logger.warn('NotificationService', 'Error al conectar con Supabase:', err.message);
+            Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'Notification', icon: '⚠️', message: 'Error al conectar con Supabase', data: err.message });
         }
     },
 
@@ -158,7 +158,7 @@ export const NotificationService = {
                 newNotif.id = data.id; // Asignar el UUID real de PostgreSQL
             }
         } catch (err) {
-            Logger.warn('NotificationService', 'Persistencia remota en cola local:', err.message);
+            Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'Notification', icon: '⚠️', message: 'Persistencia remota en cola local', data: err.message });
         }
     },
 
@@ -190,10 +190,10 @@ export const NotificationService = {
                         p_notification_id: String(notif.id)
                     });
                     if (error) {
-                        Logger.warn('NotificationService', 'Advertencia en RPC mark_notification_read:', error.message);
+                        Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'Notification', icon: '⚠️', message: 'Advertencia en RPC mark_notification_read', data: error.message });
                     }
                 } catch (e) {
-                    Logger.warn('NotificationService', 'Error llamando mark_notification_read en Supabase:', e.message);
+                    Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'Notification', icon: '⚠️', message: 'Error llamando mark_notification_read en Supabase', data: e.message });
                 }
             }
         }
@@ -214,7 +214,7 @@ export const NotificationService = {
     },
 
     async sendOTP(email, name, otpCode) {
-        Logger.info('NotificationService', `Sending OTP to ${email}`);
+        Logger.info({ layer: 'SERVICE', role: 'CLASS', target: 'Notification', icon: '🔌', message: `Enviando código OTP a ${email}` });
         try {
             await this.sendEmail({
                 to_email: email,
@@ -223,7 +223,7 @@ export const NotificationService = {
                 message: `Su código de verificación BUSA-I es: ${otpCode}`
             });
         } catch (e) {
-            Logger.warn('NotificationService', 'Email delivery notice:', e?.message || e);
+            Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'Notification', icon: '⚠️', message: 'Aviso en entrega de correo OTP', data: e?.message || e });
         }
         eventBus.emit('notifications:push', {
             title: 'Código OTP Generado',

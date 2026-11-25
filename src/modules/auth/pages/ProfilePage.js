@@ -4,7 +4,7 @@
  * Visualización y edición de datos del usuario en sesión.
  * Utiliza el estilo Corporate Hybrid Glass.
  */
-import { $id, $on, $text, $attr, $hide, $show, $className, $mount } from '@/shared/utils/dom.js';
+import { $id, $on, $text, $attr, $hide, $show, $className } from '@/shared/utils/dom.js';
 import { setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
 import { safeReload } from '@/core/utils/system-helper.js';
 import { Logger } from '@/shared/utils/logger.js';

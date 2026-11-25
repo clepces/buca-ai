@@ -22,6 +22,7 @@ import { DOMEffectsApplier } from './services/DOMEffectsApplier.js';
 import { PanicModeManager } from './services/PanicModeManager.js';
 import { $$, $on, $off } from '@/shared/utils/dom.js';
 import { $onWindow, $offWindow } from '@/core/utils/system-helper.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export class GraphicsEngine {
     static #instance = null;
@@ -121,7 +122,7 @@ export class GraphicsEngine {
     }
 
     async init() {
-        console.log('%c 🚀 BUCA NEURAL ENGINE: Initializing Modular Phase 4... ', 'background: #2563eb; color: #fff; font-weight: bold;');
+        Logger.info({ layer: 'ENGINE', role: 'CLASS', target: 'BNE', icon: '🚀', message: 'Inicializando motor neural (Fase Modular 4)' });
 
         const savedConfig = PerformanceStorage.get();
         if (savedConfig?.profile) {
