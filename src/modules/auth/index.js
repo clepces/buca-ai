@@ -213,6 +213,14 @@ export const AuthModule = {
         } catch (error) {
             Logger.error('AuthModule', 'Error en login:', error);
         }
+    },
+
+    async checkSession() {
+        return AuthService.checkSession();
+    },
+
+    async logout() {
+        return AuthService.logout();
     }
 };
 

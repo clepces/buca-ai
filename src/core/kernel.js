@@ -78,9 +78,8 @@ class BucaKernel {
             updateStatus(50, 'Verificando Credenciales & Estado de Sesión...');
 
             // 3. Auth-First Gate: Validar sesión de Supabase ANTES de pintar cualquier Layout
-            await ModuleLoader.load('auth');
-            const { AuthService } = await import('@/modules/auth/services/AuthService.js');
-            const sessionCheck = await AuthService.checkSession();
+            const authModule = await ModuleLoader.load('auth');
+            const sessionCheck = await authModule.checkSession();
             const isAuthenticated = Boolean(sessionCheck?.isAuthenticated);
 
             let initialPath = getPath();

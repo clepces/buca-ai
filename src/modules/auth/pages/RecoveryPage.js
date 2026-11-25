@@ -4,6 +4,7 @@
 import { $id, $on, $className, $addClass, $removeClass, $hide, $show } from '@/shared/utils/dom.js';
 import { setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
 import { Logger } from '@/shared/utils/logger.js';
+import { AuthService } from '../services/AuthService.js';
 
 export const RecoveryPage = {
     _cooldownTimer: null,
@@ -48,7 +49,6 @@ export const RecoveryPage = {
 
     init() {
         this.destroy();
-        import('../services/AuthService.js').then(({ AuthService }) => {
             const form = $id('recovery-form');
             const emailInput = $id('recovery-email');
             const btn = $id('btn-recovery-submit');
@@ -119,7 +119,6 @@ export const RecoveryPage = {
                     resetSubmitButton();
                 }
             });
-        });
     },
 
     destroy() {

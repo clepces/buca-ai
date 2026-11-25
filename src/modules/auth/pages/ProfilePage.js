@@ -5,6 +5,7 @@
  * Utiliza el estilo Corporate Hybrid Glass.
  */
 import { $id, $on, $text, $attr, $hide, $show, $className } from '@/shared/utils/dom.js';
+import { AuthService } from '../services/AuthService.js';
 import { setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
 import { safeReload } from '@/core/utils/system-helper.js';
 import { Logger } from '@/shared/utils/logger.js';
@@ -158,7 +159,6 @@ export const ProfilePage = {
             const btnLogout = $id('btn-logout');
             if (btnLogout) {
                 $on(btnLogout, 'click', async () => {
-                    const { AuthService } = await import('../services/AuthService.js');
                     await AuthService.logout();
                     safeReload('/auth/login');
                 });

@@ -1,5 +1,6 @@
 import LoginForm from '../components/LoginForm.js';
 import PINForm from '../components/PINForm.js';
+import { AuthService } from '../services/AuthService.js';
 import { router } from '@/core/router/router.js';
 import { sessionState } from '@/core/state/session.js';
 import { $id, $mount, $show, $hide, $text, $styleVar, $addClass, setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
@@ -99,7 +100,6 @@ export const LoginPage = {
                     }
 
                     try {
-                        const { AuthService } = await import('../services/AuthService.js');
                         let currentFactorId = factorId;
 
                         if (!currentFactorId) {

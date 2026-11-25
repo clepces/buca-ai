@@ -13,6 +13,7 @@ import { Logger } from '@/shared/utils/logger.js';
 import { sessionState } from '@/core/state/session.js';
 import { safeReload } from '@/core/utils/system-helper.js';
 import { ThemeManager } from '@/core/services/ThemeManager.js';
+import ModuleLoader from '@/core/ModuleLoader.js';
 
 export const ActionDispatcher = {
     _initialized: false,
@@ -130,8 +131,8 @@ export const ActionDispatcher = {
                     body: '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div><p class="small text-muted mb-0">Desconectando de forma segura...</p></div>'
                 });
                 try {
-                    const { AuthService } = await import('@/modules/auth/services/AuthService.js');
-                    await AuthService.logout();
+                    const authModule = await ModuleLoader.load('auth');
+                    await authModule.logout();
                 } catch (err) {
                     Logger.error('ActionDispatcher', 'Logout error:', err);
                     try { localStorage.clear(); sessionStorage.clear(); } catch (e) {

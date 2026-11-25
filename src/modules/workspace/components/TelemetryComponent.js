@@ -5,6 +5,7 @@
  * =========================================================================
  */
 import { eventBus } from '@/core/eventBus/index.js';
+import { ModalService } from '@/shared/ui/services/ModalService.js';
 import { $id, $on, $mount } from '@/shared/utils/dom.js';
 
 export const TelemetryComponent = {
@@ -152,10 +153,7 @@ export const TelemetryComponent = {
                 if (metric.id.startsWith('currency')) {
                     eventBus.emit('ui:open_rate');
                 } else {
-                    const [{ ModalTemplates }, { ModalService }] = await Promise.all([
-                        import('@/shared/ui/templates/ModalTemplates.js'),
-                        import('@/shared/ui/services/ModalService.js')
-                    ]);
+                    const { ModalTemplates } = await import('@/shared/ui/templates/ModalTemplates.js');
                     ModalService.showModal({
                         size: 'md',
                         header: ModalTemplates.buildHeader({

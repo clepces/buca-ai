@@ -2,6 +2,7 @@
  * LoginForm - Componente de Entrada de Credenciales
  */
 import { $id, $mount, $on, $show, $hide, $val, setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
+import { AuthService } from '../services/AuthService.js';
 
 export const LoginForm = {
     render() {
@@ -53,9 +54,7 @@ export const LoginForm = {
     },
 
     init(onSubmit) {
-        // Carga dinámica del AuthService para no inflar el bundle inicial si no se usa
-        import('../services/AuthService.js').then(({ AuthService }) => {
-            const form = $id('login-form');
+        const form = $id('login-form');
             const togglePwd = $id('toggle-password');
             const emailInput = $id('email');
             const pwdInput = $id('password');
@@ -118,7 +117,6 @@ export const LoginForm = {
                     }
                 });
             }
-        });
     },
 
     showFeedback(message, type = 'error') {

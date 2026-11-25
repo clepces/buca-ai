@@ -4,6 +4,7 @@
 import { router } from '@/core/router/router.js';
 import { $id, $on, $mount, $className, $hide, $show, $val } from '@/shared/utils/dom.js';
 import { setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
+import { AuthService } from '../services/AuthService.js';
 
 export const RegisterPage = {
     render() {
@@ -59,7 +60,6 @@ export const RegisterPage = {
     },
 
     init() {
-        import('../services/AuthService.js').then(({ AuthService }) => {
             const form = $id('register-form');
             const togglePwd = $id('reg-toggle-password');
             const pwdInput = $id('reg-password');
@@ -106,7 +106,6 @@ export const RegisterPage = {
                     }
                 });
             }
-        });
     }
 };
 export default RegisterPage;

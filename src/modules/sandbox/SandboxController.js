@@ -3,10 +3,10 @@
  */
 
 import { ExperimentalDock } from './components/ExperimentalDock.js';
+import { ModalService } from '@/shared/ui/services/ModalService.js';
 
 export class SandboxController {
     static async show() {
-        const { ModalService } = await import('@/shared/ui/services/ModalService.js');
         const dock = new ExperimentalDock();
 
         ModalService.showModal({
