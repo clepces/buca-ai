@@ -8,34 +8,50 @@
 import { getSupabase, supabase } from '../config/supabase.js';
 import { sessionState } from '../state/session.js';
 import { eventBus } from '../eventBus/index.js';
+import { Logger } from '../../shared/utils/logger.js';
 
 export const ActivityLogService = {
+    _initialized: false,
+    _cleanups: [],
+
     _getClient() {
         return getSupabase() || supabase;
     },
 
     init() {
-        console.log('[ActivityLogService] Inicializando auditoría inmutable en Supabase...');
+        if (this._initialized) return;
+        this._initialized = true;
+
+        Logger.info({ layer: 'SERVICE', role: 'CLASS', target: 'ActivityLog', icon: '🛡️', message: 'Auditoría inmutable inicializada (Supabase)' });
 
         // Escuchar eventos sensibles para auto-registro
-        eventBus.on('buca:rate_change', (data) => {
-            this.log({
-                action: 'UPDATE_RATE',
-                title: 'Tasa cambiaria actualizada',
-                description: `Tasa modificada a Bs. ${data?.rate}`,
-                category: 'operaciones',
-                details: data
-            });
-        });
+        this._cleanups.push(
+            eventBus.on('buca:rate_change', (data) => {
+                this.log({
+                    action: 'UPDATE_RATE',
+                    title: 'Tasa cambiaria actualizada',
+                    description: `Tasa modificada a Bs. ${data?.rate}`,
+                    category: 'operaciones',
+                    details: data
+                });
+            }),
 
-        eventBus.on('profile:mfa-enrolled', () => {
-            this.log({
-                action: 'MFA_ENROLLED',
-                title: 'Factor de autenticación MFA TOTP activado',
-                description: 'El usuario enroló exitosamente su dispositivo con Google Authenticator.',
-                category: 'seguridad'
-            });
-        });
+            eventBus.on('profile:mfa-enrolled', () => {
+                this.log({
+                    action: 'MFA_ENROLLED',
+                    title: 'Factor de autenticación MFA TOTP activado',
+                    description: 'El usuario enroló exitosamente su dispositivo con Google Authenticator.',
+                    category: 'seguridad'
+                });
+            })
+        );
+    },
+
+    destroy() {
+        while (this._cleanups.length > 0) {
+            try { this._cleanups.pop()(); } catch { /* absorb */ }
+        }
+        this._initialized = false;
     },
 
     /**
@@ -65,14 +81,14 @@ export const ActivityLogService = {
                 .single();
 
             if (error) {
-                console.warn('[ActivityLogService] Advertencia al persistir log:', error.message);
+                Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'ActivityLog', icon: '⚠️', message: 'Advertencia al persistir log', data: error.message });
                 return null;
             }
 
             eventBus.emit('activity:logged', data || payload);
             return data || payload;
         } catch (err) {
-            console.warn('[ActivityLogService] Error al registrar actividad:', err.message);
+            Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'ActivityLog', icon: '⚠️', message: 'Error al registrar actividad', data: err.message });
             return null;
         }
     },
@@ -95,12 +111,12 @@ export const ActivityLogService = {
 
             const { data, error } = await query;
             if (error) {
-                console.warn('[ActivityLogService] Error al consultar actividades:', error.message);
+                Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'ActivityLog', icon: '⚠️', message: 'Error al consultar actividades', data: error.message });
                 return [];
             }
             return data || [];
         } catch (err) {
-            console.warn('[ActivityLogService] Error recuperando actividades:', err.message);
+            Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'ActivityLog', icon: '⚠️', message: 'Error recuperando actividades', data: err.message });
             return [];
         }
     }

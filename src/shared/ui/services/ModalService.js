@@ -14,6 +14,7 @@ export class ModalService {
     static isInitialized = false;
     static _backdropBound = false;
     static _currentOnClose = null;
+    static _cleanups = [];
 
     /**
      * Inicializa listeners globales de modales.
@@ -24,28 +25,36 @@ export class ModalService {
         Logger.info('ModalService', 'Servicio global de modales inicializado.');
 
         // Escuchar cierre global de modales
-        eventBus.on('ui:close_modal', () => this.hideModal());
+        this._cleanups.push(eventBus.on('ui:close_modal', () => this.hideModal()));
 
         // Manejar cierre con clic en el fondo oscuro
         const modalBase = $id('modal-base');
         if (modalBase && !this._backdropBound) {
-            $on(modalBase, 'click', (e) => {
+            this._cleanups.push($on(modalBase, 'click', (e) => {
                 if (e.target === modalBase) {
                     this.hideModal();
                 }
-            });
+            }));
             this._backdropBound = true;
         }
 
         // Manejar cierre con tecla Escape
-        $on(document, 'keydown', (e) => {
+        this._cleanups.push($on(document, 'keydown', (e) => {
             if (e.key === 'Escape') {
                 const base = $id('modal-base');
                 if (base && base.classList.contains('active')) {
                     this.hideModal();
                 }
             }
-        });
+        }));
+    }
+
+    static destroy() {
+        while (this._cleanups.length > 0) {
+            try { this._cleanups.pop()(); } catch { /* absorb */ }
+        }
+        this.isInitialized = false;
+        this._backdropBound = false;
     }
 
     /**
@@ -67,6 +76,17 @@ export class ModalService {
         if (!modalBase || !modalContainer) {
             Logger.error('ModalService', 'No se encontró la estructura base del modal (#modal-base).');
             return;
+        }
+
+        // Si ya hay un modal abierto con callback de cierre, invocarlo antes de reemplazar
+        if (typeof this._currentOnClose === 'function') {
+            const prevClose = this._currentOnClose;
+            this._currentOnClose = null;
+            try {
+                prevClose();
+            } catch (err) {
+                Logger.warn('ModalService', 'Error en onClose previo al reemplazar modal:', err);
+            }
         }
 
         // 1. Limpiar clases de tamaño previas y aplicar la nueva

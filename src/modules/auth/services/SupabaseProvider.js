@@ -7,6 +7,7 @@
  */
 import { getSupabase, supabase } from '@/core/config/supabase.js';
 import { Logger } from '@/shared/utils/logger.js';
+import { getValidatedOrigin } from '@/core/utils/system-helper.js';
 
 export const SupabaseProvider = {
     _getClient() {
@@ -63,24 +64,59 @@ export const SupabaseProvider = {
     },
 
     /**
-     * Envía correo de recuperación de contraseña.
+     * Envía correo de recuperación de contraseña con URL de retorno validada.
      * @param {string} email 
      */
     async recoverPassword(email) {
-        Logger.info('SupabaseProvider', 'Enviando recuperación...');
+        Logger.info('SupabaseProvider', 'Enviando solicitud de recuperación...');
         const client = this._getClient();
-        const { error } = await client.auth.resetPasswordForEmail(email);
-        if (error) throw error;
+        const origin = getValidatedOrigin();
+        const { error } = await client.auth.resetPasswordForEmail(email, {
+            redirectTo: `${origin}/auth/recovery/reset-password`
+        });
+        if (error) {
+            Logger.error('SupabaseProvider', 'Error en recuperación:', error.message);
+            throw error;
+        }
+        Logger.info('SupabaseProvider', 'Solicitud de recuperación procesada por el servidor (200 OK).');
         return true;
     },
 
     /**
-     * Cierra la sesión activa.
+     * Actualiza la contraseña del usuario únicamente en una sesión de recuperación verificada.
+     * @param {string} newPassword 
+     */
+    async updateUserPassword(newPassword) {
+        Logger.info('SupabaseProvider', 'Actualizando contraseña de usuario...');
+        const isRecovery = await this.isRecoverySession();
+        if (!isRecovery) {
+            throw new Error('Sesión de recuperación no válida o no verificada.');
+        }
+        const client = this._getClient();
+        const { data, error } = await client.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        return data;
+    },
+
+    /**
+     * Cierra la sesión activa. Si falla el cierre global, intenta limpieza local vía SDK.
+     * @returns {Promise<{ success: boolean, localCleared?: boolean, error?: string }>}
      */
     async logout() {
         const client = this._getClient();
         const { error } = await client.auth.signOut();
-        if (error) console.warn('[SupabaseProvider] Logout warning:', error.message);
+        if (error) {
+            Logger.warn('SupabaseProvider', `Logout warning: ${error.message}`);
+            let localCleared;
+            try {
+                const { error: localErr } = await client.auth.signOut({ scope: 'local' });
+                localCleared = !localErr;
+            } catch {
+                localCleared = false;
+            }
+            return { success: false, localCleared, error: error.message };
+        }
+        return { success: true, localCleared: true };
     },
 
     /**
@@ -108,6 +144,52 @@ export const SupabaseProvider = {
         const { data, error } = await client.auth.getUser();
         if (error) throw error;
         return data.user;
+    },
+
+    /**
+     * Verifica mediante claims del SDK si la sesión activa tiene origen PASSWORD_RECOVERY.
+     * Falla cerrado (false) ante cualquier error o ausencia de claim 'recovery'.
+     * @returns {Promise<boolean>}
+     */
+    async isRecoverySession() {
+        try {
+            const client = this._getClient();
+            if (!client?.auth) return false;
+
+            const session = await this.getSession();
+            if (!session?.user) return false;
+
+            const hasRecoveryMethod = (methods) =>
+                Array.isArray(methods) &&
+                methods.some((entry) => (typeof entry === 'string' ? entry === 'recovery' : entry?.method === 'recovery'));
+
+            if (typeof client.auth.getClaims === 'function') {
+                const { data, error } = await client.auth.getClaims();
+                Logger.debug('SupabaseProvider', 'isRecoverySession getClaims:', {
+                    error: error?.message || null,
+                    amr: data?.claims?.amr ?? null
+                });
+                if (!error && data?.claims?.amr !== undefined) {
+                    return hasRecoveryMethod(data.claims.amr);
+                }
+            }
+
+            if (typeof client.auth.mfa?.getAuthenticatorAssuranceLevel === 'function') {
+                const { data, error } = await client.auth.mfa.getAuthenticatorAssuranceLevel();
+                Logger.debug('SupabaseProvider', 'isRecoverySession AAL:', {
+                    error: error?.message || null,
+                    methods: data?.currentAuthenticationMethods ?? null
+                });
+                if (!error && Array.isArray(data?.currentAuthenticationMethods)) {
+                    return hasRecoveryMethod(data.currentAuthenticationMethods);
+                }
+            }
+
+            return false;
+        } catch (err) {
+            Logger.warn('SupabaseProvider', 'isRecoverySession exception:', err?.message || err);
+            return false;
+        }
     },
 
     // =========================================================================

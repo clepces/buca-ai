@@ -1,13 +1,29 @@
 import { eventBus } from '@/core/eventBus/index.js';
+import { Logger } from '../../shared/utils/logger.js';
 
 /**
  * SearchService - Orquestador de búsqueda global en BUCA AI
  */
 export const SearchService = {
     _registry: [],
+    _initialized: false,
+    _cleanups: [],
 
     init() {
-        eventBus.on('ui:global_search', ({ term }) => this.performSearch(term));
+        if (this._initialized) return;
+        this._initialized = true;
+
+        this._cleanups.push(
+            eventBus.on('ui:global_search', ({ term }) => this.performSearch(term))
+        );
+    },
+
+    destroy() {
+        while (this._cleanups.length > 0) {
+            try { this._cleanups.pop()(); } catch { /* absorb */ }
+        }
+        this._registry = [];
+        this._initialized = false;
     },
 
     /**
@@ -23,7 +39,7 @@ export const SearchService = {
     async performSearch(term) {
         if (!term || term.length < 3) return;
 
-        console.log(`[SearchService] Buscando: ${term}`);
+        Logger.info('SearchService', `Buscando: ${term}`);
 
         const results = [];
         for (const provider of this._registry) {
@@ -31,7 +47,7 @@ export const SearchService = {
                 const providerResults = await provider.search(term);
                 results.push(...providerResults.map(r => ({ ...r, source: provider.name })));
             } catch (err) {
-                console.error(`[SearchService] Error en proveedor ${provider.name}:`, err);
+                Logger.error('SearchService', `Error en proveedor ${provider.name}:`, err);
             }
         }
 

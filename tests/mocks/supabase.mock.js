@@ -96,30 +96,19 @@ export class MockTableQueryBuilder {
         const tableRows = this.store.get(this.tableName) || [];
         const sessionUser = this.auth?._session?.user || null;
 
-        // RLS Mock: profiles update - bloquear cambio de platform_role si no es super_admin
-        if (this.tableName === 'profiles' && this._pendingAction === 'update') {
-            if (this._actionPayload?.platform_role && sessionUser?.platform_role !== 'super_admin') {
-                return resolve({ data: null, error: { message: 'No está autorizado para modificar platform_role.' } });
-            }
+        // RLS Mocks
+        if (this.tableName === 'profiles' && this._pendingAction === 'update' && this._actionPayload?.platform_role && sessionUser?.platform_role !== 'super_admin') {
+            return resolve({ data: null, error: { message: 'No está autorizado para modificar platform_role.' } });
         }
-
-        // RLS Mock: profiles insert - bloquear autoasignación de platform_role si no es super_admin
         if (this.tableName === 'profiles' && this._pendingAction === 'insert') {
             const hasUnauthorizedRole = this._actionPayload.some(r => r.platform_role && r.platform_role !== 'user');
             if (hasUnauthorizedRole && sessionUser?.platform_role !== 'super_admin') {
                 return resolve({ data: null, error: { message: 'Violación RLS: platform_role en inserción debe ser user.' } });
             }
         }
-
-        // RLS Mock: activity_log insert - prohibir anónimos
-        if (this.tableName === 'activity_log' && this._pendingAction === 'insert') {
-            const hasAnonymous = this._actionPayload.some(r => !r.user_id || !sessionUser);
-            if (hasAnonymous) {
-                return resolve({ data: null, error: { message: 'Violación RLS: activity_log exige user_id autenticado.' } });
-            }
+        if (this.tableName === 'activity_log' && this._pendingAction === 'insert' && this._actionPayload.some(r => !r.user_id || !sessionUser)) {
+            return resolve({ data: null, error: { message: 'Violación RLS: activity_log exige user_id autenticado.' } });
         }
-
-        // RLS Mock: notifications update - revocado en favor de la RPC mark_notification_read
         if (this.tableName === 'notifications' && this._pendingAction === 'update') {
             return resolve({ data: null, error: { message: 'permission denied: direct UPDATE on notifications revoked. Use mark_notification_read RPC.' } });
         }
@@ -207,28 +196,69 @@ export class MockTableQueryBuilder {
 export function createMockSupabaseClient() {
     const memoryStore = new Map();
     const authState = {
-        _session: { user: { id: 'mock_uid_1', email: 'tester@buca.com', platform_role: 'super_admin' } },
+        _session: {
+            user: { id: 'mock_uid_1', email: 'tester@buca.com', platform_role: 'super_admin' },
+            amr: [{ method: 'password', timestamp: 1700000000 }]
+        },
+        _lastSignOutCalls: [],
         setSession(s) { this._session = s; },
         async getSession() {
             return { data: { session: this._session }, error: null };
         },
         async getUser() {
-            return { data: { user: this._session?.user || null }, error: null };
-        },
-        async signInWithPassword({ email }) {
-            this._session = { user: { id: 'mock_uid_1', email, platform_role: 'super_admin' } };
+            if (!this._session?.user) {
+                return { data: { user: null }, error: new Error('Auth session missing!') };
+            }
             return { data: { user: this._session.user }, error: null };
         },
-        async signOut() {
+        async getClaims() {
+            if (!this._session?.user) {
+                return { data: null, error: new Error('Auth session missing!') };
+            }
+            return {
+                data: {
+                    claims: {
+                        sub: this._session.user.id,
+                        amr: this._session.amr || [{ method: 'password', timestamp: 1700000000 }]
+                    }
+                },
+                error: null
+            };
+        },
+        async signInWithPassword({ email }) {
+            this._session = {
+                user: { id: 'mock_uid_1', email, platform_role: 'super_admin' },
+                amr: [{ method: 'password', timestamp: Math.floor(Date.now() / 1000) }]
+            };
+            return { data: { user: this._session.user }, error: null };
+        },
+        async signOut(options = {}) {
+            this._lastSignOutCalls.push(options);
             this._session = null;
             return { error: null };
         },
+        _listeners: [],
         onAuthStateChange(cb) {
-            return { data: { subscription: { unsubscribe: () => {} } } };
+            this._listeners.push(cb);
+            return { data: { subscription: { unsubscribe: () => { this._listeners = this._listeners.filter(l => l !== cb); } } } };
+        },
+        _triggerAuth(event, session) {
+            for (const cb of this._listeners) cb(event, session);
+        },
+        async resetPasswordForEmail(email, options = {}) {
+            this._lastResetRequest = { email, options };
+            return { data: {}, error: null };
+        },
+        async updateUser({ password }) {
+            if (!this._session) {
+                return { data: null, error: new Error('Auth session missing!') };
+            }
+            return { data: { user: this._session.user }, error: null };
         },
         mfa: {
             async getAuthenticatorAssuranceLevel() {
-                return { data: { currentLevel: 'aal1', nextLevel: 'aal1' }, error: null };
+                const amr = authState._session?.amr || [{ method: 'password', timestamp: 1700000000 }];
+                return { data: { currentLevel: 'aal1', nextLevel: 'aal1', currentAuthenticationMethods: amr }, error: null };
             },
             async listFactors() {
                 return { data: { totp: [], all: [] }, error: null };
@@ -250,6 +280,9 @@ export function createMockSupabaseClient() {
                     return { data: null, error: { message: 'Código TOTP incorrecto.' } };
                 }
                 return { data: { user: { id: 'mock_uid_1' } }, error: null };
+            },
+            async unenroll({ factorId }) {
+                return { data: { id: factorId }, error: null };
             }
         }
     };

@@ -4,6 +4,7 @@
  * @description Abstracción segura de ciclo de vida del entorno, listeners de ventana,
  * manipulación de historial y utilidades para evitar accesos descontrolados al objeto global window.
  */
+import { ENV } from '@/core/config/environment.js';
 
 /**
  * Comprueba si el código se ejecuta en un contexto de navegador válido.
@@ -153,3 +154,25 @@ export const getHash = () => (isBrowser() ? window.location.hash : '');
  * @returns {string}
  */
 export const getHostname = () => (isBrowser() ? window.location.hostname : '');
+
+/**
+ * Retorna el origen (origin) del navegador validado de forma estricta contra la lista permitida del entorno.
+ * Previene redirecciones arbitrarias o mezcla de orígenes entre desarrollo y producción.
+ * @returns {string}
+ * @throws {Error} Si el origen no coincide con el entorno esperado.
+ */
+export const getValidatedOrigin = () => {
+    const isProd = Boolean(ENV?.IS_PROD);
+    const expectedOrigin = isProd ? 'https://app.buca.com.ve' : 'http://localhost:3000';
+
+    if (!isBrowser()) {
+        return expectedOrigin;
+    }
+
+    const currentOrigin = window.location.origin;
+    if (currentOrigin !== expectedOrigin) {
+        throw new Error(`[Security] Origen no permitido para redirección de autenticación: "${currentOrigin}". Esperado: "${expectedOrigin}".`);
+    }
+
+    return currentOrigin;
+};

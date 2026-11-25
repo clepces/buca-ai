@@ -49,6 +49,15 @@ export class BaseState {
     }
 
     /**
+     * Restablece el estado completo preservando el contrato de notificaciones.
+     * @param {Object} initialState
+     */
+    reset(initialState = {}) {
+        this._state = { ...initialState };
+        this.notify();
+    }
+
+    /**
      * Se suscribe a los cambios de estado
      * @param {Function} handler 
      * @returns {Function} Función para cancelar la suscripción

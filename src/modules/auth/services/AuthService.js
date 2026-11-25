@@ -1,9 +1,6 @@
 /**
  * AuthService - Orquestador de Autenticación & MFA Nativo de Supabase
- * =========================================================================
- * Maneja login con signInWithPassword, registro, recuperación y TOTP MFA
- * oficial provisto por Supabase en capa gratuita.
- * =========================================================================
+ * Maneja login con signInWithPassword, registro, recuperación y TOTP MFA.
  */
 import { SupabaseProvider } from './SupabaseProvider.js';
 import { getSupabase } from '@/core/config/supabase.js';
@@ -12,16 +9,30 @@ import { sessionState } from '@/core/state/session.js';
 import { Logger } from '@/shared/utils/logger.js';
 
 export const AuthService = {
-    /**
-     * Valida de forma temprana si existe una sesión activa persistida en Supabase.
-     * @returns {Promise<{ isAuthenticated: boolean, user?: object, mfaPending?: boolean }>}
-     */
     async checkSession() {
         try {
             const session = await SupabaseProvider.getSession();
             if (!session || !session.user) {
                 sessionState.set({ isAuthenticated: false, mfaPending: false, user: null, currentRole: 'guest' });
                 return { isAuthenticated: false };
+            }
+
+            const isRecovery = await SupabaseProvider.isRecoverySession();
+            if (isRecovery) {
+                try {
+                    if (typeof sessionStorage !== 'undefined') {
+                        sessionStorage.setItem('buca_recovery_flow', 'true');
+                    }
+                } catch { /* ignore */ }
+                sessionState.set({
+                    isAuthenticated: false,
+                    mfaPending: false,
+                    isAAL2Verified: false,
+                    isPasswordRecovery: true,
+                    user: null,
+                    currentRole: 'guest'
+                });
+                return { isAuthenticated: false, isPasswordRecovery: true };
             }
 
             const user = session.user;
@@ -41,6 +52,7 @@ export const AuthService = {
             sessionState.set({
                 isAuthenticated: true,
                 mfaPending: false,
+                isAAL2Verified: false,
                 user: {
                     uid: user.id,
                     email: user.email,
@@ -56,19 +68,21 @@ export const AuthService = {
         }
     },
 
-    /**
-     * Intenta iniciar sesión con email y contraseña.
-     * @param {string} email 
-     * @param {string} password 
-     */
     async login(email, password) {
         Logger.info('AuthService', `Intentando login con Supabase para ${email}`);
-
         try {
             const data = await SupabaseProvider.login(email, password);
             const user = data.user;
 
-            // Verificar si el usuario tiene un factor MFA TOTP pendiente (AAL2)
+            try {
+                if (typeof sessionStorage !== 'undefined') {
+                    sessionStorage.removeItem('buca_recovery_flow');
+                }
+            } catch { /* ignore */ }
+            if (sessionState.get().isPasswordRecovery) {
+                sessionState.set({ isPasswordRecovery: false });
+            }
+
             try {
                 const aal = await SupabaseProvider.getAssuranceLevel();
                 if (aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
@@ -77,39 +91,19 @@ export const AuthService = {
                     const totpFactor = factors?.totp?.[0];
 
                     if (totpFactor) {
-                        sessionState.set({
-                            isAuthenticated: false,
-                            mfaPending: true,
-                            user: null,
-                            currentRole: 'guest'
-                        });
+                        sessionState.set({ isAuthenticated: false, mfaPending: true, user: null, currentRole: 'guest' });
                         eventBus.emit('auth:mfa-required', { factorId: totpFactor.id, user });
-                        return {
-                            success: false,
-                            mfaRequired: true,
-                            factorId: totpFactor.id,
-                            user
-                        };
+                        return { success: false, mfaRequired: true, factorId: totpFactor.id, user };
                     }
                 }
             } catch (mfaCheckErr) {
-                console.error('[AuthService] Fallo evaluando nivel AAL (Fail-Closed):', mfaCheckErr.message);
-                sessionState.set({
-                    isAuthenticated: false,
-                    mfaPending: true,
-                    user: null,
-                    currentRole: 'guest'
-                });
-                return {
-                    success: false,
-                    error: 'Error de verificación de seguridad AAL. Se requiere autenticación estricta.'
-                };
+                Logger.error('AuthService', 'Fallo evaluando nivel AAL (Fail-Closed):', mfaCheckErr.message);
+                sessionState.set({ isAuthenticated: false, mfaPending: true, user: null, currentRole: 'guest' });
+                return { success: false, error: 'Error de verificación de seguridad AAL. Se requiere autenticación estricta.' };
             }
 
-            // Cargar o sincronizar perfil en la tabla 'profiles'
             const profile = await this._loadOrCreateProfile(user);
             const role = profile?.platform_role || 'user';
-
             sessionState.set({
                 isAuthenticated: true,
                 user: {
@@ -124,22 +118,21 @@ export const AuthService = {
             eventBus.emit('auth:login-success', { user });
             return { success: true, user };
         } catch (error) {
-            console.error('[AuthService] Fallo en autenticación:', error.message);
+            Logger.error('AuthService', 'Fallo en autenticación:', error.message);
             eventBus.emit('auth:login-failed', { error });
             return { success: false, error: error.message };
         }
     },
 
-    /**
-     * Resuelve el desafío de segundo factor TOTP para completar la autenticación.
-     * @param {string} factorId 
-     * @param {string} code 
-     */
+    async _verifyFactorChallenge(factorId, code) {
+        const challenge = await SupabaseProvider.mfaChallenge(factorId);
+        const verifyResult = await SupabaseProvider.mfaVerify(factorId, challenge.id, code);
+        return { challengeId: challenge.id, verifyResult };
+    },
+
     async verifyMFAChallenge(factorId, code) {
         try {
-            const challenge = await SupabaseProvider.mfaChallenge(factorId);
-            const result = await SupabaseProvider.mfaVerify(factorId, challenge.id, code);
-
+            const { verifyResult } = await this._verifyFactorChallenge(factorId, code);
             const user = await SupabaseProvider.getUser();
             const profile = await this._loadOrCreateProfile(user);
             const role = profile?.platform_role || 'user';
@@ -147,6 +140,7 @@ export const AuthService = {
             sessionState.set({
                 isAuthenticated: true,
                 mfaPending: false,
+                isAAL2Verified: true,
                 user: {
                     uid: user.id,
                     email: user.email,
@@ -157,16 +151,13 @@ export const AuthService = {
             });
 
             eventBus.emit('auth:login-success', { user });
-            return { success: true, result };
+            return { success: true, result: verifyResult };
         } catch (error) {
-            console.error('[AuthService] Fallo verificando código MFA:', error.message);
+            Logger.error('AuthService', 'Fallo verificando código MFA:', error.message);
             return { success: false, error: error.message };
         }
     },
 
-    /**
-     * Inicia el enrolamiento de un factor TOTP para el usuario autenticado.
-     */
     async enrollTOTP() {
         try {
             const enrollment = await SupabaseProvider.mfaEnroll('BUCA Authenticator');
@@ -178,28 +169,26 @@ export const AuthService = {
                 uri: enrollment.totp.uri
             };
         } catch (error) {
-            console.error('[AuthService] Fallo enrolando TOTP:', error.message);
+            Logger.error('AuthService', 'Fallo enrolando TOTP:', error.message);
             return { success: false, error: error.message };
         }
     },
 
-    /**
-     * Confirma la activación del factor TOTP con el primer código de prueba.
-     * @param {string} factorId 
-     * @param {string} code 
-     */
     async confirmTOTPEnrollment(factorId, code) {
-        return await this.verifyMFAChallenge(factorId, code);
+        try {
+            const { verifyResult } = await this._verifyFactorChallenge(factorId, code);
+            sessionState.set({ isAAL2Verified: true, mfaPending: false });
+            return { success: true, result: verifyResult };
+        } catch (error) {
+            Logger.error('AuthService', 'Fallo confirmando enrolamiento TOTP:', error.message);
+            return { success: false, error: error.message };
+        }
     },
 
-    /**
-     * Registra un nuevo usuario en Supabase.
-     */
     async register(email, password, name) {
         try {
             const data = await SupabaseProvider.register(email, password, name);
             const user = data.user;
-
             if (user) {
                 await this._loadOrCreateProfile(user, name);
                 sessionState.set({
@@ -209,57 +198,87 @@ export const AuthService = {
                 });
                 eventBus.emit('auth:register-success', { user });
             }
-
             return { success: true, user };
         } catch (error) {
-            console.error('[AuthService] Fallo en registro:', error.message);
+            Logger.error('AuthService', 'Fallo en registro:', error.message);
             eventBus.emit('auth:register-failed', { error });
             return { success: false, error: error.message };
         }
     },
 
-    /**
-     * Envía correo de recuperación de contraseña.
-     */
     async recoverPassword(email) {
         try {
             await SupabaseProvider.recoverPassword(email);
+            Logger.info('AuthService', 'Flujo de recuperación despachado correctamente.');
             return { success: true };
         } catch (error) {
+            const rawMsg = typeof error?.message === 'string' ? error.message.trim() : '';
+            const safeError = (!rawMsg || rawMsg === '{}')
+                ? 'No se pudo procesar la solicitud de recuperación.'
+                : rawMsg;
+            Logger.error('AuthService', `Fallo al solicitar recuperación (status: ${error?.status ?? 'N/A'}):`, safeError);
+            return { success: false, status: error?.status, error: safeError };
+        }
+    },
+
+    /**
+     * Actualiza la contraseña del usuario únicamente con contexto de recuperación verificado.
+     * @param {string} newPassword 
+     * @returns {Promise<{ success: boolean, user?: object, error?: string }>}
+     */
+    async updatePassword(newPassword) {
+        Logger.info('AuthService', 'Ejecutando cambio de contraseña...');
+        try {
+            const isRecovery = await SupabaseProvider.isRecoverySession();
+            if (!isRecovery) {
+                throw new Error('Se requiere una sesión de recuperación válida para restablecer la contraseña.');
+            }
+            const data = await SupabaseProvider.updateUserPassword(newPassword);
+            eventBus.emit('auth:password-updated', { user: data?.user });
+            return { success: true, user: data?.user };
+        } catch (error) {
+            Logger.error('AuthService', 'Fallo al actualizar contraseña:', error.message);
             return { success: false, error: error.message };
         }
     },
 
     /**
-     * Cierra la sesión activa en Supabase y limpia el estado local.
+     * Cierra la sesión activa con opción de redirección controlada.
+     * @param {Object} [options]
+     * @param {boolean} [options.redirect=true]
+     * @param {string} [options.redirectTo='/']
+     * @returns {Promise<{ success: boolean, error?: string }>}
      */
-    async logout() {
+    async logout({ redirect = true, redirectTo = '/' } = {}) {
+        let remoteSuccess = false;
+        let remoteError = null;
         try {
-            await SupabaseProvider.logout();
+            const result = await SupabaseProvider.logout();
+            remoteSuccess = Boolean(result?.success);
+            if (!remoteSuccess && result?.error) {
+                remoteError = result.error;
+            }
+        } catch (error) {
+            Logger.error('AuthService', 'Error al cerrar sesión remota:', error.message);
+            remoteError = error.message;
+        } finally {
             sessionState.clear();
             try {
-                localStorage.removeItem('buca_supabase_auth');
-            } catch {
-                // Silencioso
+                if (typeof sessionStorage !== 'undefined') {
+                    sessionStorage.removeItem('buca_recovery_flow');
+                }
+            } catch { /* ignore */ }
+            eventBus.emit('auth:logout-success', { remoteSuccess, remoteError });
+            if (redirect && typeof window !== 'undefined' && window.location) {
+                setTimeout(() => { window.location.href = redirectTo; }, 500);
             }
-            eventBus.emit('auth:logout-success');
-        } catch (error) {
-            console.error('[AuthService] Error al cerrar sesión:', error);
-        } finally {
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 500);
         }
+        return { success: remoteSuccess, error: remoteError };
     },
 
-    /**
-     * Helper interno para sincronizar el perfil en la tabla 'profiles'.
-     * @private
-     */
     async _loadOrCreateProfile(user, optionalName = '') {
         if (!user || !user.id) return null;
         const client = getSupabase();
-
         try {
             const { data, error } = await client
                 .from('profiles')
@@ -269,7 +288,6 @@ export const AuthService = {
 
             if (!error && data) return data;
 
-            // Crear perfil por defecto si no existe
             const nameParts = (optionalName || user.user_metadata?.displayName || user.email.split('@')[0]).split(' ');
             const defaultProfile = {
                 id: user.id,
@@ -289,7 +307,7 @@ export const AuthService = {
 
             return inserted || defaultProfile;
         } catch (err) {
-            console.warn('[AuthService] Error sincronizando perfil:', err.message);
+            Logger.warn('AuthService', 'Error sincronizando perfil:', err.message);
             return null;
         }
     }

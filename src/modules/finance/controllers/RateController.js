@@ -16,7 +16,7 @@ import { FinanceRepository } from '../services/FinanceRepository.js';
 import { sessionState } from '@/core/state/session.js';
 import { RateCalculatorHelper } from './RateCalculatorHelper.js';
 import { RateTabsBinder } from './RateTabsBinder.js';
-import { $id, $$, $on, $mount, $show, $hide, $text, $addClass, $removeClass } from '@/shared/utils/dom.js';
+import { $id, $$, $on, $mount, $show, $hide, $text } from '@/shared/utils/dom.js';
 import { setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
 import { Logger } from '@/shared/utils/logger.js';
 

@@ -84,8 +84,9 @@ class Router {
             this.currentPath = path;
             
             let route = this.routes.find(r => r.path === path);
+            const isAuthRoute = path.startsWith('/auth');
             
-            if (!route && !path.startsWith('/auth')) {
+            if (!route && !isAuthRoute) {
                 if (!ModuleLoader.isLoaded('workspace')) {
                     await ModuleLoader.load('workspace');
                     route = this.routes.find(r => r.path === path);
@@ -107,7 +108,7 @@ class Router {
             if (!route) return this.#renderError('404');
 
             // Determinar layout y slot
-            const isAuth = path.startsWith(RouteConfig.layouts.auth.pathPrefix);
+            const isAuth = route?.layout === 'auth' || path.startsWith(RouteConfig.layouts.auth.pathPrefix);
             const layoutKey = isAuth ? 'auth' : 'workspace';
             const config = RouteConfig.layouts[layoutKey];
             
@@ -157,7 +158,9 @@ class Router {
                     
                     if (typeof route.component.init === 'function') {
                         try {
-                            route.component.init();
+                            Promise.resolve(route.component.init()).catch((initError) => {
+                                Logger.error('Router', 'Async Init Error:', initError);
+                            });
                         } catch (initError) {
                             Logger.error('Router', 'Init Error:', initError);
                         }

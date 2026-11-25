@@ -17,6 +17,8 @@ import { getSupabase } from '@/core/config/supabase.js';
 import { Logger } from '@/shared/utils/logger.js';
 
 export const AuthModule = {
+    _authSubscription: null,
+
     /**
      * Inicializa los listeners del módulo.
      */
@@ -27,9 +29,63 @@ export const AuthModule = {
         }
         this.setupListeners();
 
-        // Escuchar cambios de autenticación nativos de Supabase
+        // Escuchar cambios de autenticación nativos de Supabase (sin duplicar suscripciones)
         try {
-            SupabaseProvider.onAuthStateChange(async (_event, session) => {
+            if (this._authSubscription && typeof this._authSubscription.unsubscribe === 'function') {
+                this._authSubscription.unsubscribe();
+                this._authSubscription = null;
+            }
+            this._authSubscription = SupabaseProvider.onAuthStateChange(async (_event, session) => {
+                if (_event === 'PASSWORD_RECOVERY') {
+                    Logger.info('AuthModule', 'Evento PASSWORD_RECOVERY detectado. Aislando sesión de recuperación.');
+                    try {
+                        if (typeof sessionStorage !== 'undefined') {
+                            sessionStorage.setItem('buca_recovery_flow', 'true');
+                        }
+                    } catch { /* ignore */ }
+                    sessionState.set({
+                        isAuthenticated: false,
+                        mfaPending: false,
+                        isAAL2Verified: false,
+                        isPasswordRecovery: true,
+                        user: null,
+                        currentRole: 'guest'
+                    });
+                    eventBus.emit('auth:password-recovery', { session });
+                    return;
+                }
+
+                const isRecoveryFlow = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('buca_recovery_flow') === 'true')
+                    || Boolean(sessionState.get().isPasswordRecovery);
+
+                // Procesar SIGNED_OUT o sesión nula antes del aislamiento para garantizar limpieza completa
+                if (!session || !session.user || _event === 'SIGNED_OUT') {
+                    const currentSession = sessionState.get();
+                    if (currentSession.isAuthenticated || currentSession.isPasswordRecovery || isRecoveryFlow) {
+                        sessionState.set({
+                            isAuthenticated: false,
+                            mfaPending: false,
+                            isAAL2Verified: false,
+                            isPasswordRecovery: false,
+                            user: null,
+                            currentRole: 'guest'
+                        });
+                        try {
+                            if (typeof sessionStorage !== 'undefined') {
+                                sessionStorage.removeItem('buca_recovery_flow');
+                            }
+                        } catch { /* ignore */ }
+                        Logger.info('AuthModule', 'Sesión cerrada o invalidada en Supabase.');
+                    }
+                    return;
+                }
+
+                // Aislar eventos regulares si el flujo de recuperación está activo en la pestaña
+                if (isRecoveryFlow) {
+                    Logger.debug('AuthModule', `Aislando evento [${_event}] mientras el flujo de recuperación esté activo.`);
+                    return;
+                }
+
                 if (session && session.user) {
                     const user = session.user;
                     const currentSession = sessionState.get();
@@ -56,9 +112,28 @@ export const AuthModule = {
                         // Mantener rol previo o fallback seguro
                     }
 
+                    let aal = null;
                     try {
-                        const aal = await SupabaseProvider.getAssuranceLevel();
+                        aal = await SupabaseProvider.getAssuranceLevel();
                         if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+                            // Si el usuario no estaba autenticado o es un login inicial, retener sesión para MFA
+                            if (!currentSession.isAuthenticated || currentSession.user?.uid !== user.id) {
+                                sessionState.set({
+                                    isAuthenticated: false,
+                                    mfaPending: true,
+                                    isAAL2Verified: false,
+                                    user: null,
+                                    currentRole: 'guest'
+                                });
+                                Logger.warn('AuthModule', 'Sesión retenida: AAL2 pendiente de verificación TOTP.');
+                                return;
+                            }
+                            // Si ya estaba plenamente autenticado (reautenticación interna), mantener identidad
+                            Logger.info('AuthModule', 'Reautenticación de usuario activo con factor MFA registrado.');
+                        }
+                    } catch (aalErr) {
+                        Logger.error('AuthModule', 'Fallo evaluando AAL (Fail-Closed):', aalErr.message);
+                        if (!currentSession.isAuthenticated || currentSession.user?.uid !== user.id) {
                             sessionState.set({
                                 isAuthenticated: false,
                                 mfaPending: true,
@@ -66,25 +141,15 @@ export const AuthModule = {
                                 user: null,
                                 currentRole: 'guest'
                             });
-                            Logger.warn('AuthModule', 'Sesión retenida: AAL2 pendiente de verificación TOTP.');
                             return;
                         }
-                    } catch (aalErr) {
-                        Logger.error('AuthModule', 'Fallo evaluando AAL (Fail-Closed):', aalErr.message);
-                        sessionState.set({
-                            isAuthenticated: false,
-                            mfaPending: true,
-                            isAAL2Verified: false,
-                            user: null,
-                            currentRole: 'guest'
-                        });
-                        return;
                     }
 
+                    const isAAL2 = aal?.currentLevel === 'aal2';
                     sessionState.set({
                         isAuthenticated: true,
                         mfaPending: false,
-                        isAAL2Verified: true,
+                        isAAL2Verified: isAAL2,
                         user: {
                             uid: user.id,
                             email: user.email,
@@ -94,17 +159,6 @@ export const AuthModule = {
                         currentRole: role
                     });
                     Logger.info('AuthModule', `Sesión sincronizada [${_event || 'SYNC'}]: ${user.email}`);
-                } else {
-                    const currentSession = sessionState.get();
-                    if (currentSession.isAuthenticated) {
-                        sessionState.set({
-                            isAuthenticated: false,
-                            isAAL2Verified: false,
-                            user: null,
-                            currentRole: 'guest'
-                        });
-                        Logger.info('AuthModule', 'Sesión cerrada o invalidada en Supabase.');
-                    }
                 }
             });
         } catch (err) {

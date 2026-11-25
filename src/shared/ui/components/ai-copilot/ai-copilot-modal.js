@@ -6,14 +6,12 @@
  * =========================================================================
  */
 import { ModalService } from '@/shared/ui/services/ModalService.js';
-import { eventBus } from '@/core/eventBus/index.js';
 import { sessionState } from '@/core/state/session.js';
 import { $id, $on } from '@/shared/utils/dom.js';
 
 export const AICopilotModal = {
     show() {
         const user = sessionState.get()?.user;
-        const tenant = sessionState.get()?.tenantId || 'buca_enterprise_main';
         const userEmail = user?.email || 'admin@buca.com.ve';
 
         ModalService.showModal({

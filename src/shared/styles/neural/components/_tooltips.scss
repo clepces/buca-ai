@@ -17,14 +17,12 @@
     transform: translateY(-2px);
     transition: opacity 0.12s cubic-bezier(0.16, 1, 0.3, 1),
                 transform 0.12s cubic-bezier(0.16, 1, 0.3, 1);
-
     padding: 4px 8px;
     background: #0f172a;
     color: #f8fafc;
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 6px;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
-
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-size: 0.72rem;
     font-weight: 500;
