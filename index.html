@@ -210,8 +210,10 @@
     <div id="app"></div>
 
     <!-- 4.1. SHELL GLOBAL DE MODAL (BASE SÓLIDA UI-MODAL v2) -->
-    <div id="ui-modal-root" class="ui-modal-backdrop" aria-hidden="true" data-modal-state="closed" data-modal-scope="global">
-        <section id="ui-modal-dialog" class="ui-modal" role="dialog" aria-modal="true" aria-labelledby="ui-modal-title" aria-describedby="ui-modal-subtitle" data-modal-size="md" data-modal-layout="plain" tabindex="-1">
+    <div id="ui-modal-root" class="ui-modal-backdrop" aria-hidden="true" data-modal-state="closed"
+        data-modal-scope="global">
+        <section id="ui-modal-dialog" class="ui-modal" role="dialog" aria-modal="true" aria-labelledby="ui-modal-title"
+            aria-describedby="ui-modal-subtitle" data-modal-size="md" data-modal-layout="plain" tabindex="-1">
             <header class="ui-modal__header" id="ui-modal-header">
                 <div class="ui-modal__header-left" id="ui-modal-header-left">
                     <span class="ui-modal__icon" id="ui-modal-icon" aria-hidden="true" hidden></span>
@@ -224,24 +226,55 @@
                     </div>
                 </div>
                 <div class="ui-modal__header-center" id="ui-modal-header-center">
-                    <div class="ui-modal__header-context" id="ui-modal-header-context"></div>
-                    <div class="ui-modal__header-alert" id="ui-modal-header-alert" role="status" aria-live="polite" data-alert-type="warning" hidden></div>
+                    <div class="ui-modal__header-context" id="ui-modal-header-context">
+                    </div>
+                    <div class="ui-modal__header-alert" id="ui-modal-header-alert" role="status" aria-live="polite"
+                        data-alert-type="warning" hidden>
+                    </div>
                 </div>
                 <div class="ui-modal__header-right" id="ui-modal-header-right">
-                    <div class="ui-modal__header-actions" id="ui-modal-header-actions"></div>
+                    <div class="ui-modal__header-actions" id="ui-modal-header-actions">
+
+                    </div>
                     <div class="ui-modal__global-controls" id="ui-modal-global-controls">
-                        <button type="button" class="ui-modal__icon-btn ui-modal__icon-btn--overflow-item" id="ui-modal-btn-ai" data-action="ui:modal_ai_assist" aria-label="Asistente IA" title="Asistente IA"><i class="bi bi-stars" aria-hidden="true"></i></button>
-                        <button type="button" class="ui-modal__icon-btn ui-modal__icon-btn--overflow-item" id="ui-modal-btn-help" data-action="ui:modal_help" aria-label="Ayuda" title="Ayuda"><i class="bi bi-question-circle" aria-hidden="true"></i></button>
-                        <button type="button" class="ui-modal__icon-btn ui-modal__icon-btn--experimental ui-modal__icon-btn--overflow-item" id="ui-modal-btn-resize" data-action="ui:modal_size_menu" data-badge="Experimental" aria-haspopup="menu" aria-expanded="false" aria-label="Tamaño de ventana (Experimental)" title="Tamaño de ventana (Experimental)"><i class="bi bi-aspect-ratio" aria-hidden="true"></i></button>
-                        <button type="button" class="ui-modal__icon-btn ui-modal__icon-btn--experimental ui-modal__btn-more" id="ui-modal-btn-more" data-action="ui:modal_more_menu" data-badge="Experimental" aria-haspopup="menu" aria-expanded="false" aria-label="Más opciones" title="Más opciones (IA, Ayuda, Tamaño)"><i class="bi bi-three-dots" aria-hidden="true"></i></button>
-                        <button type="button" class="ui-modal__close-btn" id="ui-modal-btn-close" data-action="ui:close_modal" aria-label="Cerrar ventana" title="Cerrar (Esc)"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+                        <button type="button" class="ui-modal__icon-btn ui-modal__icon-btn--overflow-item"
+                            id="ui-modal-btn-ai" data-action="ui:modal_ai_assist" aria-label="Asistente IA"
+                            title="Asistente IA">
+                            <i class="bi bi-stars" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="ui-modal__icon-btn ui-modal__icon-btn--overflow-item"
+                            id="ui-modal-btn-help" data-action="ui:modal_help" aria-label="Ayuda" title="Ayuda">
+                            <i class="bi bi-question-circle" aria-hidden="true"></i>
+                        </button>
+                        <button type="button"
+                            class="ui-modal__icon-btn ui-modal__icon-btn--experimental ui-modal__icon-btn--overflow-item"
+                            id="ui-modal-btn-resize" data-action="ui:modal_size_menu" data-badge="Experimental"
+                            aria-haspopup="menu" aria-expanded="false" aria-label="Tamaño de ventana (Experimental)"
+                            title="Tamaño de ventana (Experimental)">
+                            <i class="bi bi-aspect-ratio" aria-hidden="true"></i>
+                        </button>
+                        <button type="button"
+                            class="ui-modal__icon-btn ui-modal__icon-btn--experimental ui-modal__btn-more"
+                            id="ui-modal-btn-more" data-action="ui:modal_more_menu" data-badge="Experimental"
+                            aria-haspopup="menu" aria-expanded="false" aria-label="Más opciones"
+                            title="Más opciones (IA, Ayuda, Tamaño)">
+                            <i class="bi bi-three-dots" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="ui-modal__close-btn" id="ui-modal-btn-close"
+                            data-action="ui:close_modal" aria-label="Cerrar ventana" title="Cerrar (Esc)">
+                            <i class="bi bi-x-lg" aria-hidden="true"></i>
+                        </button>
                     </div>
                 </div>
             </header>
             <div class="ui-modal__body" id="ui-modal-body" data-loading="false">
-                <div class="ui-modal__skeleton" id="ui-modal-skeleton" aria-hidden="true" hidden></div>
-                <aside class="ui-modal__nav" id="ui-modal-nav" data-nav-position="left" data-nav-collapsed="false" hidden></aside>
-                <main class="ui-modal__content" id="ui-modal-content"></main>
+                <div class="ui-modal__skeleton" id="ui-modal-skeleton" aria-hidden="true" hidden>
+                </div>
+                <aside class="ui-modal__nav" id="ui-modal-nav" data-nav-position="left" data-nav-collapsed="false"
+                    hidden>
+                </aside>
+                <main class="ui-modal__content" id="ui-modal-content">
+                </main>
             </div>
             <footer class="ui-modal__footer" id="ui-modal-footer" data-footer-scope="view">
                 <div class="ui-modal__footer-left" id="ui-modal-footer-left"></div>

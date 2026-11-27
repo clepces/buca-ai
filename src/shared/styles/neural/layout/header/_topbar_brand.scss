@@ -31,9 +31,9 @@
 /* ── BRAND HOVER TOOLTIP (appears when logo is contracted) ───── */
 .brand-hover-tooltip {
     position: absolute;
-    left: calc(100% + 8px);
-    top: 50%;
-    transform: translateY(-50%) translateX(-4px);
+    left: 0;
+    top: calc(100% + 6px);
+    transform: translateY(-4px);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -66,7 +66,7 @@
     &--visible {
         opacity: 1;
         visibility: visible;
-        transform: translateY(-50%) translateX(0);
+        transform: translateY(0);
         transition:
             opacity 0.2s ease,
             transform 0.2s ease,

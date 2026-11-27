@@ -200,23 +200,23 @@ export const Header = {
      * Hover on logo shows tooltip with app name, version and context.
      */
     _initBrandContraction() {
+        const brandLink = $('.navbar-brand-premium');
         const collapsible = $('.brand-collapsible');
         const tooltip = $('.brand-hover-tooltip');
-        const logoContainer = $('.logo-neural-container');
-        if (!collapsible || !logoContainer) return;
+        if (!collapsible || !brandLink) return;
 
         this._brandTimer = setTimeout(() => {
             $addClass(collapsible, 'brand-collapsible--contracted');
             if (tooltip) $addClass(tooltip, 'brand-hover-tooltip--ready');
         }, 3000);
 
-        // Hover → show tooltip (only when contracted)
-        $on(logoContainer, 'mouseenter', () => {
+        // Hover on the entire brand link (logo area) → show tooltip when contracted
+        $on(brandLink, 'mouseenter', () => {
             if (collapsible.classList.contains('brand-collapsible--contracted') && tooltip) {
                 $addClass(tooltip, 'brand-hover-tooltip--visible');
             }
         });
-        $on(logoContainer, 'mouseleave', () => {
+        $on(brandLink, 'mouseleave', () => {
             if (tooltip) $removeClass(tooltip, 'brand-hover-tooltip--visible');
         });
     },

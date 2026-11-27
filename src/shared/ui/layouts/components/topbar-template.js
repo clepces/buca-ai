@@ -47,15 +47,14 @@ export function renderTopBar() {
                             <span class="brand-name-main fw-bold text-main">BUCA <span class="text-primary">AI</span></span>
                             <span class="badge bg-secondary-subtle text-muted rounded-pill px-2 py-0.5 x-small font-monospace brand-version-badge">${versionTag}</span>
                         </div>
+                        <!-- Tooltip hover: aparece sobre logo contraído -->
+                        <div class="brand-hover-tooltip" role="tooltip" aria-hidden="true">
+                            <strong class="brand-hover-tooltip__name">BUCA AI</strong>
+                            <span class="brand-hover-tooltip__version">${versionTag}</span>
+                            <span class="brand-hover-tooltip__sep">/</span>
+                            <span class="brand-hover-tooltip__context">${escapeHTML(bizLabel)} <small>${envBadge}</small></span>
+                        </div>
                     </a>
-
-                    <!-- Tooltip hover sobre logo contraído (se llena por JS) -->
-                    <div class="brand-hover-tooltip" role="tooltip" aria-hidden="true">
-                        <strong class="brand-hover-tooltip__name">BUCA AI</strong>
-                        <span class="brand-hover-tooltip__version">${versionTag}</span>
-                        <span class="brand-hover-tooltip__sep">/</span>
-                        <span class="brand-hover-tooltip__context">${escapeHTML(bizLabel)} <small>${envBadge}</small></span>
-                    </div>
 
                     <!-- Separador y Breadcrumb de Organización / Negocio -->
                     <span class="header-breadcrumb-sep text-muted opacity-40 d-none d-md-inline">/</span>
