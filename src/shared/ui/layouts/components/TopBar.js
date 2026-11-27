@@ -39,6 +39,7 @@ export const Header = {
 
         this._initialized = true;
         this.syncNotifications();
+        this._initBrandContraction();
     },
 
     _bindEvents() {
@@ -80,12 +81,12 @@ export const Header = {
             this.syncNotifications(notifications);
         });
 
-        eventBus.on('ui:clear_notifications', () => {
+        eventBus.on('notifications:clear', () => {
             NotificationService.clearNotifications();
         });
 
         // Escuchar cambios globales de tasa
-        eventBus.on('buca:rate_change', ({ rate }) => {
+        eventBus.on('finance:rate_updated', ({ rate }) => {
             const pill = $('.live-bcv-mini-pill span');
             if (pill && rate) {
                 $text(pill, `Bs. ${Number(rate).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
@@ -191,6 +192,33 @@ export const Header = {
         if (!isFullscreen()) requestFullscreen().catch(() => {});
         else exitFullscreen().catch(() => {});
         this.closeAllPanels();
+    },
+
+    /**
+     * Initializes brand contraction animation.
+     * Shows full branding on load, contracts to logo-only after ~3s.
+     * Hover on logo shows tooltip with app name, version and context.
+     */
+    _initBrandContraction() {
+        const collapsible = $('.brand-collapsible');
+        const tooltip = $('.brand-hover-tooltip');
+        const logoContainer = $('.logo-neural-container');
+        if (!collapsible || !logoContainer) return;
+
+        this._brandTimer = setTimeout(() => {
+            $addClass(collapsible, 'brand-collapsible--contracted');
+            if (tooltip) $addClass(tooltip, 'brand-hover-tooltip--ready');
+        }, 3000);
+
+        // Hover → show tooltip (only when contracted)
+        $on(logoContainer, 'mouseenter', () => {
+            if (collapsible.classList.contains('brand-collapsible--contracted') && tooltip) {
+                $addClass(tooltip, 'brand-hover-tooltip--visible');
+            }
+        });
+        $on(logoContainer, 'mouseleave', () => {
+            if (tooltip) $removeClass(tooltip, 'brand-hover-tooltip--visible');
+        });
     },
 
     updateEngineUI(data) {

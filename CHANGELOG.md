@@ -6,6 +6,80 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
+## [1.1.24-alpha] - 2026-11-26
+
+### Añadido
+- **Hardening de Recuperación de Contraseña (`PASSWORD_RECOVERY`)**: Observador temprano en `src/core/config/supabase.js` con prueba en RAM (`recoverySessionProof`), validación estricta de claims (`getClaims()`) sin fallback AAL y elevación MFA AAL2 (`verifyRecoveryMFA`).
+- **Desacoplamiento Clean Core (`ActionDispatcher` + `SharedActions`)**: Delegación global O(1) en `src/core/services/ActionDispatcher.js` con protección contra Prototype Pollution y acciones transversales en `src/shared/ui/services/shared-actions.js`.
+- **Centralización de Versión (`ENV.APP_VERSION`)**: Inyección automática desde `package.json` vía `vite.config.js` hacia `src/core/config/environment.js`.
+- **Watchdog Adaptativo para Redes Lentas**: Detección de conectividad (`2g`/`3g`/`saveData`) en `index.html` con botón explícito `#buca-watchdog-retry`.
+
+### Modificado
+- **Service Worker (`public/sw.js`)**: Bypass para Vite dev (`/src/`, `/@`, `?t=`), *Cache-First* para assets con hash (`/assets/`, `.woff2`, iconos) y *Network-First* para HTML/manifest.
+- **Estandarización `kebab-case` en Módulo `auth`**: Migración de páginas y componentes a `kebab-case` (`login-page.js`, `password-reset-page.js`, `auth-card-shell.js`, `auth-status-view.js`, etc.).
+- **Logger Estructurado v2**: Migración global de `console.*` y llamadas legacy al formato `{ layer, role, target, message, data }` y unificación de etiqueta `BENE`.
+- **Modularización SCSS 7-1**: División de los 10 archivos `.scss` extensos en parciales `≤ 300` líneas con barrels `@forward`.
+- **Estabilidad D3.js (`D3BenchmarkChart.js`)**: Umbral de ancho en `ResizeObserver` (`_lastWidth`) y redibujado sin reiniciar animaciones desde `height: 0`.
+- **Endurecimiento de Utilidades**: Mejoras de seguridad y limpieza en `system-helper.js` (`getHash`, `goBack`, `getValidatedOrigin`), `async-helper.js`, `validators.js`, `dom.js`, `haptics.js`, `performance.js`, `touchGestures.js` y `KeyboardShortcuts.js` (`destroy()`).
+- **Estandarización de Dominios y Acciones**: Unificación de eventos/acciones (`auth:logout`, `finance:rate_updated`, `notifications:clear`, `notifications:filter_tab`, `business:open_create`, `business:enter`, `workspace:export_report`).
+
+---
+
+## [1.1.19-alpha - 1.1.23-alpha] - 2026-11-20 a 2026-11-25
+
+### Añadido
+- **Breakpoints BUCA v6**: Soporte responsivo `lg:1024`, `xl:1280`, `2xl:1536`, `3xl:1920` y `4xl:2560` con alineación unificada en header, toolbar y workspace.
+- **Copiloto IA y Consola de Auditoría**: Modales `ai-copilot-modal.js` y `audit-terminal-modal.js` estilo Supabase, junto con `TooltipService` global de alto rendimiento.
+- **Banner y Acordeón Workspace**: Rediseño con grid Bootstrap responsivo y badges de servicios.
+
+### Corregido
+- **Kernel & Ciclo de Vida MFA**: Separación de enrolamiento MFA respecto al evento de login, teardown seguro de servicios en `Kernel.destroy()` y actualización de `lucide` a `1.74.0`.
+- **Header & Navegación**: Erradicación de tormenta de sincronización de sesión, corrección de overflow en `WorkspaceNavRibbon` y limpieza de estilos inline en paneles.
+
+---
+
+## [1.1.18-alpha] - 2026-11-18
+
+### Modificado
+- Adopción masiva de utilidades DOM y sistema en `auth`, `finance`, `profile`, pestaña laboral (`worker_profile`) y estandarización inicial de `Logger`.
+
+---
+
+## [1.1.17-alpha] - 2026-11-17
+
+### Modificado
+- Adopción unificada de `dom.js` y `system-helper.js` en layouts, componentes, overlays, `Kernel`, `Router` y `OfflineReplayQueue`.
+
+---
+
+## [1.1.16-alpha] - 2026-11-16
+
+### Modificado
+- Desacoplamiento total entre `Kernel` y módulo `finance` vía `EventBus`, introducción de `core/utils/*` y erradicación de `innerHTML` y `console.*` en núcleo.
+
+---
+
+## [1.1.15-alpha] - 2026-11-16
+
+### Añadido
+- **Auth-First Boot Gate**: Validación de sesión previa al montaje del layout para eliminar parpadeo FOUC y exposición de workspace sin sesión; deprecación de `onclick` inline.
+
+---
+
+## [1.1.14-alpha] - 2026-11-15
+
+### Corregido
+- Listeners táctiles pasivos, estilos del asistente de creación de negocios (`business-wizard-modal`) e higienización de iconos PWA.
+
+---
+
+## [1.1.9-alpha - 1.1.13-alpha] - 2026-11-15
+
+### Añadido / Modificado
+- Integración de adaptador `MontosVE` en `ForexManager` con caché de cuota de 3 minutos, retiro del obsoleto `DolarVzlaService` y blindaje del proxy de consultas y `.env.production`.
+
+---
+
 ## [1.1.8-alpha] - 2026-11-15
 
 ### Añadido

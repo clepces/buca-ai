@@ -31,10 +31,18 @@ export const throttle = (func, limit) => {
  */
 export const debounce = (func, delay = 300) => {
     let timeoutId;
-    return (...args) => {
+    const debounced = (...args) => {
         if (timeoutId) clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
+            timeoutId = undefined;
             func(...args);
         }, delay);
     };
+    debounced.cancel = () => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = undefined;
+        }
+    };
+    return debounced;
 };

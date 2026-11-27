@@ -4,6 +4,8 @@
  * Proporciona una interfaz unificada para peticiones externas con manejo
  * automático de errores, cabeceras y timeouts.
  */
+import { Logger } from '@/shared/utils/logger.js';
+
 export class HttpClient {
     constructor(baseURL = '') {
         this.baseURL = baseURL;
@@ -46,7 +48,7 @@ export class HttpClient {
             return rawText;
         } catch (error) {
             clearTimeout(id);
-            console.error(`[HttpClient] Request failed: ${url}`, error);
+            Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'HttpClient', message: 'Fallo en petición HTTP.', data: { url, error: error?.message || error } });
             throw error;
         }
     }

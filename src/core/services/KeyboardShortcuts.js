@@ -4,20 +4,31 @@
  */
 
 import { eventBus } from '@/core/eventBus/index.js';
+import { $on } from '@/shared/utils/dom.js';
+import { DrilldownMenu } from '@/shared/ui/components/drilldown-menu/drilldown-menu.js';
+import { modalServiceV2 } from '@/shared/ui/services/modal/modal-service-v2.js';
 
 export const KeyboardShortcuts = {
     _shortcuts: [],
+    _unlisten: null,
 
     init() {
-        document.addEventListener('keydown', (e) => {
-            // Escape: Cerrar modales y paneles por defecto
+        this.destroy();
+        this._unlisten = $on(document, 'keydown', (e) => {
             if (e.key === 'Escape') {
+                if (DrilldownMenu.isOpen()) {
+                    DrilldownMenu.close(true);
+                    return;
+                }
+                if (modalServiceV2.isOpen()) {
+                    modalServiceV2.requestClose('esc');
+                    return;
+                }
                 eventBus.emit('header:close_all_panels');
-                eventBus.emit('ui:close_modal');
             }
 
-            // Ctrl/Cmd + K: Buscador / Command Palette
             if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+                if (modalServiceV2.isShortcutLocked()) return;
                 e.preventDefault();
                 eventBus.emit('ui:open_search_palette');
             }
@@ -29,6 +40,13 @@ export const KeyboardShortcuts = {
                 }
             });
         });
+    },
+
+    destroy() {
+        if (typeof this._unlisten === 'function') {
+            this._unlisten();
+            this._unlisten = null;
+        }
     },
 
     register(key, action, ctrl = false) {

@@ -1,0 +1,228 @@
+/**
+ * Finance Module Styles — Tabs, Currency Cards & Popover
+ */
+@use "@/shared/styles/neural/abstracts" as *;
+
+.rate-update-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+
+    /* ── TABBED NAVIGATION ───────────────────────────────────── */
+    .rate-modal-tabs {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--hover-glass);
+        border: 1px solid var(--border-glass);
+        padding: 5px;
+        border-radius: 18px;
+        overflow-x: auto;
+
+        @include hide-scrollbar;
+
+        .rate-tab-btn {
+            flex: 1;
+            min-width: fit-content;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+
+            i {
+                font-size: 0.95rem;
+                transition: transform 0.2s ease;
+            }
+
+            &:hover {
+                color: var(--text-main);
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            &.active {
+                background: var(--buca-blue);
+                color: #fff;
+                box-shadow: 0 4px 12px var(--buca-blue-glow);
+
+                i {
+                    color: #fff;
+                }
+            }
+        }
+    }
+
+    .rate-tab-content {
+        display: none;
+        animation: rateFadeIn 0.3s ease forwards;
+
+        &.active {
+            display: block;
+        }
+    }
+
+    @keyframes rateFadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── MULTI-CURRENCY GRID CARDS ───────────────────────────── */
+    .currency-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+
+        @media (max-width: 576px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .currency-card-hero {
+        background: var(--surface-card, rgba(255, 255, 255, 0.85));
+        [data-theme="dark"] & {
+            background: rgba(26, 34, 52, 0.85);
+        }
+
+        border: 1px solid var(--border-glass-bright);
+        border-radius: 18px;
+        padding: 16px;
+        position: relative;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+
+        &:hover {
+            transform: translateY(-2px);
+            border-color: var(--buca-blue);
+            box-shadow: 0 8px 20px var(--buca-blue-glow);
+        }
+
+        &.card--usd {
+            border-top: 3px solid #2563eb;
+        }
+        &.card--eur {
+            border-top: 3px solid #8b5cf6;
+        }
+        &.card--usdt {
+            border-top: 3px solid #f59e0b;
+        }
+
+        .card-currency-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .currency-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text-main);
+
+            .flag-icon {
+                font-size: 1.1rem;
+            }
+        }
+
+        .rate-value-large {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            line-height: 1.1;
+            margin-bottom: 6px;
+
+            span.decimals {
+                font-size: 1.25rem;
+                color: var(--buca-blue);
+            }
+        }
+
+        .card-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            border-top: 1px dashed var(--border-glass);
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+    }
+
+    /* ── INFO POPOVER TOOLTIP ────────────────────────────────── */
+    .info-popover-trigger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--hover-glass);
+        border: 1px solid var(--border-glass);
+        color: var(--buca-blue);
+        font-size: 0.72rem;
+        font-weight: 700;
+        cursor: pointer;
+        position: relative;
+
+        &:hover {
+            background: var(--buca-blue);
+            color: #fff;
+            border-color: var(--buca-blue);
+
+            .info-popover-tooltip {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+        }
+
+        .info-popover-tooltip {
+            position: absolute;
+            bottom: 125%;
+            right: 0;
+            left: auto;
+            transform: translateY(6px);
+            width: 220px;
+            max-width: 80vw;
+            padding: 8px 12px;
+            background: rgba(15, 23, 42, 0.96);
+            color: #fff;
+            border-radius: 10px;
+            font-size: 0.68rem;
+            font-weight: 400;
+            line-height: 1.35;
+            text-align: left;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 1050;
+
+            &::after {
+                content: '';
+                position: absolute;
+                top: 100%;
+                right: 6px;
+                left: auto;
+                border: 5px solid transparent;
+                border-top-color: rgba(15, 23, 42, 0.96);
+            }
+        }
+    }
+}

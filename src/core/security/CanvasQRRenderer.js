@@ -6,6 +6,8 @@
  * =========================================================================
  */
 
+import { Logger } from '@/shared/utils/logger.js';
+
 export class CanvasQRRenderer {
     /**
      * Renderiza un SVG data-URI o string de Supabase en un elemento <canvas>.
@@ -44,7 +46,7 @@ export class CanvasQRRenderer {
             };
 
             img.onerror = (err) => {
-                console.warn('[CanvasQRRenderer] Error al cargar SVG, dibujando fallback visual:', err);
+                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'CanvasQRRenderer', message: 'Error al cargar SVG de QR; dibujando fallback visual.', data: err });
                 this._renderPlaceholder(ctx, size);
                 resolve(canvasEl);
             };

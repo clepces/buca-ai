@@ -8,7 +8,6 @@
 import { eventBus } from '@/core/eventBus/index.js';
 import { Validators as Validator } from '@/shared/utils/validators.js';
 import ModalService from '@/shared/ui/services/ModalService.js';
-import { ModalTemplates } from '@/shared/ui/templates/ModalTemplates.js';
 import { rateManagementTemplate } from '../components/RateManagementModal.js';
 import { ForexManager } from '@/core/services/forex/forex-manager.js';
 import { DOLAR_VZLA_KEY, CDN_BASE, API_BASE, safeRound2 } from '@/core/services/forex/forex-types.js';
@@ -47,7 +46,7 @@ export const RateController = {
     },
 
     async show() {
-        Logger.info('RateController', 'Opening Multi-Currency Rate Dashboard');
+        Logger.debug({ layer: 'UI', role: 'CLASS', target: 'RateController', message: 'Abriendo panel de tasas cambiarias.' });
         this._renderModalContent();
         this._loadAndPopulateData();
     },
@@ -58,24 +57,23 @@ export const RateController = {
 
     _renderModalContent() {
         ModalService.showModal({
+            id: 'finance-rate-modal',
+            scope: 'module',
             size: 'lg',
-            header: ModalTemplates.buildHeader({
-                icon: 'bi-currency-exchange',
-                title: 'Gestión de Tasas',
-                subtitle: 'Mercado de Cambio',
-                tag: 'v1.1.3 FINANZAS',
-                actions: `
-                    <div class="header-actions">
-                        <button type="button" class="action-mini-btn" id="btn-refresh-rate-header" title="Sincronizar en Vivo">
-                            <i class="bi bi-arrow-repeat"></i>
-                        </button>
-                        <button type="button" class="action-mini-btn close modal-close-btn" data-action="ui:close_modal" title="Cerrar">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                    </div>
-                `
-            }),
-            body: rateManagementTemplate(this._buildTemplateData()),
+            header: {
+                left: {
+                    icon: 'bi-currency-exchange',
+                    title: 'Gestión de Tasas',
+                    subtitle: 'Mercado de Cambio',
+                    badge: { text: 'FINANZAS', tone: 'primary' }
+                },
+                right: {
+                    actions: [
+                        '<button type="button" class="ui-modal__icon-btn" id="btn-refresh-rate-header" title="Sincronizar en Vivo" aria-label="Sincronizar en Vivo"><i class="bi bi-arrow-repeat" aria-hidden="true"></i></button>'
+                    ]
+                }
+            },
+            body: { html: rateManagementTemplate(this._buildTemplateData()) },
             footer: {
                 left: `
                     <div class="d-flex align-items-center gap-2 text-muted small">
@@ -112,7 +110,7 @@ export const RateController = {
     },
 
     _renderBodyContent(preserveTab = null) {
-        const bodySlot = $id('modal-body-content');
+        const bodySlot = $id('ui-modal-content') || $id('modal-body-content');
         if (!bodySlot) return;
 
         const currentTab = preserveTab || this.activeTab || 'overview';
@@ -144,7 +142,7 @@ export const RateController = {
             this._renderBodyContent();
             this._updatePageRates(this.currentRate);
         } catch (err) {
-            Logger.error('RateController', 'Error loading financial data:', err);
+            Logger.error({ layer: 'MODULE', role: 'CLASS', target: 'RateController', message: 'Error cargando datos financieros y tasas.', data: err?.message || err });
         } finally {
             if (spinner) $hide(spinner);
         }
@@ -229,7 +227,7 @@ export const RateController = {
     },
 
     async _updatePageRates(newRate) {
-        Logger.info('RateController', `Broadcasting Global Rate: Bs. ${newRate}`);
+        Logger.info({ layer: 'MODULE', role: 'CLASS', target: 'RateController', message: `Difundiendo tasa global: Bs. ${newRate}` });
 
         try {
             const { globalState } = await import('@/core/state/global.js');
@@ -237,7 +235,7 @@ export const RateController = {
                 globalState.updateRates({ bcv: newRate });
             }
         } catch (e) {
-            Logger.error('RateController', 'Error syncing with globalState:', e);
+            Logger.error({ layer: 'MODULE', role: 'CLASS', target: 'RateController', message: 'Error sincronizando tasa con globalState.', data: e?.message || e });
         }
 
         const formatted = Number(newRate).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -248,7 +246,7 @@ export const RateController = {
             $text(el, Number(newRate).toFixed(2));
         });
 
-        eventBus.emit('buca:rate_change', { rate: newRate, timestamp: new Date().toISOString() });
+        eventBus.emit('finance:rate_updated', { rate: newRate, timestamp: new Date().toISOString() });
     }
 };
 

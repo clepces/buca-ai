@@ -1,11 +1,12 @@
 /**
- * BaseClient - Corazón de la Comunicación Externa BNE
+ * BaseClient - Corazón de la Comunicación Externa BENE
  * =========================================================================
  * Evolución del HttpClient con soporte para Interceptores, Timeouts
  * y Resiliencia Nativa.
  * =========================================================================
  */
 import { storage } from '../storage/StorageAdapter.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export class BaseClient {
     constructor(baseURL = '', timeout = 10000) {
@@ -110,7 +111,7 @@ export class BaseClient {
             const { eventBus } = await import('@/core/eventBus/index.js');
 
             if (error.name === 'AbortError') {
-                console.warn(`[API] -> Timeout alcanzado en: ${url}`);
+                Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'BaseClient', message: `Timeout (${timeoutMs}ms) alcanzado en petición HTTP.`, data: { url } });
                 if (!options.silent && options.notifyOnError !== false) {
                     eventBus.emit('notifications:push', {
                         title: 'Error de Red',

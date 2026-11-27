@@ -17,7 +17,7 @@ export const Dock = {
     navMaps: {
         main: [
             { id: 'módulos', icon: 'bi-grid-fill', action: 'dock:switch-context', payload: { context: 'modules' }, tip: 'Explorar Módulos', label: 'Módulos' },
-            { id: 'unidades', icon: 'bi-layers-fill', action: 'ui:enter_business', payload: { id: 'Dashboard' }, tip: 'Gestión de Unidades', label: 'Unidades' },
+            { id: 'unidades', icon: 'bi-layers-fill', action: 'business:enter', payload: { id: 'Dashboard' }, tip: 'Gestión de Unidades', label: 'Unidades' },
             { id: 'inicio', icon: 'bi-house-door-fill', action: 'router:navigate', payload: { path: '/' }, tip: 'Panel Principal', label: 'Inicio' },
             { id: 'personal', icon: 'bi-people-fill', action: 'dock:switch-context', payload: { context: 'people' }, tip: 'Recursos Humanos', label: 'Equipo' },
             { id: 'ajustes', icon: 'bi-gear-fill', action: 'ui:open_settings', tip: 'Preferencias', label: 'Ajustes' }

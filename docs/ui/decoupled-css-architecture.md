@@ -4,6 +4,7 @@
 > **Módulo:** `docs/ui/decoupled-css-architecture.md`  
 > **Ecosistema:** B.U.C.A. AI  
 > **Directiva de Evolución:** Transición de Estilos Acoplados (v5.3) a la Trinidad Desacoplada (v6.0)  
+> **Modularización 7-1 Activa:** Todos los archivos `.scss` en `src/shared/styles/neural/` y `src/modules/*/styles/` mantienen un límite estricto de `≤ 300` líneas mediante subcarpetas en `kebab-case` y barrels `@forward` (`_panels.scss`, `_modals.scss`, `_profile.scss`, `_dock.scss`, `_preloader.scss`, `_system-overlay.scss`, `_workspace_cards.scss`, `_finance.scss`, `_system_widgets.scss`, `_performance_modal.scss`).  
 > **Estado:** `[Especificación de Ingeniería (new)]`
 
 ---

@@ -3,14 +3,13 @@
  * =========================================================================
  * Proporciona una atmósfera inmersiva de cristal para login y seguridad.
  * Independiente del MainLayout para evitar conflictos de scroll y UI.
- * SessionDashboard se inyecta desacoplado vía EventBus desde el módulo auth.
+ * =========================================================================
  */
-import { $, $on, $addClass } from '@/shared/utils/dom.js';
-import { eventBus } from '@/core/eventBus/index.js';
+
+import { ENV } from '@/core/config/environment.js';
 
 export const AuthLayout = {
     render: (content = '') => {
-        // ... (contenido anterior se mantiene igual)
         return `
             <div class="auth-shell min-vh-100 d-flex flex-column">
                 <!-- Atmósfera Neural (Fondo Dinámico) -->
@@ -30,13 +29,10 @@ export const AuthLayout = {
                     <div class="floating-icon apple" title="Acceso Apple">
                         <i class="bi bi-apple"></i>
                     </div>
-                    <div class="floating-icon extra" title="Acceso Corporativo Adicional">
+                    <div class="floating-icon extra" title="Seguridad Corporativa">
                         <i class="bi bi-shield-lock-fill"></i>
                     </div>
                 </div>
-
-                <!-- Dashboard de Sesión (Flotante Secundario) -->
-                <div id="auth-session-dashboard-slot" data-bne-ignore="true"></div>
 
                 <!-- Slot de Contenido Principal -->
                 <main class="flex-grow-1 d-flex align-items-center justify-content-center p-3 p-md-4 u-z-content">
@@ -61,7 +57,7 @@ export const AuthLayout = {
                 <!-- Footer Minimalista -->
                 <footer class="auth-minimal-footer p-3 text-center">
                     <div class="footer-legal small opacity-75">
-                        <span>v15.2 Corporate</span>
+                        <span>v${ENV.APP_VERSION} Corporate</span>
                         <span class="mx-2 text-primary">•</span>
                         <a href="#" class="text-decoration-none">Privacidad</a>
                         <span class="mx-2 text-primary">•</span>
@@ -72,15 +68,5 @@ export const AuthLayout = {
         `;
     },
 
-    init() {
-        // Emitir evento para que el módulo auth inyecte SessionDashboard desacoplado
-        eventBus.emit('auth-layout:mounted');
-
-        // Vincular el icono "extra" (escudo) para toggle del dashboard
-        const extraIcon = $('.floating-icon.extra');
-        if (extraIcon) {
-            $addClass(extraIcon, 'u-cursor-pointer');
-            $on(extraIcon, 'click', () => eventBus.emit('auth:toggle-session-dashboard'));
-        }
-    }
+    init() {}
 };

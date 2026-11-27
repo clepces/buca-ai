@@ -152,9 +152,9 @@ export const NotificationTray = {
                 </div>
 
                 <div class="tray-filter-tabs px-3 py-2 d-flex align-items-center gap-1 border-bottom">
-                    <button type="button" class="tray-tab-btn btn btn-sm rounded-pill px-2.5 py-0.5 border-0 ${activeTab === 'all' ? 'active-tab' : 'text-muted'}" data-action="tray:filter_tab" data-tab="all">Todas (${totalNotifications.length})</button>
-                    <button type="button" class="tray-tab-btn btn btn-sm rounded-pill px-2.5 py-0.5 border-0 ${activeTab === 'unread' ? 'active-tab' : 'text-muted'}" data-action="tray:filter_tab" data-tab="unread">No leídas ${unreadCount > 0 ? `(${unreadCount})` : ''}</button>
-                    <button type="button" class="tray-tab-btn btn btn-sm rounded-pill px-2.5 py-0.5 border-0 ${activeTab === 'system' ? 'active-tab' : 'text-muted'}" data-action="tray:filter_tab" data-tab="system">Sistema ${systemCount > 0 ? `(${systemCount})` : ''}</button>
+                    <button type="button" class="tray-tab-btn btn btn-sm rounded-pill px-2.5 py-0.5 border-0 ${activeTab === 'all' ? 'active-tab' : 'text-muted'}" data-action="notifications:filter_tab" data-tab="all">Todas (${totalNotifications.length})</button>
+                    <button type="button" class="tray-tab-btn btn btn-sm rounded-pill px-2.5 py-0.5 border-0 ${activeTab === 'unread' ? 'active-tab' : 'text-muted'}" data-action="notifications:filter_tab" data-tab="unread">No leídas ${unreadCount > 0 ? `(${unreadCount})` : ''}</button>
+                    <button type="button" class="tray-tab-btn btn btn-sm rounded-pill px-2.5 py-0.5 border-0 ${activeTab === 'system' ? 'active-tab' : 'text-muted'}" data-action="notifications:filter_tab" data-tab="system">Sistema ${systemCount > 0 ? `(${systemCount})` : ''}</button>
                 </div>
 
                 <!-- CONTENEDOR SCROLL GLOBAL UNIFICADO -->
@@ -179,7 +179,7 @@ export const NotificationTray = {
 
                 <div class="panel-footer panel-footer-clean p-2 border-top d-flex align-items-center justify-content-between">
                     ${unreadCount > 0 ? `
-                        <button type="button" class="btn btn-link btn-sm text-decoration-none x-small fw-bold text-primary p-0" data-action="ui:clear_notifications">
+                        <button type="button" class="btn btn-link btn-sm text-decoration-none x-small fw-bold text-primary p-0" data-action="notifications:clear">
                             <i class="bi bi-check2-all me-1"></i> Marcar todas leídas
                         </button>
                     ` : '<span class="text-muted x-small">Todas revisadas</span>'}

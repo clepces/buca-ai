@@ -4,6 +4,7 @@
  * Estructura modular ES6+ con soporte O(1), comodines (*), middlewares y aislamiento de errores.
  */
 import { offlineReplayQueue } from './OfflineReplayQueue.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 class EventBus {
     constructor() {
@@ -125,7 +126,7 @@ class EventBus {
                 const result = middleware(event, ...args);
                 if (result === false) return false;
             } catch (error) {
-                console.error(`[EventBus] Error en Middleware al procesar "${event}":`, error);
+                Logger.error({ layer: 'KERNEL', role: 'EVENT', target: 'EventBus', message: `Error en middleware procesando evento "${event}".`, data: error });
             }
         }
         return true;
@@ -151,11 +152,11 @@ class EventBus {
             try {
                 callback(...args);
             } catch (error) {
-                console.error(`[EventBus] Error crítico en el suscriptor de "${event}":`, error);
+                Logger.error({ layer: 'KERNEL', role: 'EVENT', target: 'EventBus', message: `Error en suscriptor síncrono del evento "${event}".`, data: error });
             } finally {
                 const duration = performance.now() - start;
                 if (duration > 16) {
-                    console.warn(`[EventBus][Performance Warning] El suscriptor de "${event}" tardó ${duration.toFixed(2)}ms en responder.`);
+                    Logger.warn({ layer: 'KERNEL', role: 'EVENT', target: 'EventBus', message: `Suscriptor lento en "${event}" (${duration.toFixed(2)}ms).` });
                 }
             }
         });
@@ -198,7 +199,7 @@ class EventBus {
             try {
                 await callback(...args);
             } catch (error) {
-                console.error(`[EventBus] Error Asíncrono detectado en "${event}":`, error);
+                Logger.error({ layer: 'KERNEL', role: 'EVENT', target: 'EventBus', message: `Error en suscriptor asíncrono del evento "${event}".`, data: error });
             }
         });
 

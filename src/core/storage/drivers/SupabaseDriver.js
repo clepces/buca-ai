@@ -6,6 +6,7 @@
  * =========================================================================
  */
 import { getSupabase } from '../../config/supabase.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export class SupabaseDriver {
     constructor(tableName = 'app_storage') {
@@ -41,7 +42,13 @@ export class SupabaseDriver {
         try {
             const client = this._getClient();
             if (!client || typeof client.from !== 'function') {
-                console.warn(`[SupabaseDriver] Cliente no disponible. Omitiendo guardado remoto de "${key}".`);
+                Logger.warn({
+                    layer: 'STORAGE',
+                    role: 'DRIVER',
+                    target: 'SupabaseDriver',
+                    message: 'Cliente Supabase no disponible. Omitiendo guardado remoto.',
+                    data: { key }
+                });
                 return false;
             }
             const payload = {
@@ -52,7 +59,13 @@ export class SupabaseDriver {
             const userId = await this._getCurrentUserId();
             if (this.tableName === 'app_storage') {
                 if (!userId) {
-                    console.warn(`[SupabaseDriver] Bloqueo de seguridad: No se permite escribir en app_storage sin owner_id.`);
+                    Logger.warn({
+                        layer: 'STORAGE',
+                        role: 'DRIVER',
+                        target: 'SupabaseDriver',
+                        message: 'Bloqueo de seguridad: no se permite escribir en app_storage sin owner_id.',
+                        data: { key }
+                    });
                     return false;
                 }
                 payload.owner_id = userId;
@@ -63,12 +76,24 @@ export class SupabaseDriver {
                 .upsert(payload, { onConflict: 'key' });
 
             if (error) {
-                console.warn(`[SupabaseDriver] Error writing key "${key}":`, error.message);
+                Logger.warn({
+                    layer: 'STORAGE',
+                    role: 'DRIVER',
+                    target: 'SupabaseDriver',
+                    message: 'Error escribiendo clave remota en app_storage.',
+                    data: { key, error: error.message }
+                });
                 return false;
             }
             return true;
         } catch (err) {
-            console.error(`[SupabaseDriver] Unexpected set error for "${key}":`, err);
+            Logger.error({
+                layer: 'STORAGE',
+                role: 'DRIVER',
+                target: 'SupabaseDriver',
+                message: 'Excepción inesperada al escribir clave remota en app_storage.',
+                data: { key, error: err?.message || err }
+            });
             return false;
         }
     }
@@ -96,13 +121,25 @@ export class SupabaseDriver {
             const { data, error } = await query.maybeSingle();
 
             if (error) {
-                console.warn(`[SupabaseDriver] Error reading key "${key}":`, error.message);
+                Logger.warn({
+                    layer: 'STORAGE',
+                    role: 'DRIVER',
+                    target: 'SupabaseDriver',
+                    message: 'Error leyendo clave remota en app_storage.',
+                    data: { key, error: error.message }
+                });
                 return null;
             }
 
             return data ? data.value : null;
         } catch (err) {
-            console.error(`[SupabaseDriver] Unexpected get error for "${key}":`, err);
+            Logger.error({
+                layer: 'STORAGE',
+                role: 'DRIVER',
+                target: 'SupabaseDriver',
+                message: 'Excepción inesperada al leer clave remota en app_storage.',
+                data: { key, error: err?.message || err }
+            });
             return null;
         }
     }
@@ -130,12 +167,24 @@ export class SupabaseDriver {
             const { error } = await query;
 
             if (error) {
-                console.warn(`[SupabaseDriver] Error deleting key "${key}":`, error.message);
+                Logger.warn({
+                    layer: 'STORAGE',
+                    role: 'DRIVER',
+                    target: 'SupabaseDriver',
+                    message: 'Error eliminando clave remota en app_storage.',
+                    data: { key, error: error.message }
+                });
                 return false;
             }
             return true;
         } catch (err) {
-            console.error(`[SupabaseDriver] Unexpected remove error for "${key}":`, err);
+            Logger.error({
+                layer: 'STORAGE',
+                role: 'DRIVER',
+                target: 'SupabaseDriver',
+                message: 'Excepción inesperada al eliminar clave remota en app_storage.',
+                data: { key, error: err?.message || err }
+            });
             return false;
         }
     }
@@ -163,13 +212,25 @@ export class SupabaseDriver {
 
             const { data, error } = await query;
             if (error) {
-                console.warn(`[SupabaseDriver] Error listing with prefix "${prefix}":`, error.message);
+                Logger.warn({
+                    layer: 'STORAGE',
+                    role: 'DRIVER',
+                    target: 'SupabaseDriver',
+                    message: 'Error listando claves remotas por prefijo en app_storage.',
+                    data: { prefix, error: error.message }
+                });
                 return [];
             }
 
             return data || [];
         } catch (err) {
-            console.error(`[SupabaseDriver] Unexpected list error:`, err);
+            Logger.error({
+                layer: 'STORAGE',
+                role: 'DRIVER',
+                target: 'SupabaseDriver',
+                message: 'Excepción inesperada al listar claves remotas en app_storage.',
+                data: { prefix, error: err?.message || err }
+            });
             return [];
         }
     }

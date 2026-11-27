@@ -1,0 +1,152 @@
+/**
+ * Workspace System Widgets — Health Monitor & Quick Actions
+ */
+@use "@/shared/styles/neural/abstracts" as *;
+
+/* ── SYSTEM HEALTH MONITOR CLASSES ─────────────────────── */
+.health-header-icon-box {
+    width: 38px;
+    height: 38px;
+    background: rgba(5, 150, 105, 0.12);
+    color: #059669;
+}
+
+.health-title {
+    font-family: var(--font-family-display, 'Outfit', sans-serif);
+}
+
+.health-subtitle {
+    font-size: 0.72rem;
+}
+
+.health-card-icon-cloud {
+    width: 36px;
+    height: 36px;
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
+}
+
+.health-card-icon-gpu {
+    color: #d97706;
+}
+
+.health-card-icon-db {
+    width: 36px;
+    height: 36px;
+    background: rgba(124, 58, 237, 0.12);
+    color: #7c3aed;
+}
+
+.health-card-title {
+    font-family: var(--font-family-display, 'Outfit', sans-serif);
+    font-size: 0.88rem;
+}
+
+.health-badge-online {
+    font-size: 0.65rem;
+    background: #059669;
+    color: #fff;
+    font-weight: 700;
+}
+
+.health-badge-fps {
+    font-size: 0.65rem;
+    background: rgba(217, 119, 6, 0.15);
+    color: #b45309;
+    font-weight: 700;
+}
+
+.health-badge-storage {
+    font-size: 0.65rem;
+    background: rgba(124, 58, 237, 0.15);
+    color: #6d28d9;
+    font-weight: 700;
+}
+
+.health-progress-gpu {
+    height: 8px;
+}
+
+.health-progress-bar-gpu {
+    width: 85%;
+    background: #2563eb;
+}
+
+.health-progress-text {
+    font-size: 0.7rem;
+}
+
+/* ── QUICK ACTIONS CONTROL CLASSES ──────────────────────── */
+.qa-header-icon-box {
+    width: 38px;
+    height: 38px;
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
+}
+
+.qa-tile-link {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border-color: rgba(0, 0, 0, 0.06);
+
+    &:hover {
+        border-color: rgba(37, 99, 235, 0.3);
+        transform: translateY(-2px);
+    }
+}
+
+.qa-tile-icon-box {
+    width: 36px;
+    height: 36px;
+
+    &--blue { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+    &--green { background: rgba(5, 150, 105, 0.12); color: #059669; }
+    &--amber { background: rgba(217, 119, 6, 0.12); color: #d97706; }
+    &--purple { background: rgba(124, 58, 237, 0.12); color: #7c3aed; }
+}
+
+.qa-badge {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+
+    &--blue { color: #2563eb; }
+    &--green { color: #059669; }
+    &--amber { color: #d97706; }
+    &--purple { color: #7c3aed; }
+}
+
+.qa-title {
+    font-family: var(--font-family-display, 'Outfit', sans-serif);
+    font-size: 0.88rem;
+    color: #0f172a;
+}
+
+.qa-desc {
+    font-size: 0.73rem;
+    line-height: 1.25;
+}
+
+.qa-summary-box {
+    background: #f8fafc;
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+.qa-summary-icon {
+    width: 38px;
+    height: 38px;
+    background: rgba(5, 150, 105, 0.1);
+    color: #059669;
+}
+
+.qa-summary-title {
+    font-size: 0.82rem;
+    font-family: var(--font-family-display, 'Outfit', sans-serif);
+}
+
+.qa-summary-sub {
+    font-size: 0.7rem;
+}
+
+.qa-link-btn {
+    font-size: 0.75rem;
+    color: #2563eb;
+}

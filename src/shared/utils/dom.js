@@ -165,9 +165,9 @@ export const setButtonLoading = (target, isLoading, loadingText = 'Procesando...
 
         const textNode = document.createTextNode(loadingText);
         btn.replaceChildren(spinner, textNode);
-    } else {
-        const originalText = btn.dataset.originalText || '';
-        btn.textContent = originalText;
+    } else if (btn.dataset.originalText !== undefined) {
+        btn.textContent = btn.dataset.originalText;
+        delete btn.dataset.originalText;
     }
 };
 
@@ -220,9 +220,9 @@ export const $off = (target, event, handler, options) => {
 export const $create = (tag, attrs = {}) => {
     const el = document.createElement(tag);
     const { id, className, text, ...rest } = attrs;
-    if (id) el.id = id;
+    if (id !== undefined && id !== null && id !== '') el.id = String(id);
     if (className) el.className = className;
-    if (text) el.textContent = text;
+    if (text !== undefined && text !== null) el.textContent = String(text);
     for (const [key, val] of Object.entries(rest)) {
         if (key.startsWith('data')) {
             el.setAttribute(key.replace(/([A-Z])/g, '-$1').toLowerCase(), val);

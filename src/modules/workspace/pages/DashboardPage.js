@@ -1,5 +1,6 @@
 import { sessionState } from '@/core/state/session.js';
 import { escapeHTML } from '@/shared/utils/security.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 /**
  * DashboardPage - Vista Principal del Workspace
@@ -109,7 +110,7 @@ export const DashboardPage = {
         `;
     },
     init() {
-        console.log('[Workspace] -> DashboardPage inicializado con telemetría mock.');
+        Logger.debug({ layer: 'MODULE', role: 'CLASS', target: 'DashboardPage', message: 'DashboardPage inicializado.' });
     }
 };
 export default DashboardPage;

@@ -3,25 +3,33 @@
  * =========================================================================
  * Clean Core Architecture: Componente nativo del módulo de negocios.
  */
-import ModalService from '@/shared/ui/services/ModalService.js';
-import { createBusinessWizardTemplate } from '@/shared/ui/templates/modals/_business_wizard.js';
+import { modalServiceV2 } from '@/shared/ui/services/modal/modal-service-v2.js';
+import { renderButton } from '@/shared/ui/primitives/ui-button.js';
+import { createBusinessWizardTemplate } from '../templates/business-wizard-template.js';
 import BusinessWizardController from '../BusinessWizardController.js';
 
 export const BusinessWizardModal = {
     show() {
-        ModalService.showModal({
+        modalServiceV2.showModal({
+            id: 'business-wizard-modal',
+            scope: 'module',
             size: 'lg',
-            header: ModalService.buildHeader({
-                icon: 'bi-building-add',
-                title: 'Asistente de Registro Comercial',
-                subtitle: 'NUEVA EMPRESA / COMERCIO EN BUCA AI'
-            }),
-            body: createBusinessWizardTemplate(),
+            closeOnBackdrop: false,
+            header: {
+                left: {
+                    icon: 'bi-building-add',
+                    title: 'Asistente de Registro Comercial',
+                    subtitle: 'Nueva empresa / comercio en BUCA AI'
+                }
+            },
+            body: {
+                html: createBusinessWizardTemplate()
+            },
             footer: {
-                right: `
-                    <button type="button" class="btn btn-ghost rounded-pill px-4" data-action="ui:close_modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4" id="btn-submit-business-wizard">Registrar Comercio</button>
-                `
+                right: [
+                    renderButton({ variant: 'ghost', pill: true, label: 'Cancelar', action: 'ui:close_modal' }),
+                    renderButton({ id: 'btn-submit-business-wizard', variant: 'primary', pill: true, iconLeft: 'bi-check2-circle', label: 'Registrar Comercio' })
+                ].join('')
             },
             onOpen: () => {
                 if (BusinessWizardController && typeof BusinessWizardController.init === 'function') {

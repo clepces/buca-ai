@@ -3,7 +3,7 @@
  * =========================================================================
  */
 import GraphicsEngine from '@/core/engine/engine.js';
-import { PerformanceGuards } from '@/shared/ui/components/performance/PerformanceGuards.js';
+import { PerformanceGuards } from '../components/performance/PerformanceGuards.js';
 import { PerformanceD3Dashboard } from '../components/PerformanceD3Dashboard.js';
 
 export const performanceTemplate = (data = {}) => {

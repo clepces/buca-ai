@@ -39,7 +39,7 @@ export const SearchService = {
     async performSearch(term) {
         if (!term || term.length < 3) return;
 
-        Logger.info('SearchService', `Buscando: ${term}`);
+        Logger.debug({ layer: 'SERVICE', role: 'SERVICE', target: 'SearchService', message: `Ejecutando búsqueda global: "${term}".` });
 
         const results = [];
         for (const provider of this._registry) {
@@ -47,7 +47,7 @@ export const SearchService = {
                 const providerResults = await provider.search(term);
                 results.push(...providerResults.map(r => ({ ...r, source: provider.name })));
             } catch (err) {
-                Logger.error('SearchService', `Error en proveedor ${provider.name}:`, err);
+                Logger.error({ layer: 'SERVICE', role: 'SERVICE', target: 'SearchService', message: `Error consultando proveedor de búsqueda "${provider.name}".`, data: err?.message || err });
             }
         }
 

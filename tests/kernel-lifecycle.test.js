@@ -81,7 +81,7 @@ describe('Event Ownership & Double-Effect Prevention', () => {
         }
     });
 
-    it('ui:clear_notifications es propiedad de NotificationService (sin doble llamada)', () => {
+    it('notifications:clear es propiedad de NotificationService (sin doble llamada)', () => {
         NotificationService.init();
         ActionDispatcher.init();
 
@@ -90,7 +90,7 @@ describe('Event Ownership & Double-Effect Prevention', () => {
         NotificationService.clearNotifications = () => { clearCount++; };
 
         try {
-            eventBus.emit('ui:clear_notifications');
+            eventBus.emit('notifications:clear');
             assert.equal(clearCount, 1, 'Debe ejecutarse exactamente 1 vez');
         } finally {
             NotificationService.clearNotifications = origClear;

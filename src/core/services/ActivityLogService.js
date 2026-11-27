@@ -26,7 +26,7 @@ export const ActivityLogService = {
 
         // Escuchar eventos sensibles para auto-registro
         this._cleanups.push(
-            eventBus.on('buca:rate_change', (data) => {
+            eventBus.on('finance:rate_updated', (data) => {
                 this.log({
                     action: 'UPDATE_RATE',
                     title: 'Tasa cambiaria actualizada',

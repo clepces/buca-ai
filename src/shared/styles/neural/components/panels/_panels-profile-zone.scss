@@ -1,0 +1,212 @@
+@use '../../abstracts' as *;
+
+/* ─────────────────────────────────────────────────────────
+   VARIANTE IDIOMA — Items con banderas
+   ───────────────────────────────────────────────────────── */
+.panel-item--lang {
+    gap: 10px;
+    padding: 11px 18px;
+    
+    .lang-flag-sm {
+        font-size: 1.3rem;
+        line-height: 1;
+    }
+
+    .item-label {
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--text-main);
+    }
+
+    .item-check {
+        margin-left: auto;
+        color: var(--buca-blue);
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+
+    &.active {
+        background: rgba(37, 99, 235, 0.06);
+        .item-label { font-weight: 700; }
+    }
+
+    &:hover {
+        background: var(--hover-glass);
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   ZONA DE PERFIL (solo variante RICH)
+   ───────────────────────────────────────────────────────── */
+.panel-profile-zone {
+    padding: 24px 18px 16px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, transparent 100%);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    border-bottom: 1px solid var(--border-glass);
+
+    .profile-avatar-lg {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        position: relative;
+        background: linear-gradient(135deg, var(--buca-blue), #60a5fa);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 800;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        box-shadow: 0 6px 14px var(--buca-blue-glow);
+        border: 2px solid white;
+
+        .status-dot {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            bottom: 2px;
+            right: 2px;
+            border-width: 3px;
+            pointer-events: none;
+            z-index: 2;
+        }
+    }
+
+    .profile-info {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-width: 0;
+
+        .profile-name {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--text-main);
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .profile-email {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: -1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   ACCESOS RÁPIDOS (Quick Controls)
+   Diseño con scroll horizontal para soportar múltiples acciones
+   sin saturar verticalmente el panel.
+   ───────────────────────────────────────────────────────── */
+.panel-quick-controls {
+    display: flex;
+    align-items: center;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border-glass);
+    background: rgba(37, 99, 235, 0.02);
+    overflow: hidden;
+
+    .qc-scroll-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 4px 2px;
+
+        @include hide-scrollbar;
+
+        scroll-snap-type: x mandatory;
+        flex: 1;
+        min-width: 0;
+
+        /* Limitar visualmente a ~5 botones (34px + 10px gap) * 5 ≈ 210px-220px */
+        /* Pero permitimos que crezca si el panel es ancho */
+    }
+
+    .qc-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 4px;
+        transition: all 0.2s;
+        opacity: 0.6;
+
+        &:hover {
+            color: var(--buca-blue);
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        &--left { margin-right: 2px; }
+        &--right { margin-left: 2px; }
+    }
+}
+
+.qc-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: 1px solid var(--border-glass);
+    background: var(--surface-glass);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    flex-shrink: 0;
+    scroll-snap-align: start;
+
+    &:hover {
+        background: var(--buca-blue);
+        color: #fff;
+        border-color: var(--buca-blue);
+        transform: translateY(-2px) scale(1.1);
+        box-shadow: 0 4px 12px var(--buca-blue-glow);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   SCROLL AREA INTERNA (evita doble scrollbar)
+   ───────────────────────────────────────────────────────── */
+.panel-scroll-area {
+    flex: 1;            /* Ocupa todo el espacio disponible en el flex column */
+    min-height: 0;      /* Permite que flex shrink funcione */
+    overflow: hidden auto;
+
+    @supports (scrollbar-width: thin) {
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-glass) transparent;
+    }
+
+    &::-webkit-scrollbar {
+        width: 3px;
+    }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: var(--border-glass);
+        border-radius: 3px;
+    }
+}
+

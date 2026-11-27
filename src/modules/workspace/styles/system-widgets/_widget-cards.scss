@@ -1,0 +1,124 @@
+/**
+ * Workspace System Widgets — Cards & Accordion Base
+ */
+@use "@/shared/styles/neural/abstracts" as *;
+
+.system-widget-card {
+    background: var(--glass-bg, rgba(255, 255, 255, 0.95));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.08));
+    border-radius: 1.25rem;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.03);
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+        border-color: rgba(37, 99, 235, 0.25);
+    }
+}
+
+.system-accordion-stack {
+    .system-accordion-item {
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        background: #fff !important;
+
+        &:hover {
+            border-color: rgba(37, 99, 235, 0.3) !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+        }
+    }
+
+    .accordion-body-content {
+        display: none !important;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+
+        &.show {
+            display: block !important;
+            max-height: 600px;
+            opacity: 1;
+        }
+    }
+
+    .accordion-scroll-body {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(37, 99, 235, 0.3) transparent;
+
+        &::-webkit-scrollbar {
+            width: 5px;
+        }
+        &::-webkit-scrollbar-thumb {
+            background: rgba(37, 99, 235, 0.3);
+            border-radius: 10px;
+        }
+    }
+
+    .accordion-chevron {
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .accordion-inner-frame {
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        border-radius: 0.85rem;
+        background: #f8fafc !important;
+    }
+
+    .system-highlight-card {
+        transition: all 0.2s ease;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        background: #fff !important;
+        min-width: 0;
+
+        &:hover {
+            transform: translateY(-1px);
+            border-color: rgba(37, 99, 235, 0.25) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+        }
+
+        .system-highlight-text {
+            min-width: 0;
+            flex: 1 1 auto;
+            overflow: hidden;
+
+            strong, span {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+    }
+
+    .system-metric-box {
+        margin-top: 1rem;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        background: #fff !important;
+    }
+}
+
+.widget-badge-pill {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.65rem;
+}
+
+.widget-status-dot {
+    font-size: 0.45rem;
+}
+
+.widget-progress-track {
+    height: 6px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.widget-progress-fill-85 {
+    width: 85%;
+}
+
+.widget-meta-micro {
+    font-size: 0.72rem;
+}

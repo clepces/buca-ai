@@ -53,14 +53,16 @@ export const Validators = {
      * Validates email format
      */
     isValidEmail(email) {
+        if (typeof email !== 'string') return false;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
+        return emailRegex.test(email.trim());
     },
 
     /**
      * Validates strong password (min 8 chars, 1 upper, 1 lower, 1 number)
      */
     isStrongPassword(password) {
+        if (typeof password !== 'string') return false;
         return password.length >= 8 &&
             /[A-Z]/.test(password) &&
             /[a-z]/.test(password) &&
@@ -71,7 +73,7 @@ export const Validators = {
      * Validates if a rate is a positive number
      */
     isValidRate(rate) {
-        return typeof rate === 'number' && rate > 0;
+        return Number.isFinite(rate) && rate > 0;
     },
 
     /**
@@ -85,7 +87,7 @@ export const Validators = {
      * Validates the challenge PIN (6 digits)
      */
     isValidChallengePin(pin) {
-        return /^\d{6}$/.test(pin);
+        return typeof pin === 'string' && /^\d{6}$/.test(pin);
     }
 };
 

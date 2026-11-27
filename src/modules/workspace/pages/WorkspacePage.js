@@ -82,7 +82,7 @@ export const WorkspacePage = {
         `;
     },
     init() {
-        Logger.info('WorkspacePage', 'Full Neural Workspace initialized');
+        Logger.info({ layer: 'UI', role: 'CLASS', target: 'WorkspacePage', message: 'Vista principal del Workspace inicializada.' });
         
         // Mount Navigation Ribbon
         WorkspaceNavRibbon.mount('workspace-nav-slot');
@@ -96,7 +96,7 @@ export const WorkspacePage = {
         if (typeof SystemHealthMonitor.init === 'function') SystemHealthMonitor.init();
     },
     destroy() {
-        Logger.info('WorkspacePage', 'Destroying workspace components...');
+        Logger.debug({ layer: 'UI', role: 'CLASS', target: 'WorkspacePage', message: 'Desmontando componentes del Workspace.' });
         if (typeof BusinessHub.destroy === 'function') BusinessHub.destroy();
         if (typeof RecentActivity.destroy === 'function') RecentActivity.destroy();
         if (typeof WorkspaceNavRibbon.unmount === 'function') WorkspaceNavRibbon.unmount();

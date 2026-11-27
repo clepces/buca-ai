@@ -3,26 +3,26 @@
  */
 
 import { ExperimentalDock } from './components/ExperimentalDock.js';
+import ModalService from '@/shared/ui/services/ModalService.js';
 
 export class SandboxController {
     static async show() {
-        const { ModalService } = await import('@/shared/ui/services/ModalService.js');
         const dock = new ExperimentalDock();
 
         ModalService.showModal({
+            id: 'sandbox-test-area',
+            scope: 'module',
             size: 'full',
             header: {
-                left: `
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-bug-fill text-danger fs-5"></i>
-                        <div>
-                            <h2 class="h6 fw-bold mb-0">MODO SANDBOX / TEST AREA</h2>
-                            <span class="text-muted small">PRUEBAS DE COMPONENTES EXPERIMENTALES</span>
-                        </div>
-                    </div>
-                `
+                left: {
+                    icon: 'bi-bug-fill',
+                    title: 'MODO SANDBOX / TEST AREA',
+                    subtitle: 'Pruebas de componentes experimentales',
+                    badge: { text: 'LAB', tone: 'warning' }
+                }
             },
-            body: `
+            body: {
+                html: `
                 <div class="sandbox-workspace h-100 d-flex flex-column align-items-center justify-content-center position-relative">
                     <div class="test-label text-white-50 mb-5 text-center">
                         <h3 class="h4">Laboratorio de UI</h3>
@@ -36,8 +36,8 @@ export class SandboxController {
                         <div>Física: Magnética (Radial)</div>
                     </div>
                 </div>
-            `,
-            lifecycleId: 'sandbox-test-area',
+            `
+            },
             destroyCallback: () => {
                 dock.destroy();
             }

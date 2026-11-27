@@ -5,13 +5,27 @@
 
 import { storage } from '@/core/storage/StorageAdapter.js';
 import { uiState } from '@/core/state/ui.js';
+import { eventBus } from '@/core/eventBus/index.js';
 import { $id, $attr, $$ } from '@/shared/utils/dom.js';
 
 export const ThemeManager = {
+    _unlisten: null,
+
     async init() {
         const saved = await storage.get('theme') || 'light';
         $attr(document.documentElement, 'data-theme', saved);
         this.updateThemeUI(saved);
+        if (typeof this._unlisten === 'function') this._unlisten();
+        this._unlisten = eventBus.on('ui:set_theme', (p) => {
+            if (p?.theme) this.setTheme(p.theme);
+        });
+    },
+
+    destroy() {
+        if (typeof this._unlisten === 'function') {
+            this._unlisten();
+            this._unlisten = null;
+        }
     },
 
     async toggle() {

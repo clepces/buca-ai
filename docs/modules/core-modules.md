@@ -2,13 +2,14 @@
 ## Dominios Autónomos Activos en `src/modules/` — B.U.C.A. AI
 
 > **Módulo:** `docs/modules/core-modules.md`  
-> **Estado:** `[Producción v1.1.8-alpha]`
+> **Estado:** `[Producción v1.1.24-alpha]`
 
 ---
 
 ## 1. Módulo `auth` (Identidad, Seguridad y MFA)
 * **Serial ID:** `buca:mod:auth:core`
-* **Rutas:** `/auth/login`, `/auth/register`, `/auth/pin`, `/auth/mfa`
+* **Rutas (`kebab-case`):** `/auth/login`, `/auth/register`, `/auth/recovery`, `/auth/recovery/reset-password`, `/auth/two-factor`, `/auth/verify-email`, `/auth/callback`, `/auth/logout`, `/auth/unauthorized`
+* **Componentes y Páginas (`kebab-case`):** `login-page.js`, `register-page.js`, `recovery-page.js`, `password-reset-page.js`, `two-factor-page.js`, `verify-email-page.js`, `callback-page.js`, `logout-page.js`, `unauthorized-page.js`, `auth-card-shell.js`, `auth-form-fields.js`, `auth-status-view.js`.
 * **Capacidades:**
   - Autenticación con Supabase Auth (JWT).
   - Verificación Multifactorial TOTP (RFC 6238) con nivel AAL2.

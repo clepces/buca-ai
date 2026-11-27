@@ -8,6 +8,7 @@
  */
 import { eventBus } from '@/core/eventBus/index.js';
 import { RouteConfig } from './RouteConfig.js';
+import { RouterGuards } from './guards.js';
 import { Logger } from '@/shared/utils/logger.js';
 import ModuleLoader from '@/core/ModuleLoader.js';
 import { getPath, pushHistory, scrollWindowTo, $onWindow } from '@/core/utils/index.js';
@@ -48,6 +49,12 @@ class Router {
     #setupListeners() {
         const unlisten = $onWindow('popstate', () => this.handleRouteChange());
         if (unlisten) this.#unlisteners.push(unlisten);
+        const unlistenNav = eventBus.on('router:navigate', async (p) => {
+            if (!p?.path) return;
+            const safePath = RouterGuards.sanitizeReturnUrl(p.path);
+            this.navigate(safePath);
+        });
+        if (typeof unlistenNav === 'function') this.#unlisteners.push(unlistenNav);
     }
 
     #setupLinkInterceptor() {
@@ -66,14 +73,13 @@ class Router {
 
     #setupGlobalErrorCapture() {
         const unlistenErr = $onWindow('error', (event) => {
-            Logger.error('GlobalError', { message: event.message, source: event.filename, lineno: event.lineno, error: event.error });
+            Logger.error({ layer: 'KERNEL', role: 'EVENT', target: 'GlobalError', message: 'Error global no capturado en ventana.', data: { message: event.message, source: event.filename, lineno: event.lineno, error: event.error } });
             this.#renderError('500');
         });
         if (unlistenErr) this.#unlisteners.push(unlistenErr);
 
         const unlistenRej = $onWindow('unhandledrejection', (event) => {
-            Logger.error('UnhandledRejection', event.reason);
-            this.#renderError('500');
+            Logger.error({ layer: 'KERNEL', role: 'EVENT', target: 'UnhandledRejection', message: 'Promesa rechazada sin manejador.', data: event.reason });
         });
         if (unlistenRej) this.#unlisteners.push(unlistenRej);
     }
@@ -95,13 +101,26 @@ class Router {
 
             if (!route) route = this.routes.find(r => r.path === '*');
 
-            if (route && route.requiresAuth) {
-                const { RouterGuards } = await import('./guards.js');
-                if (!RouterGuards.requiresAuth()) return this.navigate('/auth/login');
-                const hasAAL2 = await RouterGuards.requiresAAL2();
-                if (!hasAAL2) {
-                    eventBus.emit('auth:mfa-required', { returnUrl: path });
-                    return this.navigate('/auth/login');
+            if (route) {
+                const stateRedirect = RouterGuards.resolveStateRedirect(route);
+                if (stateRedirect && stateRedirect !== path) {
+                    return this.navigate(stateRedirect);
+                }
+                if (route.requiresAuth) {
+                    if (!RouterGuards.requiresAuth()) {
+                        RouterGuards.setReturnUrl(path);
+                        return this.navigate('/auth/login');
+                    }
+                    const hasAAL2 = await RouterGuards.requiresAAL2();
+                    if (!hasAAL2) {
+                        const safeReturn = RouterGuards.sanitizeReturnUrl(path);
+                        RouterGuards.setReturnUrl(safeReturn);
+                        eventBus.emit('auth:mfa-required', { returnUrl: safeReturn });
+                        return this.navigate('/auth/login');
+                    }
+                    if (!RouterGuards.requiresRole(route.allowedRoles)) {
+                        return this.#renderError('403');
+                    }
                 }
             }
 
@@ -150,7 +169,7 @@ class Router {
                     try {
                         $mount(contentSlot, route.component.render());
                     } catch (renderError) {
-                        Logger.error('Router', 'Render Error:', renderError);
+                        Logger.error({ layer: 'KERNEL', role: 'CLASS', target: 'Router', message: 'Error renderizando componente de ruta.', data: renderError });
                         return this.#renderError('500');
                     }
                     
@@ -159,10 +178,10 @@ class Router {
                     if (typeof route.component.init === 'function') {
                         try {
                             Promise.resolve(route.component.init()).catch((initError) => {
-                                Logger.error('Router', 'Async Init Error:', initError);
+                                Logger.error({ layer: 'KERNEL', role: 'CLASS', target: 'Router', message: 'Error en inicialización asíncrona de ruta.', data: initError });
                             });
                         } catch (initError) {
-                            Logger.error('Router', 'Init Error:', initError);
+                            Logger.error({ layer: 'KERNEL', role: 'CLASS', target: 'Router', message: 'Error inicializando componente de ruta.', data: initError });
                         }
                     }
                 }
@@ -171,7 +190,7 @@ class Router {
             this.prevPath = path;
             eventBus.emit('router:changed', { path, route });
         } catch (fatalError) {
-            Logger.critical('Router', 'Fatal Route Change Error:', fatalError);
+            Logger.critical({ layer: 'KERNEL', role: 'CLASS', target: 'Router', message: 'Error crítico durante el cambio de ruta.', data: fatalError });
             this.#renderError('500');
         }
     }
@@ -186,7 +205,7 @@ class Router {
                 if (ErrorPage.init) ErrorPage.init();
             }
         } catch (err) {
-            Logger.critical('Router', 'Error in error view:', err);
+            Logger.critical({ layer: 'KERNEL', role: 'CLASS', target: 'Router', message: 'Error al renderizar vista de error.', data: err });
         }
     }
 

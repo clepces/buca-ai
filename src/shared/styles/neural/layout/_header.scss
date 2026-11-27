@@ -4,5 +4,6 @@
 
 @use "../abstracts" as *;
 @forward 'header/topbar_core';
+@forward 'header/topbar_brand';
 @forward 'header/header_actions';
 @forward 'header/topbar_controls';

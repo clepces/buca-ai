@@ -5,6 +5,7 @@
  * =========================================================================
  */
 import { eventBus } from '@/core/eventBus/index.js';
+import ModalService from '@/shared/ui/services/ModalService.js';
 import { $id, $on, $mount } from '@/shared/utils/dom.js';
 
 export const TelemetryComponent = {
@@ -114,7 +115,7 @@ export const TelemetryComponent = {
                         </div>
                         <div class="d-flex align-items-baseline justify-content-between gap-2 mt-1">
                             <h4 class="mb-0 fw-bold text-main h5">${v.value}</h4>
-                            <span class="x-small text-primary fw-semibold clickable" data-action="${metric.id.startsWith('currency') ? 'ui:open_rate' : 'ui:enter_business'}">
+                            <span class="x-small text-primary fw-semibold clickable" data-action="${metric.id.startsWith('currency') ? 'finance:open_rate' : 'business:enter'}">
                                 ${metric.id.startsWith('currency') ? 'Ajustar Tasa <i class="bi bi-arrow-up-right"></i>' : 'Ver Detalles <i class="bi bi-arrow-right"></i>'}
                             </span>
                         </div>
@@ -150,20 +151,21 @@ export const TelemetryComponent = {
                 const metric = this._metrics[idx];
                 
                 if (metric.id.startsWith('currency')) {
-                    eventBus.emit('ui:open_rate');
+                    eventBus.emit('finance:open_rate');
                 } else {
-                    const [{ ModalTemplates }, { ModalService }] = await Promise.all([
-                        import('@/shared/ui/templates/ModalTemplates.js'),
-                        import('@/shared/ui/services/ModalService.js')
-                    ]);
                     ModalService.showModal({
+                        id: `telemetry-${metric.id}`,
+                        scope: 'module',
                         size: 'md',
-                        header: ModalTemplates.buildHeader({
-                            icon: metric.icon,
-                            title: metric.title,
-                            subtitle: 'INDICADOR OPERATIVO'
-                        }),
-                        body: `
+                        header: {
+                            left: {
+                                icon: metric.icon,
+                                title: metric.title,
+                                subtitle: 'Indicador operativo en tiempo real'
+                            }
+                        },
+                        body: {
+                            html: `
                             <div class="p-3 text-center">
                                 <div class="tel-modal-icon rounded-circle mx-auto mb-3 shadow-sm" data-metric="${metric.id}">
                                     <i class="bi ${metric.icon} fs-4"></i>
@@ -181,7 +183,8 @@ export const TelemetryComponent = {
                                     </div>
                                 </div>
                             </div>
-                        `,
+                        `
+                        },
                         footer: {
                             right: '<button type="button" class="btn btn-primary rounded-pill px-4" data-action="ui:close_modal">Cerrar</button>'
                         }
@@ -190,7 +193,7 @@ export const TelemetryComponent = {
             }
         });
         
-        eventBus.on('buca:rate_change', ({ rate }) => {
+        eventBus.on('finance:rate_updated', ({ rate }) => {
             const usd = this._metrics.find(m => m.id === 'currency_usd');
             const eur = this._metrics.find(m => m.id === 'currency_eur');
             const usdt = this._metrics.find(m => m.id === 'crypto_usdt');

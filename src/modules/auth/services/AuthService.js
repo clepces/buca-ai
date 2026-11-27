@@ -3,7 +3,7 @@
  * Maneja login con signInWithPassword, registro, recuperación y TOTP MFA.
  */
 import { SupabaseProvider } from './SupabaseProvider.js';
-import { getSupabase } from '@/core/config/supabase.js';
+import { getSupabase, clearRecoverySessionProof } from '@/core/config/supabase.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { sessionState } from '@/core/state/session.js';
 import { Logger } from '@/shared/utils/logger.js';
@@ -36,12 +36,14 @@ export const AuthService = {
             }
 
             const user = session.user;
+            let isAAL2 = false;
             try {
                 const aal = await SupabaseProvider.getAssuranceLevel();
                 if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
                     sessionState.set({ isAuthenticated: false, mfaPending: true, user: null, currentRole: 'guest' });
                     return { isAuthenticated: false, mfaPending: true };
                 }
+                isAAL2 = aal?.currentLevel === 'aal2';
             } catch {
                 sessionState.set({ isAuthenticated: false, mfaPending: true, user: null, currentRole: 'guest' });
                 return { isAuthenticated: false, mfaPending: true };
@@ -52,7 +54,7 @@ export const AuthService = {
             sessionState.set({
                 isAuthenticated: true,
                 mfaPending: false,
-                isAAL2Verified: false,
+                isAAL2Verified: isAAL2,
                 user: {
                     uid: user.id,
                     email: user.email,
@@ -69,10 +71,11 @@ export const AuthService = {
     },
 
     async login(email, password) {
-        Logger.info('AuthService', `Intentando login con Supabase para ${email}`);
+        Logger.info({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: `Iniciando autenticación con Supabase para ${email}.` });
         try {
             const data = await SupabaseProvider.login(email, password);
             const user = data.user;
+            clearRecoverySessionProof();
 
             try {
                 if (typeof sessionStorage !== 'undefined') {
@@ -86,7 +89,7 @@ export const AuthService = {
             try {
                 const aal = await SupabaseProvider.getAssuranceLevel();
                 if (aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
-                    Logger.info('AuthService', 'MFA Requerido (AAL2)');
+                    Logger.info({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: 'Verificación MFA (AAL2) requerida.' });
                     const factors = await SupabaseProvider.mfaListFactors();
                     const totpFactor = factors?.totp?.[0];
 
@@ -97,7 +100,7 @@ export const AuthService = {
                     }
                 }
             } catch (mfaCheckErr) {
-                Logger.error('AuthService', 'Fallo evaluando nivel AAL (Fail-Closed):', mfaCheckErr.message);
+                Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: 'Fallo evaluando nivel AAL (Fail-Closed).', data: mfaCheckErr.message });
                 sessionState.set({ isAuthenticated: false, mfaPending: true, user: null, currentRole: 'guest' });
                 return { success: false, error: 'Error de verificación de seguridad AAL. Se requiere autenticación estricta.' };
             }
@@ -118,7 +121,7 @@ export const AuthService = {
             eventBus.emit('auth:login-success', { user });
             return { success: true, user };
         } catch (error) {
-            Logger.error('AuthService', 'Fallo en autenticación:', error.message);
+            Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: 'Fallo en autenticación.', data: error.message });
             eventBus.emit('auth:login-failed', { error });
             return { success: false, error: error.message };
         }
@@ -153,7 +156,21 @@ export const AuthService = {
             eventBus.emit('auth:login-success', { user });
             return { success: true, result: verifyResult };
         } catch (error) {
-            Logger.error('AuthService', 'Fallo verificando código MFA:', error.message);
+            Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: 'Fallo verificando código MFA.', data: error.message });
+            return { success: false, error: error.message };
+        }
+    },
+
+    async verifyRecoveryMFA(factorId, code) {
+        try {
+            const isRecovery = await SupabaseProvider.isRecoverySession();
+            if (!isRecovery) {
+                throw new Error('Se requiere una sesión de recuperación válida para verificar el segundo factor.');
+            }
+            const { verifyResult } = await this._verifyFactorChallenge(factorId, code);
+            return { success: true, result: verifyResult };
+        } catch (error) {
+            Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: 'Fallo verificando MFA en recuperación.', data: error.message });
             return { success: false, error: error.message };
         }
     },
@@ -169,7 +186,7 @@ export const AuthService = {
                 uri: enrollment.totp.uri
             };
         } catch (error) {
-            Logger.error('AuthService', 'Fallo enrolando TOTP:', error.message);
+            Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: 'Fallo enrolando factor TOTP.', data: error.message });
             return { success: false, error: error.message };
         }
     },
@@ -180,7 +197,7 @@ export const AuthService = {
             sessionState.set({ isAAL2Verified: true, mfaPending: false });
             return { success: true, result: verifyResult };
         } catch (error) {
-            Logger.error('AuthService', 'Fallo confirmando enrolamiento TOTP:', error.message);
+            Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: 'Fallo confirmando enrolamiento TOTP.', data: error.message });
             return { success: false, error: error.message };
         }
     },
@@ -200,7 +217,7 @@ export const AuthService = {
             }
             return { success: true, user };
         } catch (error) {
-            Logger.error('AuthService', 'Fallo en registro:', error.message);
+            Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: 'Fallo en registro de usuario.', data: error.message });
             eventBus.emit('auth:register-failed', { error });
             return { success: false, error: error.message };
         }
@@ -209,14 +226,14 @@ export const AuthService = {
     async recoverPassword(email) {
         try {
             await SupabaseProvider.recoverPassword(email);
-            Logger.info('AuthService', 'Flujo de recuperación despachado correctamente.');
+            Logger.info({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: 'Flujo de recuperación despachado correctamente.' });
             return { success: true };
         } catch (error) {
             const rawMsg = typeof error?.message === 'string' ? error.message.trim() : '';
             const safeError = (!rawMsg || rawMsg === '{}')
                 ? 'No se pudo procesar la solicitud de recuperación.'
                 : rawMsg;
-            Logger.error('AuthService', `Fallo al solicitar recuperación (status: ${error?.status ?? 'N/A'}):`, safeError);
+            Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: 'Fallo al solicitar recuperación de contraseña.', data: { status: error?.status ?? 'N/A', error: safeError } });
             return { success: false, status: error?.status, error: safeError };
         }
     },
@@ -227,7 +244,7 @@ export const AuthService = {
      * @returns {Promise<{ success: boolean, user?: object, error?: string }>}
      */
     async updatePassword(newPassword) {
-        Logger.info('AuthService', 'Ejecutando cambio de contraseña...');
+        Logger.info({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: 'Ejecutando cambio de contraseña.' });
         try {
             const isRecovery = await SupabaseProvider.isRecoverySession();
             if (!isRecovery) {
@@ -237,7 +254,7 @@ export const AuthService = {
             eventBus.emit('auth:password-updated', { user: data?.user });
             return { success: true, user: data?.user };
         } catch (error) {
-            Logger.error('AuthService', 'Fallo al actualizar contraseña:', error.message);
+            Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: 'Fallo al actualizar contraseña.', data: error.message });
             return { success: false, error: error.message };
         }
     },
@@ -259,7 +276,7 @@ export const AuthService = {
                 remoteError = result.error;
             }
         } catch (error) {
-            Logger.error('AuthService', 'Error al cerrar sesión remota:', error.message);
+            Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: 'Error al cerrar sesión remota.', data: error.message });
             remoteError = error.message;
         } finally {
             sessionState.clear();
@@ -307,7 +324,7 @@ export const AuthService = {
 
             return inserted || defaultProfile;
         } catch (err) {
-            Logger.warn('AuthService', 'Error sincronizando perfil:', err.message);
+            Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'Auth', message: 'Error sincronizando perfil de usuario.', data: err.message });
             return null;
         }
     }

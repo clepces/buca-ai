@@ -7,6 +7,7 @@
  * =========================================================================
  */
 import { $id, $mount, $on } from '@/shared/utils/dom.js';
+import { getViewportWidth, getViewportHeight } from '@/core/utils/system-helper.js';
 
 export class TooltipService {
     static isInitialized = false;
@@ -151,7 +152,7 @@ export class TooltipService {
             if (position === 'bottom') {
                 top = targetRect.bottom + margin;
                 left = targetRect.left + (targetRect.width - tooltipRect.width) / 2;
-                if (top + tooltipRect.height > window.innerHeight - margin) {
+                if (top + tooltipRect.height > getViewportHeight() - margin) {
                     top = targetRect.top - tooltipRect.height - margin;
                 }
             } else if (position === 'top') {
@@ -170,7 +171,7 @@ export class TooltipService {
 
             // Detección de bordes horizontales (Edge Clamping)
             const minLeft = margin;
-            const maxLeft = window.innerWidth - tooltipRect.width - margin;
+            const maxLeft = getViewportWidth() - tooltipRect.width - margin;
             left = Math.max(minLeft, Math.min(left, maxLeft));
 
             // Aplicar coordenadas finales

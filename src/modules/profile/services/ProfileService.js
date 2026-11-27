@@ -5,6 +5,7 @@
  * =========================================================================
  */
 import { getSupabase } from '@/core/config/supabase.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const ProfileService = {
   _getClient() {
@@ -22,12 +23,12 @@ export const ProfileService = {
         .maybeSingle();
 
       if (error) {
-        console.warn('[ProfileService] Error fetching profile:', error.message);
+        Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'ProfileService', message: 'Error consultando perfil de usuario.', data: error.message });
         return null;
       }
       return data;
     } catch (err) {
-      console.error('[ProfileService] Unexpected profile fetch error:', err);
+      Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'ProfileService', message: 'Error inesperado consultando perfil.', data: err });
       return null;
     }
   },
@@ -47,7 +48,7 @@ export const ProfileService = {
       if (error) throw error;
       return true;
     } catch (err) {
-      console.error('[ProfileService] Error updating profile:', err.message || err);
+      Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'ProfileService', message: 'Error actualizando perfil de usuario.', data: err.message || err });
       throw err;
     }
   },
@@ -74,7 +75,7 @@ export const ProfileService = {
       if (error) throw error;
       return inserted;
     } catch (err) {
-      console.error('[ProfileService] Error creating profile:', err.message || err);
+      Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'ProfileService', message: 'Error creando perfil de usuario.', data: err.message || err });
       throw err;
     }
   }

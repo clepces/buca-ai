@@ -1,0 +1,109 @@
+/* =========================================================================
+   HEADER PARTIAL: TOPBAR BRAND (Collapsible Identity & Hover Tooltip)
+   Supabase-style brand contraction animation and contextual tooltip.
+   ========================================================================= */
+
+/* ── BRAND COLLAPSIBLE (Supabase-style contraction) ──────────── */
+.brand-collapsible {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+    max-width: 300px;
+    opacity: 1;
+    transition:
+        max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.35s ease,
+        margin 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &--contracted {
+        max-width: 0;
+        opacity: 0;
+        margin-left: 0;
+        pointer-events: none;
+    }
+}
+
+.brand-version-badge {
+    white-space: nowrap;
+}
+
+/* ── BRAND HOVER TOOLTIP (appears when logo is contracted) ───── */
+.brand-hover-tooltip {
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%) translateX(-4px);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    background: var(--surface-card, #fff);
+    border: 1px solid var(--border-glass, rgba(0, 0, 0, 0.08));
+    border-radius: 8px;
+    padding: 6px 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    font-size: 0.8rem;
+    z-index: 5000;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease,
+        visibility 0s 0.2s;
+
+    [data-theme="dark"] & {
+        background: var(--surface-card, #1e293b);
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    &--ready {
+        /* tooltip is eligible to show (brand is contracted) */
+    }
+
+    &--visible {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(-50%) translateX(0);
+        transition:
+            opacity 0.2s ease,
+            transform 0.2s ease,
+            visibility 0s 0s;
+    }
+
+    &__name {
+        font-family: "Outfit", sans-serif;
+        font-weight: 800;
+        color: var(--text-main);
+    }
+
+    &__version {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        background: var(--hover-glass, rgba(0, 0, 0, 0.04));
+        padding: 1px 6px;
+        border-radius: 4px;
+    }
+
+    &__sep {
+        color: var(--text-muted);
+        opacity: 0.4;
+    }
+
+    &__context {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+
+        small {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--buca-blue, #2563eb);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 4px;
+        }
+    }
+}

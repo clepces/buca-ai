@@ -1,0 +1,93 @@
+/**
+ * Workspace System Widgets — Accordion & Metrics Semantic Classes
+ */
+@use "@/shared/styles/neural/abstracts" as *;
+
+/* ── ACCORDION & SYSTEM WIDGETS SEMANTIC CLASSES ────────── */
+.system-widgets-header-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
+}
+
+.system-widgets-header-title {
+    font-family: var(--font-family-display, 'Outfit', sans-serif);
+    color: #0f172a;
+}
+
+.system-widgets-header-sub {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.accordion-icon-box {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+
+    &--blue { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+    &--purple { background: rgba(124, 58, 237, 0.12); color: #7c3aed; }
+    &--green { background: rgba(16, 185, 129, 0.12); color: #059669; }
+}
+
+.accordion-title {
+    font-family: var(--font-family-display, 'Outfit', sans-serif);
+    font-size: 0.98rem;
+    color: #0f172a;
+}
+
+.accordion-sub {
+    font-size: 0.74rem;
+    color: #475569;
+}
+
+.accordion-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+
+    &--blue { color: #2563eb; letter-spacing: 0.5px; }
+    &--purple { color: #7c3aed; }
+    &--green { color: #059669; }
+}
+
+.profile-l4-pill {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #047857;
+}
+
+.dot-green-micro {
+    width: 6px;
+    height: 6px;
+    background: #059669;
+}
+
+.metric-highlight-title {
+    font-size: 0.82rem;
+    color: #0f172a;
+}
+
+.metric-highlight-sub {
+    font-size: 0.72rem;
+}
+
+.accordion-desc-text {
+    font-size: 0.84rem;
+    line-height: 1.55;
+    color: #334155;
+}
+
+.vsync-bar-fill {
+    width: 100%;
+    background: #2563eb;
+}
+
+.vsync-track {
+    height: 6px;
+}
+
+.metric-event-text {
+    font-size: 0.82rem;
+    font-weight: 600;
+}

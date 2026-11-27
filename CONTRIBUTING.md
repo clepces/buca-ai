@@ -94,10 +94,13 @@ Antes de emitir cualquier commit o proponer cambios, es obligatorio ejecutar loc
 # 1. Pruebas de integración, RLS y contratos
 npm test
 
-# 2. Análisis estático de sintaxis y buenas prácticas
-npm run lint
+# 2. Análisis estático de sintaxis JS y estilos SCSS
+npm run lint:js
+npm run lint:css
 
-# 3. Verificación de tipos de JavaScript
+# 3. Verificación de tipos y compilación de producción
+npm run type-check
+npm run build
 npm run type-check
 
 # 4. Prueba de compilación de producción con Vite

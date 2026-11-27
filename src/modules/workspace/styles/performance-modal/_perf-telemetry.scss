@@ -1,0 +1,212 @@
+@use '@/shared/styles/neural/abstracts' as *;
+
+.performance-dashboard {
+    /* ── TELEMETRY TAB STYLES ──────────────────────────── */
+    .perf-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+
+        .stat-card {
+            background: var(--hover-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+
+            .stat-label {
+                font-size: 0.6rem;
+                font-weight: 800;
+                color: var(--text-muted);
+                letter-spacing: 0.5px;
+                margin-bottom: 6px;
+                text-transform: uppercase;
+            }
+
+            .stat-value-group {
+                display: flex;
+                align-items: baseline;
+                gap: 4px;
+
+                .stat-value {
+                    font-size: 1.4rem;
+                    font-weight: 900;
+                    color: var(--text-main);
+                    line-height: 1;
+                }
+
+                .stat-unit {
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    color: var(--buca-blue);
+                }
+            }
+
+            .stat-mini-chart {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 25px;
+                display: flex;
+                align-items: flex-end;
+                padding: 0 8px;
+                gap: 3px;
+                opacity: 0.15;
+
+                .chart-bar {
+                    flex: 1;
+                    background: var(--buca-blue);
+                    border-radius: 2px 2px 0 0;
+                }
+            }
+        }
+    }
+
+    /* ── SECTION CARDS & BADGES ────────────────────────── */
+    .perf-section-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-glass);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: var(--shadow-glass-sm);
+
+        .section-header {
+            margin-bottom: 16px;
+            
+            h4 {
+                color: var(--text-main);
+            }
+        }
+    }
+
+    .badge-status-premium {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        letter-spacing: 0.5px;
+        transition: all 0.3s;
+
+        &.status-active {
+            background: var(--color-eco);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            color: var(--color-eco-text);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.1);
+        }
+
+        &.status-warning {
+            background: var(--color-balanced);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: var(--color-balanced-text);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.1);
+        }
+
+        &.status-danger {
+            background: var(--color-ultra);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: var(--color-ultra-text);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+            animation: pulse-red-soft 2s infinite;
+        }
+    }
+
+    @keyframes pulse-red-soft {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+
+    .badge-status-mini {
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.55rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: 1px solid transparent;
+
+        &.beta {
+            background: var(--color-balanced);
+            color: var(--color-balanced-text);
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+        &.pronto {
+            background: var(--color-pro);
+            color: var(--color-pro-text);
+            border-color: rgba(168, 85, 247, 0.4);
+        }
+        &.en-desarrollo {
+            background: rgba(100, 116, 139, 0.1);
+            color: var(--text-muted);
+            border-color: rgba(100, 116, 139, 0.3);
+        }
+        &.nuevo {
+            background: var(--color-eco);
+            color: var(--color-eco-text);
+            border-color: rgba(16, 185, 129, 0.4);
+            animation: pulse-green 2s infinite;
+        }
+    }
+
+    .guard-header-icon {
+        font-size: 1.3rem;
+    }
+
+    .guard-status-summary {
+        font-size: 0.65rem;
+        font-weight: 700;
+    }
+
+    /* ── GUARDS GRID ───────────────────────────────────── */
+    .guards-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+
+        .guard-pill {
+            background: var(--hover-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            .guard-icon {
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                background: rgba(37, 99, 235, 0.1);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--buca-blue);
+                font-size: 1.1rem;
+            }
+
+            .guard-info {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 2px;
+                
+                .guard-label { 
+                    font-size: 0.65rem; 
+                    font-weight: 800; 
+                    color: var(--text-main);
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                .guard-status { 
+                    font-size: 0.6rem; 
+                    font-weight: 700; 
+                }
+            }
+        }
+    }
+
+}

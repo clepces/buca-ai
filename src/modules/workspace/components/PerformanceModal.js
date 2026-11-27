@@ -7,7 +7,8 @@ import GraphicsEngine from '@/core/engine/engine.js';
 import { PerformanceStorage } from '@/core/storage/PerformanceStorage.js';
 import { PerformanceD3Dashboard } from './PerformanceD3Dashboard.js';
 import ModalService from '@/shared/ui/services/ModalService.js';
-import { ModalTemplates } from '@/shared/ui/templates/ModalTemplates.js';
+import { performanceTemplate } from '../templates/_performance.js';
+import { Logger } from '@/shared/utils/logger.js';
 import { $id, $, $$, $on, $addClass, $removeClass, $text } from '@/shared/utils/dom.js';
 
 export const PerformanceModal = {
@@ -27,7 +28,7 @@ export const PerformanceModal = {
     telemetryInterval: null,
 
     show() {
-        console.log('[PerformanceModal] -> Opening Performance Dashboard');
+        Logger.debug({ layer: 'UI', role: 'CLASS', target: 'PerformanceModal', message: 'Abriendo panel de rendimiento del sistema.' });
         this._render();
         this.startTelemetry();
         
@@ -45,27 +46,28 @@ export const PerformanceModal = {
         const stats = GraphicsEngine.getCurrentStats();
         
         ModalService.showModal({
+            id: 'performance-modal',
+            scope: 'module',
             size: 'lg',
-            header: ModalTemplates.buildHeader({
-                icon: 'bi-cpu-fill',
-                title: 'Gestor de Rendimiento',
-                subtitle: 'BUCA NEURAL ENGINE',
-                tag: `V${GraphicsEngine.VERSION || '5.2.0'}`,
-                actions: `
-                    <div class="header-actions">
-                        <button class="action-mini-btn toggle-mode" id="btn-quick-mode-toggle" title="Alternar Modo">
-                            <i class="bi ${stats.isManualMode ? 'bi-hand-index-thumb text-warning' : 'bi-robot text-success'}"></i>
-                        </button>
-                        <button class="action-mini-btn close modal-close-btn" data-action="ui:close_modal" title="Cerrar">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                    </div>
-                `
-            }),
-            body: ModalTemplates.performance({
-                stats,
-                advancedSettings: this.advancedSettings
-            }),
+            header: {
+                left: {
+                    icon: 'bi-cpu-fill',
+                    title: 'Gestor de Rendimiento',
+                    subtitle: 'BUCA NEURAL ENGINE',
+                    badge: { text: `V${GraphicsEngine.VERSION || '5.2.0'}`, tone: 'primary' }
+                },
+                right: {
+                    actions: [
+                        `<button type="button" class="ui-modal__icon-btn" id="btn-quick-mode-toggle" title="Alternar Modo" aria-label="Alternar Modo"><i class="bi ${stats.isManualMode ? 'bi-hand-index-thumb text-warning' : 'bi-robot text-success'}" aria-hidden="true"></i></button>`
+                    ]
+                }
+            },
+            body: {
+                html: performanceTemplate({
+                    stats,
+                    advancedSettings: this.advancedSettings
+                })
+            },
             footer: {
                 left: `
                     <div class="info-footer small" id="perf-status-message">
@@ -81,7 +83,7 @@ export const PerformanceModal = {
     },
 
     _bindEvents() {
-        const modal = $id('modal-container');
+        const modal = $id('ui-modal-dialog') || $id('modal-container');
         if (!modal) return;
 
         // Tabs

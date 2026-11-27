@@ -1,0 +1,175 @@
+@use '@/shared/styles/neural/abstracts' as *;
+
+.performance-dashboard {
+    /* ── ADVANCED GROUPED CONTROLS & LOCKED FEATURES ────────────────── */
+    .perf-group-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-glass);
+        border-radius: 18px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-glass-sm);
+        transition: all 0.3s ease;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        &.locked-group {
+            border-style: dashed;
+            border-color: rgba(245, 158, 11, 0.4);
+            background: rgba(245, 158, 11, 0.02);
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-glass);
+
+            .group-title {
+                font-size: 0.95rem;
+                font-weight: 800;
+                color: var(--text-main);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                i {
+                    color: var(--buca-blue);
+                    font-size: 1.1rem;
+                }
+            }
+
+            .group-tag {
+                font-size: 0.7rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .perf-option-row {
+            background: var(--hover-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            transition: all 0.2s ease;
+
+            &:hover {
+                border-color: rgba(37, 99, 235, 0.3);
+                background: rgba(37, 99, 235, 0.03);
+            }
+
+            &.is-locked {
+                opacity: 0.65;
+                background: rgba(15, 23, 42, 0.03);
+                border-color: rgba(148, 163, 184, 0.2);
+            }
+
+            .option-info {
+                flex: 1;
+
+                .option-title-wrap {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+
+                    .option-title {
+                        font-size: 0.85rem;
+                        font-weight: 700;
+                        color: var(--text-main);
+                    }
+                }
+
+                .option-desc {
+                    font-size: 0.72rem;
+                    color: var(--text-muted);
+                    margin-top: 2px;
+                    line-height: 1.35;
+                }
+            }
+
+            .option-control-box {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                min-width: 200px;
+                justify-content: flex-end;
+
+                .range-slider-wrapper {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    width: 100%;
+
+                    input[type="range"] {
+                        flex: 1;
+                        accent-color: var(--buca-blue);
+                        cursor: pointer;
+
+                        &:disabled {
+                            cursor: not-allowed;
+                            opacity: 0.5;
+                        }
+                    }
+
+                    .range-val-badge {
+                        font-size: 0.75rem;
+                        font-weight: 800;
+                        font-family: monospace;
+                        color: var(--buca-blue);
+                        min-width: 45px;
+                        text-align: right;
+                    }
+                }
+
+                .glass-select {
+                    background: var(--bg-surface);
+                    border: 1px solid var(--border-glass);
+                    color: var(--text-main);
+                    border-radius: 8px;
+                    padding: 6px 12px;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+
+                    &:disabled {
+                        opacity: 0.6;
+                        cursor: not-allowed;
+                    }
+                }
+            }
+        }
+    }
+
+    .perf-help-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 50%;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+            color: var(--buca-blue);
+            transform: scale(1.2);
+        }
+    }
+}

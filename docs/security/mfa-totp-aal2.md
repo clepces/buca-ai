@@ -2,8 +2,8 @@
 ## Especificación de Autenticación de Dos Factores AAL2 — B.U.C.A. AI
 
 > **Módulo:** `docs/security/mfa-totp-aal2.md`  
-> **Servicios:** `src/core/security/BackupKeyService.js`, `src/modules/auth/components/MFAEnrollmentModal.js`  
-> **Estado:** `[Producción v1.1.8-alpha]`
+> **Servicios:** `src/core/security/BackupKeyService.js`, `src/modules/profile/components/MFAEnrollmentModal.js`  
+> **Estado:** `[Producción v1.1.24-alpha]`
 
 ---
 
@@ -29,3 +29,11 @@ Si el usuario pierde su teléfono o aplicación autenticadora:
   window.crypto.getRandomValues(buffer);
   ```
 * Se provee un comprobante imprimible con marcas de agua y metadatos de seguridad.
+
+---
+
+## 3. Recuperación de Contraseña (`PASSWORD_RECOVERY`) y Step-Up MFA
+
+* **Aislamiento Temprano (`src/core/config/supabase.js`):** Un observador síncrono registrado en arranque captura el evento `PASSWORD_RECOVERY` y almacena `recoverySessionProof` (`{ userId, sessionId, expiresAt }`) únicamente en memoria RAM.
+* **Validación Estricta (`SupabaseProvider.isRecoverySession()`):** Verifica sesión activa, coincidencia de `proof.sessionId` y `claims.session_id` vía `getClaims()`, expiración de claims y método `recovery`/`otp` vinculado (sin fallback permisivo por nivel AAL).
+* **Step-Up MFA en Recuperación:** Si el usuario posee un factor TOTP verificado (`nextLevel === 'aal2'`), `PasswordResetPage` exige completar `verifyRecoveryMFA()` mediante `pin-form.js` antes de habilitar `password-reset-form.js`.

@@ -54,7 +54,7 @@ export const BusinessHub = {
                     <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
                     <span class="small text-muted">Sincronizando con Supabase...</span>
                 </div>
-                <div class="hub-card-compact add-new clickable" data-action="ui:open_create_business">
+                <div class="hub-card-compact add-new clickable" data-action="business:open_create">
                     <div class="add-icon"><i class="bi bi-plus-lg"></i></div>
                     <span>Nueva Unidad</span>
                 </div>
@@ -73,7 +73,7 @@ export const BusinessHub = {
                     </div>
                 </div>
                 
-                <div class="hub-card-compact add-new clickable" data-action="ui:open_create_business">
+                <div class="hub-card-compact add-new clickable" data-action="business:open_create">
                     <div class="add-icon"><i class="bi bi-plus-lg"></i></div>
                     <span>Nueva Unidad</span>
                 </div>
@@ -83,7 +83,7 @@ export const BusinessHub = {
         return `
             ${this._items.map(b => this.renderCompactCard(b)).join('')}
             
-            <div class="hub-card-compact add-new clickable" data-action="ui:open_create_business">
+            <div class="hub-card-compact add-new clickable" data-action="business:open_create">
                 <div class="add-icon"><i class="bi bi-plus-lg"></i></div>
                 <span>Nueva Unidad</span>
             </div>
@@ -98,7 +98,7 @@ export const BusinessHub = {
         const safeId = escapeHTML(String(business.id));
         
         return `
-            <div class="hub-card-compact glass-surface clickable" data-action="ui:enter_business" data-id="${safeId}" data-payload="${safePayload}">
+            <div class="hub-card-compact glass-surface clickable" data-action="business:enter" data-id="${safeId}" data-payload="${safePayload}">
                 <div class="card-status-line ${isWarning ? 'bg-warning' : 'bg-success'}"></div>
                 <div class="card-content">
                     <div class="d-flex justify-content-between align-items-start mb-1">
@@ -123,7 +123,7 @@ export const BusinessHub = {
             <div class="command-center-container p-2">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="small text-muted fw-bold text-uppercase">Unidades Comerciales (${this._items.length})</span>
-                    <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" data-action="ui:open_create_business">
+                    <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" data-action="business:open_create">
                         <i class="bi bi-plus-lg me-1"></i> Nueva Unidad
                     </button>
                 </div>
@@ -162,7 +162,7 @@ export const BusinessHub = {
                                         </div>
                                     </div>
 
-                                    <button type="button" class="btn btn-primary w-100 rounded-pill btn-sm fw-bold shadow-sm" data-action="ui:enter_business" data-id="${escapeHTML(String(b.id))}" data-payload="${escapeHTML(JSON.stringify({ id: b.id }))}">
+                                    <button type="button" class="btn btn-primary w-100 rounded-pill btn-sm fw-bold shadow-sm" data-action="business:enter" data-id="${escapeHTML(String(b.id))}" data-payload="${escapeHTML(JSON.stringify({ id: b.id }))}">
                                         Gestionar Unidad <i class="bi bi-arrow-right ms-1"></i>
                                     </button>
                                 </div>
@@ -174,7 +174,7 @@ export const BusinessHub = {
                                 </div>
                                 <h5 class="fw-bold mb-1">Sin unidades comerciales registradas</h5>
                                 <p class="text-muted small mb-3">Crea tu primera empresa o comercio para activar el Punto de Venta, CRM y control fiscal.</p>
-                                <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" data-action="ui:open_create_business">
+                                <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" data-action="business:open_create">
                                     <i class="bi bi-plus-lg me-1"></i> Dar de Alta Mi Negocio
                                 </button>
                             </div>
@@ -192,7 +192,7 @@ export const BusinessHub = {
                 this._items = res.data || [];
             }
         } catch (err) {
-            Logger.error('BusinessHub', 'Error cargando negocios:', err);
+            Logger.error({ layer: 'UI', role: 'CLASS', target: 'BusinessHub', message: 'Error cargando negocios del usuario.', data: err?.message || err });
         } finally {
             this._isLoading = false;
             const container = $id('hub-scroll-container');
@@ -245,12 +245,17 @@ export const BusinessHub = {
             const btnFull = e.target.closest('#btn-open-command-center');
             if (btnFull) {
                 ModalService.showModal({
+                    id: 'business-command-center',
+                    scope: 'module',
                     size: 'lg',
                     header: {
-                        left: '<div class="d-flex align-items-center gap-2"><div class="rounded-3 bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center u-box-36"><i class="bi bi-buildings-fill fs-5"></i></div><div><h3 class="h6 fw-bold mb-0">Centro de Comando</h3><span class="x-small text-muted text-uppercase">Unidades</span></div></div>',
-                        right: '<button type="button" class="btn-close" data-action="ui:close_modal" aria-label="Cerrar"></button>'
+                        left: {
+                            icon: 'bi-buildings-fill',
+                            title: 'Centro de Comando',
+                            subtitle: 'Unidades comerciales activas'
+                        }
                     },
-                    body: this.renderFullView(),
+                    body: { html: this.renderFullView() },
                     footer: {
                         right: '<button type="button" class="btn btn-secondary rounded-pill px-4" data-action="ui:close_modal">Cerrar</button>'
                     }

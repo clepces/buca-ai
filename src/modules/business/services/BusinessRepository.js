@@ -5,6 +5,7 @@
  * =========================================================================
  */
 import { getSupabase } from '@/core/config/supabase.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const BusinessRepository = {
   _getClient() {
@@ -21,12 +22,12 @@ export const BusinessRepository = {
         .eq('owner_id', uid);
 
       if (error) {
-        console.warn('[BusinessRepository] Error fetching businesses:', error.message);
+        Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'BusinessRepository', message: 'Error al consultar comercios del usuario.', data: error.message });
         return [];
       }
       return data || [];
     } catch (err) {
-      console.error('[BusinessRepository] Unexpected error:', err);
+      Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'BusinessRepository', message: 'Error inesperado consultando comercios.', data: err });
       return [];
     }
   },
@@ -60,7 +61,7 @@ export const BusinessRepository = {
       if (error) throw error;
       return data || payload;
     } catch (err) {
-      console.error('[BusinessRepository] Error registering business:', err.message || err);
+      Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'BusinessRepository', message: 'Error registrando unidad comercial.', data: err.message || err });
       throw err;
     }
   }

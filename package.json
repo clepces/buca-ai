@@ -15,7 +15,7 @@
     "lint": "npm run lint:js && npm run lint:css",
     "format": "prettier --write \"src/**/*.{js,scss,html,json}\"",
     "type-check": "tsc --project jsconfig.json --noEmit",
-    "test": "node --experimental-websocket --import ./tests/loader-alias.js --test tests/supabase-storage.test.js tests/mfa-enrollment.test.js tests/mfa-lifecycle.test.js tests/database-security.test.js tests/offline-eventbus.test.js tests/finance-sync.test.js tests/forex-adapters.test.js tests/kernel-lifecycle.test.js tests/kernel-boot.test.js tests/password-reset.test.js"
+    "test": "node --experimental-websocket --import ./tests/loader-alias.js --test tests/supabase-storage.test.js tests/mfa-enrollment.test.js tests/mfa-lifecycle.test.js tests/database-security.test.js tests/offline-eventbus.test.js tests/finance-sync.test.js tests/forex-adapters.test.js tests/kernel-lifecycle.test.js tests/kernel-boot.test.js tests/password-reset.test.js tests/action-dispatcher.test.js"
   },
   "devDependencies": {
     "@emnapi/core": "^2.0.0-beta.2",

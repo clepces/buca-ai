@@ -7,6 +7,7 @@
  * =========================================================================
  */
 import currency from 'currency.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export class FinanceManager {
     static #instance = null;
@@ -75,7 +76,7 @@ export class FinanceManager {
      */
     updateRates(newRates) {
         this.rates = { ...this.rates, ...newRates, lastUpdate: Date.now() };
-        console.log('[FinanceManager] -> Tasas actualizadas:', this.rates);
+        Logger.debug({ layer: 'MODULE', role: 'CLASS', target: 'FinanceManager', message: 'Tasas cambiarias actualizadas en memoria.', data: this.rates });
     }
 }
 

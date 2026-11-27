@@ -4,6 +4,8 @@
  * cumpliendo con los estándares de diseño Corporate Hybrid Glass.
  */
 
+import { Logger } from '@/shared/utils/logger.js';
+
 export const createModulePage = ({ title, category, icon, description }) => {
     const modalPayload = JSON.stringify({
         title: `Módulo ${title}`,
@@ -117,7 +119,7 @@ export const createModulePage = ({ title, category, icon, description }) => {
         `;
     },
     init() {
-        console.log(`[ModuleSection] -> Sección cargada: ${title}`);
+        Logger.debug({ layer: 'MODULE', role: 'FN', target: 'ModulePlaceholder', message: `Sección de módulo cargada: ${title}` });
     }
 };
 };

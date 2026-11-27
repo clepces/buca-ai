@@ -1,12 +1,18 @@
 import { defineConfig } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const require = createRequire(import.meta.url);
+const pkg = require('./package.json');
 
 export default defineConfig({
     root: './',
+    define: {
+        'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version)
+    },
     resolve: {
         alias: [
             {

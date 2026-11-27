@@ -219,6 +219,8 @@ export function createMockSupabaseClient() {
                 data: {
                     claims: {
                         sub: this._session.user.id,
+                        session_id: this._session.session_id || 'mock_sid_1',
+                        exp: this._session.expires_at,
                         amr: this._session.amr || [{ method: 'password', timestamp: 1700000000 }]
                     }
                 },

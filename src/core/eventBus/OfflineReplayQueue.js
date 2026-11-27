@@ -104,7 +104,7 @@ class OfflineReplayQueue {
 
         // No descartar ni drenar si no existe emisor registrado
         if (typeof targetEmitter !== 'function') {
-            Logger.warn('OfflineReplayQueue', 'Cero emisores registrados. Drenaje suspendido.');
+            Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'OfflineReplayQueue', message: 'Sin emisor registrado; drenaje de cola offline suspendido.' });
             return 0;
         }
 
@@ -123,7 +123,7 @@ class OfflineReplayQueue {
                     this._inMemoryQueue.shift();
                     count++;
                 } catch (emitErr) {
-                    Logger.warn('OfflineReplayQueue', 'Fallo en retransmisión en memoria. Deteniendo drenaje para preservar orden:', emitErr);
+                    Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'OfflineReplayQueue', message: 'Fallo retransmitiendo evento en memoria; drenaje detenido para preservar orden.', data: emitErr });
                     inMemoryHalted = true;
                     break;
                 }
@@ -173,7 +173,7 @@ class OfflineReplayQueue {
                         });
                         count++;
                     } catch (err) {
-                        Logger.warn('OfflineReplayQueue', 'Fallo en confirmación de comando persistido. Deteniendo drenaje:', item.idempotency_key, err);
+                        Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'OfflineReplayQueue', message: 'Fallo confirmando comando persistido; drenaje detenido.', data: { key: item.idempotency_key, error: err?.message || err } });
                         break;
                     }
                 }
@@ -187,7 +187,7 @@ class OfflineReplayQueue {
 
     _initListener() {
         $onWindow('online', () => {
-            Logger.info('OfflineReplayQueue', 'Red recuperada. Reenviando eventos encolados...');
+            Logger.info({ layer: 'KERNEL', role: 'CLASS', target: 'OfflineReplayQueue', message: 'Conectividad recuperada; reenviando eventos encolados.' });
             if (this._onOnlineEmitter) {
                 this.drain(this._onOnlineEmitter);
             }

@@ -7,6 +7,7 @@ import { DolarApiAdapter } from './adapters/dolar-api-adapter.js';
 import { DolarVzlaAdapter } from './adapters/dolar-vzla-adapter.js';
 import { MontosVeAdapter } from './adapters/montos-ve-adapter.js';
 import { FallbackAdapter } from './adapters/fallback-adapter.js';
+import { Logger } from '@/shared/utils/logger.js';
 import {
     DOLAR_API_BASE,
     DOLAR_VZLA_KEY,
@@ -108,7 +109,7 @@ export class ForexManager {
                             return data;
                         }
                     } catch (err) {
-                        console.warn(`[ForexManager] Adaptador ${adapter.name} falló en fetchBCV:`, err.message);
+                        Logger.warn({ layer: 'SERVICE', role: 'SERVICE', target: 'ForexManager', message: `Adaptador ${adapter.name} falló en fetchBCV.`, data: err.message });
                     }
                 }
                 throw new Error('Todos los adaptadores de divisas fallaron');
@@ -143,7 +144,7 @@ export class ForexManager {
                             return data;
                         }
                     } catch (err) {
-                        console.warn(`[ForexManager] Adaptador ${adapter.name} falló en fetchParallel:`, err.message);
+                        Logger.warn({ layer: 'SERVICE', role: 'SERVICE', target: 'ForexManager', message: `Adaptador ${adapter.name} falló en fetchParallel.`, data: err.message });
                     }
                 }
                 throw new Error('Todos los adaptadores de paralelo fallaron');
@@ -175,7 +176,7 @@ export class ForexManager {
                             return data;
                         }
                     } catch (err) {
-                        console.warn(`[ForexManager] Intervenciones en ${adapter.name}:`, err.message);
+                        Logger.warn({ layer: 'SERVICE', role: 'SERVICE', target: 'ForexManager', message: `Error consultando intervenciones en ${adapter.name}.`, data: err.message });
                     }
                 }
                 return { current: null, list: [] };
@@ -208,7 +209,7 @@ export class ForexManager {
                             return data;
                         }
                     } catch (err) {
-                        console.warn(`[ForexManager] Historial en ${adapter.name}:`, err.message);
+                        Logger.warn({ layer: 'SERVICE', role: 'SERVICE', target: 'ForexManager', message: `Error consultando historial en ${adapter.name}.`, data: err.message });
                     }
                 }
                 return [];

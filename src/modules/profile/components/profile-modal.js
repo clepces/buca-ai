@@ -3,7 +3,8 @@
  * =========================================================================
  * Clean Core Architecture: Componente nativo del módulo de perfil.
  */
-import ModalService from '@/shared/ui/services/ModalService.js';
+import { modalServiceV2 } from '@/shared/ui/services/modal/modal-service-v2.js';
+import { renderButton } from '@/shared/ui/primitives/ui-button.js';
 import { userProfileFullTemplate } from '../templates/_user_profile.js';
 import ProfileController from '../ProfileController.js';
 import { sessionState } from '@/core/state/session.js';
@@ -27,16 +28,22 @@ export const ProfileModal = {
             }
         };
 
-        ModalService.showModal({
+        modalServiceV2.showModal({
+            id: 'profile-modal',
+            scope: 'module',
             size: 'lg',
-            header: ModalService.buildHeader({
-                icon: 'bi-person-badge',
-                title: 'Perfil de Operador & Identidad',
-                subtitle: 'CONFIGURACIÓN DE CUENTA Y SEGURIDAD BUCA AI'
-            }),
-            body: userProfileFullTemplate(userData),
+            header: {
+                left: {
+                    icon: 'bi-person-badge',
+                    title: 'Perfil de Operador & Identidad',
+                    subtitle: 'Configuración de cuenta y seguridad BUCA AI'
+                }
+            },
+            body: {
+                html: userProfileFullTemplate(userData)
+            },
             footer: {
-                right: '<button type="button" class="btn btn-primary rounded-pill px-4" data-action="ui:close_modal">Cerrar</button>'
+                right: renderButton({ variant: 'primary', pill: true, label: 'Cerrar', action: 'ui:close_modal' })
             },
             onOpen: () => {
                 if (ProfileController && typeof ProfileController.init === 'function') {

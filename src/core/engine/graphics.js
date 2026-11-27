@@ -122,7 +122,7 @@ export class GraphicsEngine {
     }
 
     async init() {
-        Logger.info({ layer: 'ENGINE', role: 'CLASS', target: 'BNE', icon: '🚀', message: 'Inicializando motor neural (Fase Modular 4)' });
+        Logger.info({ layer: 'ENGINE', role: 'CLASS', target: 'BENE', icon: '🚀', message: 'Inicializando motor gráfico adaptativo BENE.' });
 
         const savedConfig = PerformanceStorage.get();
         if (savedConfig?.profile) {

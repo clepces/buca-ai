@@ -3,21 +3,28 @@
  * =========================================================================
  * Clean Core Architecture: Componente nativo del módulo Workspace.
  */
-import ModalService from '@/shared/ui/services/ModalService.js';
+import { modalServiceV2 } from '@/shared/ui/services/modal/modal-service-v2.js';
+import { renderButton } from '@/shared/ui/primitives/ui-button.js';
 import { exportReportTemplate } from '../templates/_export_report.js';
 
 export const ExportReportModal = {
     show() {
-        ModalService.showModal({
+        modalServiceV2.showModal({
+            id: 'export-report-modal',
+            scope: 'module',
             size: 'md',
-            header: ModalService.buildHeader({
-                icon: 'bi-cloud-arrow-down-fill',
-                title: 'Exportar Reporte Maestro',
-                subtitle: 'GENERADOR DE DOCUMENTOS ERP'
-            }),
-            body: exportReportTemplate(),
+            header: {
+                left: {
+                    icon: 'bi-cloud-arrow-down-fill',
+                    title: 'Exportar Reporte Maestro',
+                    subtitle: 'Generador de documentos ERP'
+                }
+            },
+            body: {
+                html: exportReportTemplate()
+            },
             footer: {
-                right: '<button type="button" class="btn btn-primary rounded-pill px-4" data-action="ui:close_modal">Cerrar</button>'
+                right: renderButton({ variant: 'primary', pill: true, label: 'Cerrar', action: 'ui:close_modal' })
             }
         });
     }

@@ -51,7 +51,7 @@ class UserService {
                     customWorkerProfile = typeof storedWorker === 'string' ? JSON.parse(storedWorker) : storedWorker;
                 }
             } catch (wErr) {
-                Logger.warn('UserService', 'No se pudo cargar worker_profile remoto:', wErr);
+                Logger.warn({ layer: 'SERVICE', role: 'SERVICE', target: 'UserService', message: 'No se pudo cargar worker_profile remoto.', data: wErr?.message || wErr });
             }
 
             if (profileRecord && !error) {
@@ -117,7 +117,7 @@ class UserService {
 
             return { success: false, error: 'Perfil no encontrado.' };
         } catch (error) {
-            console.error('[UserService] Error al leer perfil en Supabase:', error);
+            Logger.error({ layer: 'SERVICE', role: 'SERVICE', target: 'UserService', message: 'Error al leer perfil de usuario en Supabase.', data: error?.message || error });
             return { success: false, error: error.message };
         }
     }
@@ -173,7 +173,7 @@ class UserService {
             eventBus.emit('workspace:refresh_data');
             return { success: true, data: validData };
         } catch (error) {
-            console.error('[UserService] Error actualizando perfil en Supabase:', error);
+            Logger.error({ layer: 'SERVICE', role: 'SERVICE', target: 'UserService', message: 'Error actualizando perfil de usuario en Supabase.', data: error?.message || error });
             return { success: false, error: error.message };
         }
     }
@@ -199,7 +199,7 @@ class UserService {
             eventBus.emit('workspace:refresh_data');
             return { success: true, data: validation.data };
         } catch (error) {
-            Logger.error('UserService', 'Error actualizando perfil laboral en Supabase:', error);
+            Logger.error({ layer: 'SERVICE', role: 'SERVICE', target: 'UserService', message: 'Error actualizando perfil laboral en Supabase.', data: error?.message || error });
             return { success: false, error: error.message };
         }
     }
@@ -221,7 +221,7 @@ class UserService {
             if (error) throw error;
             return { success: true };
         } catch (error) {
-            console.error('[UserService] Error actualizando seguridad:', error);
+            Logger.error({ layer: 'SERVICE', role: 'SERVICE', target: 'UserService', message: 'Error actualizando configuración de seguridad.', data: error?.message || error });
             return { success: false, error: error.message };
         }
     }

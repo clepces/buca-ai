@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com"><img src="https://img.shields.io/badge/version-1.1.8--alpha-blue.svg?style=for-the-badge&logo=git" alt="Version 1.1.8-alpha" /></a>
+  <a href="https://github.com"><img src="https://img.shields.io/badge/version-1.1.24--alpha-blue.svg?style=for-the-badge&logo=git" alt="Version 1.1.24-alpha" /></a>
   <a href="https://developer.mozilla.org/es/docs/Web/JavaScript"><img src="https://img.shields.io/badge/Vanilla_JS-ES6%2B-F7DF1E.svg?style=for-the-badge&logo=javascript&logoColor=black" alt="Vanilla JS ES6+" /></a>
   <a href="https://vitejs.dev"><img src="https://img.shields.io/badge/Vite-8.x-646CFF.svg?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" /></a>
   <a href="https://supabase.com"><img src="https://img.shields.io/badge/Supabase-PostgreSQL_RLS-3ECF8E.svg?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" /></a>
@@ -29,9 +29,9 @@
 ## 🚀 Capacidades y Características Principales
 
 ### 1. Clean Core Architecture (3-Tier Layered Design)
-- **Capa Kernel (`src/core/`)**: Orquestación procedural de arranque, despachador de eventos pub/sub reactivo, enrutador SPA nativo basado en History API, guardias de seguridad, detección de hardware y gestión de temas.
+- **Capa Kernel (`src/core/`)**: Orquestación procedural de arranque (`Auth-First Gate`), `ActionDispatcher` O(1), despachador de eventos pub/sub reactivo, enrutador SPA nativo basado en History API, guardias de seguridad, detección de hardware y gestión de temas.
 - **Capa de Módulos Autónomos (`src/modules/`)**: Dominios desacoplados que operan bajo demanda (`auth`, `workspace`, `business`, `finance`, `profile`).
-- **Capa de Recursos Compartidos (`src/shared/`)**: Layouts estructurales (`MainLayout`, `AuthLayout`), modales globales, componentes de cabecera flotante, diseño modular en SASS y utilidades transversales.
+- **Capa de Recursos Compartidos (`src/shared/`)**: Layouts estructurales (`MainLayout`, `AuthLayout`), acciones transversales (`shared-actions.js`), modales globales, componentes de cabecera flotante, diseño modular SASS 7-1 (`≤ 300` líneas por parcial) y utilidades transversales.
 
 ### 2. BUCA Neural Engine (BNE v5.3.0)
 - Motor de adaptación gráfica en tiempo real que previene el estrangulamiento de GPU (*layout thrashing* y *GPU throttling*).

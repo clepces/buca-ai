@@ -4,6 +4,7 @@
  */
 import { sessionState } from '@/core/state/session.js';
 import { escapeHTML } from '@/shared/utils/security.js';
+import { ENV } from '@/core/config/environment.js';
 
 export const ProfilePanel = {
     render: (_tierCode = 'L1') => {
@@ -41,7 +42,7 @@ export const ProfilePanel = {
                     <div class="list-group list-group-flush mb-2">
                         <span class="x-small fw-bold text-muted text-uppercase px-2.5 py-1 d-block">Cuenta & Seguridad</span>
                         
-                        <button type="button" class="list-group-item list-group-item-action border-0 rounded-3 d-flex align-items-center gap-2.5 py-2 px-2.5 mb-0.5" data-action="ui:open_profile">
+                        <button type="button" class="list-group-item list-group-item-action border-0 rounded-3 d-flex align-items-center gap-2.5 py-2 px-2.5 mb-0.5" data-action="profile:open" data-tab="general">
                             <div class="p-1.5 rounded-2 bg-primary-subtle text-primary"><i class="bi bi-person-gear"></i></div>
                             <div class="flex-grow-1 text-start">
                                 <span class="d-block small fw-semibold text-main">Mi Perfil & Datos</span>
@@ -50,7 +51,7 @@ export const ProfilePanel = {
                             <i class="bi bi-chevron-right text-muted x-small"></i>
                         </button>
 
-                        <button type="button" class="list-group-item list-group-item-action border-0 rounded-3 d-flex align-items-center gap-2.5 py-2 px-2.5 mb-0.5" data-action="ui:open_security">
+                        <button type="button" class="list-group-item list-group-item-action border-0 rounded-3 d-flex align-items-center gap-2.5 py-2 px-2.5 mb-0.5" data-action="profile:open" data-tab="security">
                             <div class="p-1.5 rounded-2 bg-warning-subtle text-warning"><i class="bi bi-shield-lock"></i></div>
                             <div class="flex-grow-1 text-start">
                                 <span class="d-block small fw-semibold text-main">Seguridad & MFA</span>
@@ -95,7 +96,7 @@ export const ProfilePanel = {
                 <!-- 3. FOOTER CON ACCIONES DE SESIÓN -->
                 <div class="panel-profile-footer p-2.5 bg-subtle border-top">
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 d-flex align-items-center gap-1.5 fw-semibold x-small" data-action="ui:logout">
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 d-flex align-items-center gap-1.5 fw-semibold x-small" data-action="auth:logout">
                             <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
                         </button>
                         <button type="button" class="btn btn-sm btn-link text-muted text-decoration-none x-small p-0" data-action="ui:open_settings">
@@ -104,7 +105,7 @@ export const ProfilePanel = {
                     </div>
                     <div class="d-flex align-items-center justify-content-between text-muted x-small border-top pt-2">
                         <span>Zona: America/Caracas</span>
-                        <span class="badge bg-secondary-subtle text-muted rounded-pill px-2 py-0.5">v1.1.20-alpha</span>
+                        <span class="badge bg-secondary-subtle text-muted rounded-pill px-2 py-0.5">v${ENV.APP_VERSION}</span>
                     </div>
                 </div>
             </div>

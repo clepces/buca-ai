@@ -159,7 +159,7 @@ export const BusinessWizardController = {
             }, 1200);
 
         } catch (err) {
-            Logger.error('BusinessWizardController', 'Registration error:', err);
+            Logger.error({ layer: 'MODULE', role: 'CLASS', target: 'BusinessWizard', message: 'Error registrando negocio en Supabase.', data: err?.message || err });
             this.showFeedback('Error al registrar el negocio en Supabase. Verifique su conexión.', 'error');
 
             setButtonLoading(submitBtn, false);

@@ -13,7 +13,8 @@ import { AuthService } from './services/AuthService.js';
 import { SupabaseProvider } from './services/SupabaseProvider.js';
 import { sessionState } from '@/core/state/session.js';
 import { router } from '@/core/router/router.js';
-import { getSupabase } from '@/core/config/supabase.js';
+import { getSupabase, getRecoverySessionProof } from '@/core/config/supabase.js';
+import ModalService from '@/shared/ui/services/ModalService.js';
 import { Logger } from '@/shared/utils/logger.js';
 
 export const AuthModule = {
@@ -23,7 +24,7 @@ export const AuthModule = {
      * Inicializa los listeners del módulo.
      */
     async init() {
-        Logger.info('AuthModule', 'Módulo inicializado (Supabase Backend)');
+        Logger.info({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: 'Módulo de autenticación inicializado (Supabase).' });
         if (router && typeof router.addRoutes === 'function') {
             router.addRoutes(authRoutes);
         }
@@ -36,8 +37,20 @@ export const AuthModule = {
                 this._authSubscription = null;
             }
             this._authSubscription = SupabaseProvider.onAuthStateChange(async (_event, session) => {
-                if (_event === 'PASSWORD_RECOVERY') {
-                    Logger.info('AuthModule', 'Evento PASSWORD_RECOVERY detectado. Aislando sesión de recuperación.');
+                const proof = getRecoverySessionProof();
+                const isEarlyRecoveryMatch = Boolean(
+                    proof &&
+                    proof.sessionId &&
+                    session?.user?.id &&
+                    proof.userId === session.user.id &&
+                    (!session.session_id || session.session_id === proof.sessionId)
+                );
+
+                if (
+                    _event === 'PASSWORD_RECOVERY' ||
+                    (isEarlyRecoveryMatch && (_event === 'INITIAL_SESSION' || _event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED' || _event === 'MFA_CHALLENGE_VERIFIED'))
+                ) {
+                    Logger.info({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: 'Evento PASSWORD_RECOVERY detectado; aislando sesión de recuperación.' });
                     try {
                         if (typeof sessionStorage !== 'undefined') {
                             sessionStorage.setItem('buca_recovery_flow', 'true');
@@ -75,14 +88,14 @@ export const AuthModule = {
                                 sessionStorage.removeItem('buca_recovery_flow');
                             }
                         } catch { /* ignore */ }
-                        Logger.info('AuthModule', 'Sesión cerrada o invalidada en Supabase.');
+                        Logger.info({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: 'Sesión cerrada o invalidada en Supabase.' });
                     }
                     return;
                 }
 
                 // Aislar eventos regulares si el flujo de recuperación está activo en la pestaña
                 if (isRecoveryFlow) {
-                    Logger.debug('AuthModule', `Aislando evento [${_event}] mientras el flujo de recuperación esté activo.`);
+                    Logger.debug({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: `Evento [${_event}] aislado mientras la recuperación esté activa.` });
                     return;
                 }
 
@@ -92,7 +105,7 @@ export const AuthModule = {
 
                     // Prevenir sobrecarga de peticiones: Si el usuario ya está plenamente autenticado y con AAL2 verificado
                     if (currentSession.isAuthenticated && currentSession.user?.uid === user.id && currentSession.isAAL2Verified) {
-                        Logger.debug('AuthModule', `Sincronización silenciosa [${_event}]: sesión activa para ${user.email}`);
+                        Logger.debug({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: `Sincronización silenciosa [${_event}]: sesión activa para ${user.email}.` });
                         return;
                     }
 
@@ -125,14 +138,14 @@ export const AuthModule = {
                                     user: null,
                                     currentRole: 'guest'
                                 });
-                                Logger.warn('AuthModule', 'Sesión retenida: AAL2 pendiente de verificación TOTP.');
+                                Logger.warn({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: 'Sesión retenida: AAL2 pendiente de verificación TOTP.' });
                                 return;
                             }
                             // Si ya estaba plenamente autenticado (reautenticación interna), mantener identidad
-                            Logger.info('AuthModule', 'Reautenticación de usuario activo con factor MFA registrado.');
+                            Logger.info({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: 'Reautenticación de usuario activo con factor MFA verificado.' });
                         }
                     } catch (aalErr) {
-                        Logger.error('AuthModule', 'Fallo evaluando AAL (Fail-Closed):', aalErr.message);
+                        Logger.error({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: 'Fallo evaluando nivel AAL (Fail-Closed).', data: aalErr.message });
                         if (!currentSession.isAuthenticated || currentSession.user?.uid !== user.id) {
                             sessionState.set({
                                 isAuthenticated: false,
@@ -158,11 +171,11 @@ export const AuthModule = {
                         },
                         currentRole: role
                     });
-                    Logger.info('AuthModule', `Sesión sincronizada [${_event || 'SYNC'}]: ${user.email}`);
+                    Logger.info({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: `Sesión sincronizada [${_event || 'SYNC'}]: ${user.email}.` });
                 }
             });
         } catch (err) {
-            Logger.warn('AuthModule', 'No se pudo adjuntar listener de Supabase Auth:', err);
+            Logger.warn({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: 'No se pudo adjuntar listener de Supabase Auth.', data: err?.message || err });
         }
     },
 
@@ -174,20 +187,33 @@ export const AuthModule = {
             await this.handleLogin(credentials);
         });
 
-        // Desacoplamiento: AuthLayout emite 'auth-layout:mounted' y auth inyecta SessionDashboard
-        eventBus.on('auth-layout:mounted', async () => {
-            const { $id, $mount } = await import('@/shared/utils/dom.js');
-            const { default: SessionDashboard } = await import('./components/SessionDashboard.js');
-            const slot = $id('auth-session-dashboard-slot');
-            if (slot) {
-                $mount(slot, SessionDashboard.render());
-                if (typeof SessionDashboard.init === 'function') SessionDashboard.init();
+        eventBus.on('auth:logout', async () => {
+            ModalService.showModal({
+                id: 'auth-logout-modal',
+                scope: 'global',
+                size: 'xs',
+                closeOnBackdrop: false,
+                closeOnEsc: false,
+                closeOnRouteChange: false,
+                lockShortcuts: true,
+                header: {
+                    left: {
+                        icon: 'bi-box-arrow-right',
+                        title: 'Cierre de Sesión',
+                        subtitle: 'Desconectando de forma segura'
+                    },
+                    right: { showGlobalControls: { ai: false, help: false, resize: false, more: false } }
+                },
+                body: {
+                    html: '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div><p class="small text-muted mb-0">Desconectando de forma segura...</p></div>'
+                }
+            });
+            try {
+                await AuthService.logout();
+            } catch (err) {
+                Logger.error({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: 'Error ejecutando cierre de sesión.', data: err?.message || err });
+                ModalService.hideModal();
             }
-        });
-
-        eventBus.on('auth:toggle-session-dashboard', async () => {
-            const { default: SessionDashboard } = await import('./components/SessionDashboard.js');
-            SessionDashboard.toggle();
         });
     },
 
@@ -196,22 +222,22 @@ export const AuthModule = {
      */
     async handleLogin({ email, password }) {
         try {
-            Logger.info('AuthModule', `Iniciando Phase 1: Identity para ${email}`);
+            Logger.info({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: `Iniciando verificación de identidad para ${email}.` });
             const result = await AuthService.login(email, password);
 
             if (result.success) {
                 // Phase 2: Device Authorization
                 const fingerprint = await DeviceFingerprint.generate();
-                Logger.info('AuthModule', `Fingerprint generado: ${fingerprint}`);
+                Logger.debug({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: 'Huella de dispositivo generada para desafío.', data: { fingerprint } });
 
                 eventBus.emit(AUTH_EVENTS.DEVICE_CHALLENGE, { fingerprint });
             } else if (result.mfaRequired) {
-                Logger.info('AuthModule', 'Desafío MFA requerido para completar el inicio de sesión.');
+                Logger.info({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: 'Desafío MFA requerido para completar el inicio de sesión.' });
             } else {
-                Logger.error('AuthModule', 'Login fallido:', result.error);
+                Logger.error({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: 'Inicio de sesión rechazado.', data: result.error });
             }
         } catch (error) {
-            Logger.error('AuthModule', 'Error en login:', error);
+            Logger.error({ layer: 'MODULE', role: 'CLASS', target: 'Auth', message: 'Error inesperado en flujo de inicio de sesión.', data: error?.message || error });
         }
     }
 };

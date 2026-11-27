@@ -6,6 +6,7 @@
  * =========================================================================
  */
 import { getSupabase, supabase } from '../../../core/config/supabase.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const FinanceRepository = {
     _getClient() {
@@ -72,7 +73,7 @@ export const FinanceRepository = {
             if (error) throw error;
             return payload;
         } catch (err) {
-            console.error('[FinanceRepository] Error saving rate snapshot:', err.message || err);
+            Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'FinanceRepository', message: 'Error guardando snapshot de tasa cambiaria.', data: err.message || err });
             throw err;
         }
     },
@@ -91,12 +92,12 @@ export const FinanceRepository = {
                 .maybeSingle();
 
             if (error) {
-                console.warn('[FinanceRepository] Warning getting tenant rate from Supabase:', error.message);
+                Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'FinanceRepository', message: 'No se pudo obtener tasa del tenant desde Supabase.', data: error.message });
                 return null;
             }
             return data;
         } catch (err) {
-            console.warn('[FinanceRepository] Warning getting tenant rate:', err.message);
+            Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'FinanceRepository', message: 'Error consultando tasa del tenant.', data: err.message });
             return null;
         }
     }

@@ -15,25 +15,19 @@ export const AICopilotModal = {
         const userEmail = user?.email || 'admin@buca.com.ve';
 
         ModalService.showModal({
+            id: 'ai-copilot-modal',
+            scope: 'global',
             size: 'lg',
             header: {
-                left: `
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="p-1.5 rounded-2 bg-primary-subtle text-primary d-flex align-items-center justify-content-center">
-                            <i class="bi bi-stars fs-6"></i>
-                        </div>
-                        <div>
-                            <h6 class="fw-bold mb-0 text-main" style="font-size:0.95rem;">BUCA AI Copilot</h6>
-                            <span class="x-small text-muted">Chat inteligente con tu Empresa & Proyecto</span>
-                        </div>
-                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill ms-2 px-2" style="font-size:0.65rem;">ACTIVO</span>
-                    </div>
-                `,
-                right: `
-                    <button type="button" class="btn btn-sm btn-subtle text-muted rounded-pill px-2.5 py-1 x-small" data-action="ui:close_modal">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                `
+                left: {
+                    icon: 'bi-stars',
+                    title: 'BUCA AI Copilot',
+                    subtitle: 'Chat inteligente con tu Empresa & Proyecto',
+                    badge: { text: 'ACTIVO', tone: 'success' }
+                },
+                right: {
+                    showGlobalControls: { ai: false, help: true, resize: true }
+                }
             },
             body: `
                 <div class="ai-copilot-container p-2" id="ai-copilot-view">

@@ -8,6 +8,8 @@
  */
 
 import { $create, $appendTo } from '../../shared/utils/dom.js';
+import { ENV } from '../config/environment.js';
+import { Logger } from '../../shared/utils/logger.js';
 
 export class BackupKeyService {
     /**
@@ -48,7 +50,7 @@ export class BackupKeyService {
 =====================================================
 Cuenta Asociada : ${email || 'Usuario B.U.C.A.'}
 Fecha de Emisión: ${dateStr}
-Instancia       : B.U.C.A. Enterprise ERP (v1.1.4-Alpha)
+Instancia       : B.U.C.A. Enterprise ERP (v${ENV.APP_VERSION})
 
 IMPORTANTE:
 - Cada clave es de UN SOLO USO.
@@ -92,7 +94,7 @@ Emitido localmente en memoria segura (Zero-Knowledge Client-Only).
         const textContent = this.formatSlip(keys, email);
         const printWindow = window.open('', '_blank', 'width=600,height=600');
         if (!printWindow) {
-            console.warn('[BackupKeyService] Popup bloqueado para impresión; descargando archivo.');
+            Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'BackupKeyService', message: 'Popup bloqueado para impresión; descargando respaldo en texto.' });
             this.downloadAsText(keys, email);
             return;
         }
@@ -123,7 +125,7 @@ Emitido localmente en memoria segura (Zero-Knowledge Client-Only).
      */
     static async acknowledgeEmission(uid, keys) {
         if (!uid || !Array.isArray(keys)) return false;
-        console.log(`[BackupKeyService] ${keys.length} claves emitidas localmente para ${uid}.`);
+        Logger.info({ layer: 'SERVICE', role: 'CLASS', target: 'BackupKeyService', message: `${keys.length} claves de respaldo emitidas localmente.` });
         return true;
     }
 }

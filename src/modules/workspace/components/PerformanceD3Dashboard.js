@@ -10,6 +10,7 @@ import GraphicsEngine from '@/core/engine/engine.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { renderPerformanceDashboardHTML } from './performance/performance-template.js';
 import { D3BenchmarkChart } from './performance/D3BenchmarkChart.js';
+import { Logger } from '@/shared/utils/logger.js';
 import { $id, $$, $on, $text, $className, $mount } from '@/shared/utils/dom.js';
 
 export class PerformanceD3Dashboard {
@@ -52,7 +53,7 @@ export class PerformanceD3Dashboard {
             GraphicsEngine.isManualMode = true;
             GraphicsEngine.applyTier(profile);
         } catch (e) {
-            console.warn('[PerformanceD3Dashboard] Error applying tier to GraphicsEngine:', e);
+            Logger.warn({ layer: 'UI', role: 'CLASS', target: 'PerformanceD3Dashboard', message: 'Error aplicando perfil de rendimiento al motor gráfico.', data: e?.message || e });
         }
 
         const pills = $$('#perf-profile-pills .perf-pill-btn');

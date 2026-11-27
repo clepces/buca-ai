@@ -17,11 +17,10 @@ export const FinanceModule = {
     async init() {
         if (this.isInitialized) return;
         this.isInitialized = true;
-        Logger.info('FinanceModule', 'Inicializado módulo de finanzas');
+        Logger.info({ layer: 'MODULE', role: 'CLASS', target: 'Finance', message: 'Módulo de finanzas inicializado.' });
 
         // Suscribir eventos del Bus para desacoplamiento total
-        eventBus.on('finance:open_rate_modal', () => RateController.show());
-        eventBus.on('ui:open_rate', () => RateController.show());
+        eventBus.on('finance:open_rate', () => RateController.show());
         eventBus.on('finance:sync-rates', () => this.syncRates());
 
         // Disparar sincronización inicial de tasas de forma asíncrona no bloqueante
@@ -35,8 +34,8 @@ export const FinanceModule = {
             if (tenantId && tenantId !== 'default') {
                 const anchoredData = await FinanceRepository.getTenantRate(tenantId);
                 if (anchoredData?.rate) {
-                    Logger.info('FinanceModule', `Usando tasa anclada de unidad comercial: Bs. ${anchoredData.rate}`);
-                    eventBus.emit('buca:rate_change', { 
+                    Logger.info({ layer: 'MODULE', role: 'CLASS', target: 'Finance', message: `Usando tasa anclada de unidad comercial: Bs. ${anchoredData.rate}` });
+                    eventBus.emit('finance:rate_updated', { 
                         rate: anchoredData.rate, 
                         isAnchored: true, 
                         date: anchoredData.created_at || new Date().toISOString() 
@@ -48,8 +47,8 @@ export const FinanceModule = {
             // Consultar siempre la tasa oficial en vivo de los adaptadores
             const data = await ForexManager.getBCVCurrent();
             if (data?.current?.usd) {
-                Logger.info('FinanceModule', `Tasa oficial en vivo obtenida: Bs. ${data.current.usd} (${data.date || 'Hoy'})`);
-                eventBus.emit('buca:rate_change', { 
+                Logger.info({ layer: 'MODULE', role: 'CLASS', target: 'Finance', message: `Tasa oficial en vivo obtenida: Bs. ${data.current.usd} (${data.date || 'Hoy'})` });
+                eventBus.emit('finance:rate_updated', { 
                     rate: data.current.usd, 
                     eur: data.current.eur,
                     isAnchored: false, 
@@ -61,8 +60,8 @@ export const FinanceModule = {
             // Fallback: Si no hay internet o falló el feed, consultar último snapshot histórico
             const fallbackSnapshot = await FinanceRepository.getTenantRate('default');
             if (fallbackSnapshot?.rate) {
-                Logger.warn('FinanceModule', `Modo Contingencia: Usando última tasa registrada: Bs. ${fallbackSnapshot.rate}`);
-                eventBus.emit('buca:rate_change', { 
+                Logger.warn({ layer: 'MODULE', role: 'CLASS', target: 'Finance', message: `Modo contingencia: usando última tasa registrada (Bs. ${fallbackSnapshot.rate}).` });
+                eventBus.emit('finance:rate_updated', { 
                     rate: fallbackSnapshot.rate, 
                     isAnchored: true, 
                     isFallback: true,
@@ -70,7 +69,7 @@ export const FinanceModule = {
                 });
             }
         } catch (e) {
-            Logger.warn('FinanceModule', 'Fallo en sincronización de tasa:', e?.message || e);
+            Logger.warn({ layer: 'MODULE', role: 'CLASS', target: 'Finance', message: 'Fallo en sincronización de tasa cambiaria.', data: e?.message || e });
         }
     },
 

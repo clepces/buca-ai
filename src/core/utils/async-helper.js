@@ -37,8 +37,11 @@ export const runOnIdle = (callback, timeoutMs = 2000) => {
  * @returns {Promise<T>}
  */
 export const withTimeout = (promise, ms, errorMsg = 'Operation timed out') => {
-    return Promise.race([
-        promise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error(errorMsg)), ms))
-    ]);
+    let timerId;
+    const timeoutPromise = new Promise((_, reject) => {
+        timerId = setTimeout(() => reject(new Error(errorMsg)), ms);
+    });
+    return Promise.race([promise, timeoutPromise]).finally(() => {
+        clearTimeout(timerId);
+    });
 };

@@ -6,7 +6,7 @@
  * =========================================================================
  */
 import { ModalService } from '@/shared/ui/services/ModalService.js';
-import { terminalTemplate } from '@/shared/ui/templates/modals/_system_modals.js';
+import { terminalTemplate } from './terminal-template.js';
 import { ActivityLogService } from '@/core/services/ActivityLogService.js';
 import { sessionState } from '@/core/state/session.js';
 import { $id, $on } from '@/shared/utils/dom.js';
@@ -17,25 +17,16 @@ export const AuditTerminalModal = {
         const recentLogs = await ActivityLogService.getRecentActivities(10);
 
         ModalService.showModal({
+            id: 'audit-terminal-modal',
+            scope: 'global',
             size: 'lg',
             header: {
-                left: `
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="p-1.5 rounded-2 bg-dark text-light d-flex align-items-center justify-content-center">
-                            <i class="bi bi-terminal fs-6"></i>
-                        </div>
-                        <div>
-                            <h6 class="fw-bold mb-0 text-main" style="font-size:0.95rem;">Consola de Auditoría & Trazabilidad</h6>
-                            <span class="x-small text-muted">Registro inmutable de eventos y telemetría de Kernel</span>
-                        </div>
-                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill ms-2 px-2" style="font-size:0.65rem;">ONLINE</span>
-                    </div>
-                `,
-                right: `
-                    <button type="button" class="btn btn-sm btn-subtle text-muted rounded-pill px-2.5 py-1 x-small" data-action="ui:close_modal">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                `
+                left: {
+                    icon: 'bi-terminal',
+                    title: 'Consola de Auditoría & Trazabilidad',
+                    subtitle: 'Registro inmutable de eventos y telemetría de Kernel',
+                    badge: { text: 'ONLINE', tone: 'success' }
+                }
             },
             body: `
                 <div class="audit-modal-content p-1" id="audit-modal-view">
@@ -67,7 +58,7 @@ export const AuditTerminalModal = {
 
                     <!-- Panel 2: Bitácora de Eventos -->
                     <div class="audit-tab-panel d-none" id="panel-audit-logs">
-                        <div class="audit-logs-list d-flex flex-column gap-2" style="max-height: 280px; overflow-y: auto;">
+                        <div class="audit-logs-list d-flex flex-column gap-2">
                             ${this._renderLogRows(recentLogs)}
                         </div>
                     </div>

@@ -54,10 +54,10 @@ export class ModuleLoader {
                     if (instance) break;
                 } catch (error) {
                     if (attempt < maxRetries) {
-                        Logger.warn('ModuleLoader', `Reintentando carga dinámica de "${moduleName}"...`);
+                        Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'ModuleLoader', message: `Reintentando carga dinámica del módulo "${moduleName}".` });
                         await new Promise(res => setTimeout(res, 300));
                     } else {
-                        Logger.warn('ModuleLoader', `Carga dinámica fallida para "${moduleName}", aplicando respaldo estático:`, error);
+                        Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'ModuleLoader', message: `Carga dinámica fallida para "${moduleName}"; aplicando respaldo estático.`, data: error?.message || error });
                     }
                 }
             }
@@ -73,7 +73,7 @@ export class ModuleLoader {
                         await instance.init();
                     }
                 } catch (initErr) {
-                    Logger.error('ModuleLoader', `Error en init() del módulo ${moduleName}:`, initErr);
+                    Logger.error({ layer: 'KERNEL', role: 'CLASS', target: 'ModuleLoader', message: `Error inicializando el módulo "${moduleName}".`, data: initErr?.message || initErr });
                 }
                 this.loadedModules.set(moduleName, instance);
             }

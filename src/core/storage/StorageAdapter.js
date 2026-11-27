@@ -35,10 +35,10 @@ class StorageAdapter {
 
         if (isAdvancedTier) {
             this.driver = new IndexedDBDriver();
-            Logger.info({ layer: 'STORAGE', role: 'ADAPTER', target: 'IndexedDB', icon: '⚡', message: 'Motor avanzado activado' });
+            Logger.info({ layer: 'STORAGE', role: 'ADAPTER', target: 'IndexedDB', icon: '⚡', message: 'Almacenamiento local avanzado (IndexedDB) inicializado.' });
         } else {
             this.driver = new LocalDriver();
-            Logger.info({ layer: 'STORAGE', role: 'ADAPTER', target: 'LocalStorage', icon: '⚡', message: 'Motor ligero activado' });
+            Logger.info({ layer: 'STORAGE', role: 'ADAPTER', target: 'LocalStorage', icon: '⚡', message: 'Almacenamiento local ligero (LocalStorage) inicializado.' });
         }
 
         this._currentTier = tier;

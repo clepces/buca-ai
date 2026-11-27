@@ -39,6 +39,18 @@ export const pushHistory = (url) => {
 };
 
 /**
+ * Navega hacia atrás en el historial si existe una entrada previa.
+ * @returns {boolean} true si se ejecutó back()
+ */
+export const goBack = () => {
+    if (isBrowser() && window.history && window.history.length > 1) {
+        window.history.back();
+        return true;
+    }
+    return false;
+};
+
+/**
  * Desplaza la ventana suavemente o a coordenadas dadas.
  * @param {ScrollToOptions|number} options 
  */
@@ -94,7 +106,12 @@ export const safeReload = (destination) => {
  * @param {string} key 
  * @returns {any}
  */
-export const getGlobal = (key) => (isBrowser() ? window[key] : undefined);
+export const getGlobal = (key) => {
+    if (!isBrowser() || !key || key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        return undefined;
+    }
+    return window[key];
+};
 
 /**
  * Asigna una propiedad global de forma segura.
@@ -102,7 +119,10 @@ export const getGlobal = (key) => (isBrowser() ? window[key] : undefined);
  * @param {any} val 
  */
 export const setGlobal = (key, val) => {
-    if (isBrowser()) window[key] = val;
+    if (!isBrowser() || !key || key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        return;
+    }
+    window[key] = val;
 };
 
 /**
@@ -170,9 +190,23 @@ export const getValidatedOrigin = () => {
     }
 
     const currentOrigin = window.location.origin;
-    if (currentOrigin !== expectedOrigin) {
-        throw new Error(`[Security] Origen no permitido para redirección de autenticación: "${currentOrigin}". Esperado: "${expectedOrigin}".`);
+    if (currentOrigin === expectedOrigin) {
+        return currentOrigin;
     }
 
-    return currentOrigin;
+    try {
+        const parsed = new URL(currentOrigin);
+        if (!isProd && (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1')) {
+            return currentOrigin;
+        }
+        if (isProd && parsed.protocol === 'https:' && (
+            parsed.hostname === 'app.buca.com.ve' ||
+            parsed.hostname.endsWith('.web.app') ||
+            parsed.hostname.endsWith('.firebaseapp.com')
+        )) {
+            return currentOrigin;
+        }
+    } catch { /* fall through to security error */ }
+
+    throw new Error(`[Security] Origen no permitido para redirección de autenticación: "${currentOrigin}". Esperado: "${expectedOrigin}".`);
 };

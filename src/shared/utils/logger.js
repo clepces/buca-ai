@@ -36,12 +36,13 @@ const MSG_STYLE = 'color: #334155; font-weight: 400;';
 const VALID_ROLES = new Set(['CLASS', 'FN', 'ADAPTER', 'DRIVER', 'SERVICE', 'MODULE', 'HOOK', 'EVENT']);
 
 const LEGACY_SCOPE_MAP = {
-    Kernel: { layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel' },
+    Kernel: { layer: 'KERNEL', role: 'CLASS', target: 'Kernel' },
     Router: { layer: 'KERNEL', role: 'CLASS', target: 'Router' },
     RouterGuard: { layer: 'KERNEL', role: 'FN', target: 'RouterGuard' },
     PWA: { layer: 'KERNEL', role: 'EVENT', target: 'ServiceWorker' },
     ModuleLoader: { layer: 'KERNEL', role: 'CLASS', target: 'ModuleLoader' },
-    BNE: { layer: 'ENGINE', role: 'CLASS', target: 'BNE' },
+    BENE: { layer: 'ENGINE', role: 'CLASS', target: 'BENE' },
+    BNE: { layer: 'ENGINE', role: 'CLASS', target: 'BENE' },
     ResourceThrottler: { layer: 'ENGINE', role: 'CLASS', target: 'ResourceThrottle' },
     StorageAdapter: { layer: 'STORAGE', role: 'ADAPTER', target: 'StorageAdapter' },
     SupabaseDriver: { layer: 'STORAGE', role: 'DRIVER', target: 'SupabaseDriver' },
@@ -53,7 +54,6 @@ const LEGACY_SCOPE_MAP = {
     WorkspaceModule: { layer: 'MODULE', role: 'CLASS', target: 'Workspace' },
     ModalService: { layer: 'UI', role: 'CLASS', target: 'Modal' },
     ActionDispatcher: { layer: 'UI', role: 'EVENT', target: 'ActionDispatcher' },
-    SessionDashboard: { layer: 'UI', role: 'CLASS', target: 'SessionDashboard' },
     PasswordResetPage: { layer: 'UI', role: 'CLASS', target: 'PasswordResetPage' },
     Auth: { layer: 'UI', role: 'CLASS', target: 'Auth' }
 };
@@ -66,21 +66,23 @@ const sanitizeText = (value) => {
         .replace(/\/(?:Users|home|var|wamp64)[^:\n]+/g, '[SECURE_PATH]');
 };
 
-const sanitizePayload = (payload) => {
+const sanitizePayload = (payload, seen = new WeakSet(), depth = 0) => {
     if (isDev || payload == null) return payload;
     if (payload instanceof Error) {
         return { name: payload.name, message: sanitizeText(payload.message) };
     }
-    if (typeof payload === 'object' && !Array.isArray(payload)) {
+    if (typeof payload === 'string') {
+        return sanitizeText(payload);
+    }
+    if (typeof payload === 'object') {
+        if (seen.has(payload) || depth > 4) return '[Circular/Truncated]';
+        seen.add(payload);
+        if (Array.isArray(payload)) {
+            return payload.map((item) => sanitizePayload(item, seen, depth + 1));
+        }
         const clean = {};
         for (const [k, v] of Object.entries(payload)) {
-            if (v instanceof Error) {
-                clean[k] = { name: v.name, message: sanitizeText(v.message) };
-            } else if (typeof v === 'string') {
-                clean[k] = sanitizeText(v);
-            } else {
-                clean[k] = v;
-            }
+            clean[k] = sanitizePayload(v, seen, depth + 1);
         }
         return clean;
     }

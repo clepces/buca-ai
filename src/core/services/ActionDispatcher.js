@@ -1,18 +1,46 @@
 /**
- * @fileoverview ActionDispatcher - Maneja la delegación global de clics y acciones UI
+ * @fileoverview ActionDispatcher - Delegación global O(1) de acciones UI [data-action].
  * @module core/services/ActionDispatcher
+ * Clean Core: Despacha eventos al EventBus sin importar módulos de negocio ni vistas UI.
  */
 
 import { eventBus } from '@/core/eventBus/index.js';
-import { ModalService } from '@/shared/ui/services/ModalService.js';
-import { router } from '@/core/router/router.js';
-import { NotificationTray } from '@/shared/ui/components/notifications/NotificationTray.js';
-import { Header } from '@/shared/ui/layouts/components/TopBar.js';
-import { $, $$, $on, $addClass, $removeClass } from '@/shared/utils/dom.js';
+import { $on } from '@/shared/utils/dom.js';
 import { Logger } from '@/shared/utils/logger.js';
-import { sessionState } from '@/core/state/session.js';
-import { safeReload } from '@/core/utils/system-helper.js';
-import { ThemeManager } from '@/core/services/ThemeManager.js';
+
+const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+const IGNORED_DATA_ATTRS = new Set(['action', 'target', 'payload', 'status', 'tooltip', 'bneIgnore']);
+
+const buildSafePayload = (actionEl) => {
+    const payload = {};
+    Array.from(actionEl.attributes).forEach((attr) => {
+        if (!attr.name.startsWith('data-')) return;
+        const key = attr.name.slice(5).replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+        if (FORBIDDEN_KEYS.has(key) || IGNORED_DATA_ATTRS.has(key) || key.startsWith('bs')) return;
+        payload[key] = attr.value;
+    });
+
+    const rawPayload = actionEl.getAttribute('data-payload');
+    if (rawPayload) {
+        try {
+            const parsed = JSON.parse(rawPayload);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                for (const key of Object.keys(parsed)) {
+                    if (!FORBIDDEN_KEYS.has(key)) {
+                        payload[key] = parsed[key];
+                    }
+                }
+            }
+        } catch (err) {
+            Logger.error({ layer: 'UI', role: 'EVENT', target: 'ActionDispatcher', message: 'Error procesando atributo data-payload.', data: err?.message || err });
+        }
+    }
+
+    const target = actionEl.getAttribute('data-target');
+    if (target) payload.target = target;
+    payload.trigger = actionEl;
+    return payload;
+};
 
 export const ActionDispatcher = {
     _initialized: false,
@@ -22,193 +50,58 @@ export const ActionDispatcher = {
         if (this._initialized) return;
         this._initialized = true;
 
-        Logger.info('ActionDispatcher', 'Conectando cables de interfaz (Global Click Delegation)');
+        Logger.info({ layer: 'UI', role: 'EVENT', target: 'ActionDispatcher', message: 'Delegación global de acciones UI inicializada.' });
 
-        // Delegación Global de Clics
-        this._cleanups.push($on(document, 'click', (e) => {
-            const actionEl = e.target.closest('[data-action]');
-            if (actionEl) {
-                if (e._bucaActionHandled) return;
-                const action = actionEl.getAttribute('data-action');
-                const target = actionEl.getAttribute('data-target');
-                let payload = {};
-                Array.from(actionEl.attributes).forEach(attr => {
-                    if (attr.name.startsWith('data-')) {
-                        const key = attr.name.slice(5).replace(/-([a-z])/g, g => g[1].toUpperCase());
-                        if (key !== 'action' && key !== 'target' && key !== 'payload') {
-                            payload[key] = attr.value;
-                        }
-                    }
-                });
-                try {
-                    const rawPayload = actionEl.getAttribute('data-payload');
-                    if (rawPayload) Object.assign(payload, JSON.parse(rawPayload));
-                } catch (err) { 
-                    Logger.error('ActionDispatcher', 'Error procesando payload:', err); 
-                }
-                if (target) payload.target = target;
-                payload.trigger = actionEl;
-                const status = actionEl.getAttribute('data-status');
-                if (status === 'in-development' || actionEl.hasAttribute('disabled') || actionEl.classList.contains('disabled-dev-item')) {
-                    e.preventDefault();
-                    eventBus.emit('notifications:push', {
-                        title: 'Función en Desarrollo',
-                        message: `La opción "${action}" está planificada en el roadmap del sistema.`,
-                        type: 'info'
-                    });
-                    Logger.info('ActionDispatcher', `Elemento en desarrollo seleccionado: ${action}`);
-                    return;
-                }
-                Logger.info('ActionDispatcher', `Dispatching: ${action}`, payload);
-                if (!eventBus.hasListeners(action)) {
-                    Logger.warn('ActionDispatcher', `[Unbound Action] Sin suscriptor activo para: "${action}". Elemento:`, actionEl);
-                    eventBus.emit('notifications:push', {
-                        title: 'Función en Desarrollo',
-                        message: `La función "${action}" aún no tiene un módulo conectado.`,
-                        type: 'warning'
-                    });
-                    return;
-                }
-                eventBus.emit(action, payload);
+        const handleAction = (e, actionEl) => {
+            if (!actionEl || e._bucaActionHandled) return;
+            const action = actionEl.getAttribute('data-action');
+            if (!action) return;
+
+            e._bucaActionHandled = true;
+            if (action === 'router:navigate' && actionEl.tagName === 'A') {
+                e.preventDefault();
             }
-        }));
 
-        // --- REGISTRO DE ACCIONES GLOBALES ---
-        // Nota de Ownership: 'notifications:mark_as_read' y 'ui:clear_notifications'
-        // son propiedad exclusiva de NotificationService; 'ui:close_modal' es de ModalService.
-        // ActionDispatcher emite estos eventos ante clics [data-action], sin duplicar suscripciones.
-        const openPerformanceModal = async () => {
-            const { PerformanceModal } = await import('@/modules/workspace/components/PerformanceModal.js');
-            PerformanceModal.show();
+            const status = actionEl.getAttribute('data-status');
+            if (status === 'in-development' || actionEl.hasAttribute('disabled') || actionEl.classList.contains('disabled-dev-item')) {
+                e.preventDefault();
+                eventBus.emit('notifications:push', {
+                    title: 'Función en Desarrollo',
+                    message: `La opción "${action}" está planificada en el roadmap del sistema.`,
+                    type: 'info'
+                });
+                Logger.info({ layer: 'UI', role: 'EVENT', target: 'ActionDispatcher', message: `Acción en desarrollo seleccionada: ${action}` });
+                return;
+            }
+
+            const payload = buildSafePayload(actionEl);
+            Logger.debug({ layer: 'UI', role: 'EVENT', target: 'ActionDispatcher', message: `Despachando acción UI: ${action}`, data: payload });
+
+            if (!eventBus.hasListeners(action)) {
+                Logger.warn({ layer: 'UI', role: 'EVENT', target: 'ActionDispatcher', message: `Acción sin suscriptor activo: "${action}".`, data: actionEl });
+                eventBus.emit('notifications:push', {
+                    title: 'Función en Desarrollo',
+                    message: `La función "${action}" aún no tiene un módulo conectado.`,
+                    type: 'warning'
+                });
+                return;
+            }
+            eventBus.emit(action, payload);
         };
 
         this._cleanups.push(
-            eventBus.on('tray:filter_tab', (payload) => {
-                const tab = payload.tab || 'all';
-                NotificationTray.setActiveTab(tab);
-                Header.syncNotifications();
+            $on(document, 'click', (e) => {
+                const actionEl = e.target?.closest?.('[data-action]');
+                if (actionEl) handleAction(e, actionEl);
             }),
-            eventBus.on('ui:open_performance', openPerformanceModal),
-            eventBus.on('ui:open_perf', openPerformanceModal),
-            eventBus.on('ui:open_profile', async (p) => {
-                const { ProfileModal } = await import('@/modules/profile/components/profile-modal.js');
-                ProfileModal.show(p?.tab || 'general');
-            }),
-            eventBus.on('ui:open_security', async () => {
-                const { ProfileModal } = await import('@/modules/profile/components/profile-modal.js');
-                ProfileModal.show('security');
-            }),
-            eventBus.on('ui:open_billing', async () => {
-                const { ProfileModal } = await import('@/modules/profile/components/profile-modal.js');
-                ProfileModal.show('subscription');
-            }),
-            eventBus.on('ui:open_settings', async () => {
-                const { PerformanceModal } = await import('@/modules/workspace/components/PerformanceModal.js');
-                PerformanceModal.show();
-            }),
-            eventBus.on('settings:toggle_glass', ({ trigger }) => {
-                if (trigger) {
-                    if (trigger.checked) {
-                        $removeClass(document.body, 'disable-glass');
-                    } else {
-                        $addClass(document.body, 'disable-glass');
-                    }
-                }
-            }),
-            eventBus.on('ui:export_report', async () => {
-                const { ExportReportModal } = await import('@/modules/workspace/components/export-report-modal.js');
-                ExportReportModal.show();
-            }),
-            eventBus.on('ui:open_activity_log', async () => {
-                const { AuditTerminalModal } = await import('@/shared/ui/components/audit/audit-terminal-modal.js');
-                AuditTerminalModal.show();
-            }),
-            eventBus.on('ui:logout', async () => {
-                ModalService.showModal({
-                    size: 'micro',
-                    header: { left: '<h3>Cierre de Sesión</h3>' },
-                    body: '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div><p class="small text-muted mb-0">Desconectando de forma segura...</p></div>'
-                });
-                try {
-                    const { AuthService } = await import('@/modules/auth/services/AuthService.js');
-                    await AuthService.logout();
-                } catch (err) {
-                    Logger.error('ActionDispatcher', 'Logout error:', err);
-                    try { localStorage.clear(); sessionStorage.clear(); } catch (e) {
-                        Logger.warn('ActionDispatcher', 'Silent logout cleanup:', e.message);
-                    }
-                    setTimeout(() => { ModalService.hideModal(); safeReload('/'); }, 800);
-                }
-            }),
-            eventBus.on('ui:enter_business', (payload = {}) => {
-                const bizId = payload?.id || payload?.businessId;
-                if (bizId && bizId !== 'Dashboard') {
-                    sessionState.set({ tenantId: bizId });
-                    Logger.info('ActionDispatcher', `Unidad comercial activa establecida en sesión: ${bizId}`);
-                    eventBus.emit('business:selected', { id: bizId });
-                    eventBus.emit('notifications:push', {
-                        title: 'Unidad Seleccionada',
-                        message: `Comercio activo establecido en la sesión.`,
-                        type: 'info'
-                    });
-                }
-                ModalService.closeModal();
-                router.navigate('/workspace');
-            }),
-            eventBus.on('workspace:filter_context', (data = {}) => {
-                const context = data?.context || data?.target || 'all';
-                $$('.context-pill').forEach(pill => $removeClass(pill, 'active'));
-                const activePill = $(`[data-context="${context}"]`);
-                if (activePill) $addClass(activePill, 'active');
-                if (context === 'directory') { router.navigate('/workspaces'); }
-                else { router.navigate('/workspace'); }
-            }),
-            eventBus.on('ui:open_create_business', async () => {
-                const { BusinessWizardModal } = await import('@/modules/business/components/business-wizard-modal.js');
-                BusinessWizardModal.show();
-            }),
-            eventBus.on('router:navigate', (p) => { if (p?.path) router.navigate(p.path); }),
-            eventBus.on('ui:open_modal', (p) => {
-                ModalService.showModal({
-                    size: p.size || 'md',
-                    header: { left: `<h3>${p.title || 'Información'}</h3>` },
-                    body: p.body || '<p>Contenido no disponible.</p>',
-                    footer: { right: '<button type="button" class="btn btn-primary rounded-pill px-4" data-action="ui:close_modal">Entendido</button>' }
-                });
-            }),
-            eventBus.on('ui:open_search_palette', async () => {
-                const { default: palette } = await import('@/shared/ui/components/header/command-palette-modal.js');
-                palette.show();
-            }),
-            eventBus.on('ui:set_theme', (p) => { if (p?.theme) ThemeManager.setTheme(p.theme); }),
-            eventBus.on('ui:open_ai_assistant', async () => {
-                const { AICopilotModal } = await import('@/shared/ui/components/ai-copilot/ai-copilot-modal.js');
-                AICopilotModal.show();
-            }),
-            eventBus.on('feedback:select_type', (payload) => {
-                eventBus.emit('header:close_all_panels');
-                eventBus.emit('notifications:push', {
-                    title: 'Feedback Registrado',
-                    message: `Gracias por tu ${payload?.type === 'idea' ? 'sugerencia' : 'reporte'}. Se ha canalizado al backlog.`,
-                    type: 'success'
-                });
-            }),
-            eventBus.on('workspace:toggle_view_mode', () => eventBus.emit('business:toggle_view')),
-            eventBus.on('ui:open_features_modal', () => {
-                ModalService.showModal({
-                    size: 'lg',
-                    header: { left: '<span class="fw-bold small text-muted text-uppercase"><i class="bi bi-grid-3x3-gap me-1"></i> Ecosistema Modular BUCA AI</span>' },
-                    body: '<div class="p-3"><p class="text-muted mb-0">ERP modular con 5 dominios activos: <strong>Auth</strong>, <strong>Workspace</strong>, <strong>Business</strong>, <strong>Finance</strong> y <strong>Profile</strong>.</p></div>',
-                    footer: { right: '<button type="button" class="btn btn-sm btn-primary rounded-pill px-3" data-action="ui:close_modal">Cerrar</button>' }
-                });
-            }),
-            eventBus.on('ui:open_changelog_modal', () => {
-                ModalService.showModal({
-                    size: 'md',
-                    header: { left: '<span class="fw-bold small text-muted text-uppercase"><i class="bi bi-clock-history me-1"></i> Registro de Cambios</span>' },
-                    body: '<div class="p-3"><h6 class="fw-bold text-main">Versión v1.1.23-alpha</h6><ul class="small text-muted mb-0 ps-3"><li>Breakpoints BUCA v6 (lg:1024, xl:1280, 2xl:1536, 3xl:1920, 4xl:2560).</li><li>Command Palette global Ctrl + K.</li><li>Tooltips Neural reactivos con edge detection.</li><li>Refactor modular de modales desacoplados.</li></ul></div>',
-                    footer: { right: '<button type="button" class="btn btn-sm btn-primary rounded-pill px-3" data-action="ui:close_modal">Cerrar</button>' }
-                });
+            $on(document, 'keydown', (e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                const actionEl = e.target?.closest?.('[data-action]');
+                if (!actionEl) return;
+                const tag = actionEl.tagName;
+                if (tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+                e.preventDefault();
+                handleAction(e, actionEl);
             })
         );
     },

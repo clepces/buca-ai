@@ -18,6 +18,7 @@ if (!viteEnv.VITE_SUPABASE_URL || !viteEnv.VITE_SUPABASE_ANON_KEY) {
 }
 
 export const ENV = {
+    APP_VERSION: viteEnv.VITE_APP_VERSION || '1.1.24-alpha',
     MODE: viteEnv.MODE || 'development',
     IS_DEV: viteEnv.DEV || (viteEnv.MODE === 'development'),
     IS_PROD: viteEnv.PROD || (viteEnv.MODE === 'production'),

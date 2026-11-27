@@ -8,6 +8,7 @@
 
 import { CONFIG } from '../config/config.js';
 import { $$, $attr } from '../../shared/utils/dom.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 const STORAGE_KEY = CONFIG.STORAGE.PERFORMANCE || 'buca_performance_config';
 const VALID_PROFILES = ['eco', 'balanced', 'pro', 'ultra'];
@@ -46,7 +47,13 @@ export class PerformanceStorage {
                 timestamp: data.timestamp || Date.now()
             };
         } catch (e) {
-            console.warn('[PerformanceStorage] Error reading performance profile:', e);
+            Logger.warn({
+                layer: 'STORAGE',
+                role: 'CLASS',
+                target: 'PerformanceStorage',
+                message: 'Error leyendo perfil de rendimiento local; usando valores por defecto.',
+                data: { error: e?.message || e }
+            });
             return this.getDefaults();
         }
     }
@@ -77,7 +84,13 @@ export class PerformanceStorage {
             this.propagateToDOM(profile, payload.tier, isManualMode);
             return payload;
         } catch (e) {
-            console.error('[PerformanceStorage] Failed to save performance profile:', e);
+            Logger.error({
+                layer: 'STORAGE',
+                role: 'CLASS',
+                target: 'PerformanceStorage',
+                message: 'Error guardando perfil de rendimiento local.',
+                data: { error: e?.message || e }
+            });
             return null;
         }
     }
@@ -112,7 +125,7 @@ export class PerformanceStorage {
 
         // Propagar a todos los contenedores de modales activos y overlays en el DOM
         const modalTargets = $$(
-            '#modal-base, .glass-modal-overlay, .glass-modal, #perf-modal-overlay, [data-buca-modal]'
+            '#ui-modal-root, .ui-modal, #perf-modal-overlay, [data-buca-modal]'
         );
         modalTargets.forEach(el => {
             $attr(el, 'data-buca-perf', tierId);
@@ -130,7 +143,13 @@ export class PerformanceStorage {
             const defaults = this.getDefaults();
             this.propagateToDOM(defaults.profile, defaults.tier, defaults.isManualMode);
         } catch (e) {
-            console.warn('[PerformanceStorage] Failed to clear performance config:', e);
+            Logger.warn({
+                layer: 'STORAGE',
+                role: 'CLASS',
+                target: 'PerformanceStorage',
+                message: 'Error limpiando configuración de rendimiento local.',
+                data: { error: e?.message || e }
+            });
         }
     }
 

@@ -8,6 +8,18 @@ import { HelpPanel } from '@/shared/ui/components/header/help-panel.js';
 import { AdvisorPanel } from '@/shared/ui/components/header/advisor-panel.js';
 import { ProfilePanel } from '@/shared/ui/components/header/ProfilePanel.js';
 import { escapeHTML } from '@/shared/utils/security.js';
+import { ENV } from '@/core/config/environment.js';
+
+/**
+ * Builds the context label and badge for the header breadcrumb.
+ * @param {string|undefined} tenantId - Current tenant ID
+ * @returns {{ bizLabel: string, hasTenant: boolean }}
+ */
+function getBizContext(tenantId) {
+    const hasTenant = Boolean(tenantId && tenantId !== 'default');
+    const bizLabel = hasTenant ? String(tenantId).replace(/^biz_/, 'Unidad ') : 'Ecosistema ERP';
+    return { bizLabel, hasTenant };
+}
 
 export function renderTopBar() {
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
@@ -17,30 +29,40 @@ export function renderTopBar() {
     const displayName = user.displayName || user.username || (user.email ? user.email.split('@')[0] : 'Usuario');
     const initials = displayName.split(/[\s._-]+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'U';
 
-    const hasTenant = Boolean(tenantId && tenantId !== 'default');
-    const bizLabel = hasTenant ? String(tenantId).replace(/^biz_/, 'Unidad ') : 'Ecosistema ERP';
+    const { bizLabel, hasTenant } = getBizContext(tenantId);
+    const versionTag = `v${ENV.APP_VERSION}`;
+    const envBadge = hasTenant ? 'PRODUCCIÓN' : 'STANDALONE';
+    const envBadgeClass = hasTenant ? 'bg-success-subtle text-success' : 'bg-primary-subtle text-primary';
 
     return `
         <header class="app-header header--solid shadow-2xs">
             <div class="container-fluid">
-                <!-- Left Zone: Logo, Versión & Negocio Activo -->
+                <!-- Left Zone: Logo con contracción animada + Breadcrumb Supabase -->
                 <div class="header-left-identity d-flex align-items-center gap-2">
-                    <a href="/" class="navbar-brand-premium d-flex align-items-center gap-2 m-0 text-decoration-none">
+                    <a href="/" class="navbar-brand-premium d-flex align-items-center gap-2 m-0 text-decoration-none" aria-label="BUCA AI - Inicio">
                         <div class="logo-neural-container d-flex align-items-center justify-content-center p-1.5 rounded-2 bg-subtle border">
                             <img id="app-logo" src="${logoSrc}" alt="Logo BUCA" class="logo-img-premium" width="20" height="20">
                         </div>
-                        <div class="d-flex align-items-center gap-1.5">
+                        <div class="brand-collapsible" aria-hidden="true">
                             <span class="brand-name-main fw-bold text-main">BUCA <span class="text-primary">AI</span></span>
-                            <span class="badge bg-secondary-subtle text-muted rounded-pill px-2 py-0.5 x-small font-monospace">v1.1.23-alpha</span>
+                            <span class="badge bg-secondary-subtle text-muted rounded-pill px-2 py-0.5 x-small font-monospace brand-version-badge">${versionTag}</span>
                         </div>
                     </a>
 
+                    <!-- Tooltip hover sobre logo contraído (se llena por JS) -->
+                    <div class="brand-hover-tooltip" role="tooltip" aria-hidden="true">
+                        <strong class="brand-hover-tooltip__name">BUCA AI</strong>
+                        <span class="brand-hover-tooltip__version">${versionTag}</span>
+                        <span class="brand-hover-tooltip__sep">/</span>
+                        <span class="brand-hover-tooltip__context">${escapeHTML(bizLabel)} <small>${envBadge}</small></span>
+                    </div>
+
                     <!-- Separador y Breadcrumb de Organización / Negocio -->
-                    <span class="text-muted opacity-40 d-none d-md-inline">/</span>
-                    <div class="d-none d-md-flex align-items-center gap-1.5">
+                    <span class="header-breadcrumb-sep text-muted opacity-40 d-none d-md-inline">/</span>
+                    <div class="header-breadcrumb-ctx d-none d-md-flex align-items-center gap-1.5">
                         <span class="fw-semibold text-main small text-truncate max-w-160" title="${escapeHTML(bizLabel)}">${escapeHTML(bizLabel)}</span>
-                        <span class="badge ${hasTenant ? 'bg-success-subtle text-success' : 'bg-primary-subtle text-primary'} rounded-pill px-1.5 py-0.2 x-small font-monospace">
-                            ${hasTenant ? 'PRODUCCIÓN' : 'STANDALONE'}
+                        <span class="badge ${envBadgeClass} rounded-pill px-1.5 py-0.2 x-small font-monospace">
+                            ${envBadge}
                         </span>
                     </div>
                 </div>

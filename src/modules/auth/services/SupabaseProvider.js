@@ -5,7 +5,7 @@
  * Soporta autenticación nativa, sesiones automáticas y TOTP MFA en capa gratuita.
  * =========================================================================
  */
-import { getSupabase, supabase } from '@/core/config/supabase.js';
+import { getSupabase, supabase, getRecoverySessionProof, clearRecoverySessionProof } from '@/core/config/supabase.js';
 import { Logger } from '@/shared/utils/logger.js';
 import { getValidatedOrigin } from '@/core/utils/system-helper.js';
 
@@ -20,7 +20,7 @@ export const SupabaseProvider = {
      * @param {string} password 
      */
     async login(email, password) {
-        Logger.info('SupabaseProvider', 'Ejecutando signInWithPassword...');
+        Logger.info({ layer: 'SERVICE', role: 'ADAPTER', target: 'SupabaseProvider', message: 'Autenticando credenciales con signInWithPassword.' });
         const client = this._getClient();
         const { data, error } = await client.auth.signInWithPassword({
             email,
@@ -28,7 +28,7 @@ export const SupabaseProvider = {
         });
 
         if (error) {
-            console.error('[SupabaseProvider] Login Error:', error.message);
+            Logger.error({ layer: 'SERVICE', role: 'ADAPTER', target: 'SupabaseProvider', message: 'Error en signInWithPassword.', data: error.message });
             throw error;
         }
 
@@ -42,7 +42,7 @@ export const SupabaseProvider = {
      * @param {string} name 
      */
     async register(email, password, name) {
-        Logger.info('SupabaseProvider', 'Ejecutando signUp en Supabase...');
+        Logger.info({ layer: 'SERVICE', role: 'ADAPTER', target: 'SupabaseProvider', message: 'Registrando usuario con signUp en Supabase.' });
         const client = this._getClient();
         const { data, error } = await client.auth.signUp({
             email,
@@ -56,7 +56,7 @@ export const SupabaseProvider = {
         });
 
         if (error) {
-            console.error('[SupabaseProvider] Register Error:', error.message);
+            Logger.error({ layer: 'SERVICE', role: 'ADAPTER', target: 'SupabaseProvider', message: 'Error en registro signUp.', data: error.message });
             throw error;
         }
 
@@ -68,17 +68,17 @@ export const SupabaseProvider = {
      * @param {string} email 
      */
     async recoverPassword(email) {
-        Logger.info('SupabaseProvider', 'Enviando solicitud de recuperación...');
+        Logger.info({ layer: 'SERVICE', role: 'ADAPTER', target: 'SupabaseProvider', message: 'Enviando solicitud de recuperación de contraseña.' });
         const client = this._getClient();
         const origin = getValidatedOrigin();
         const { error } = await client.auth.resetPasswordForEmail(email, {
             redirectTo: `${origin}/auth/recovery/reset-password`
         });
         if (error) {
-            Logger.error('SupabaseProvider', 'Error en recuperación:', error.message);
+            Logger.error({ layer: 'SERVICE', role: 'ADAPTER', target: 'SupabaseProvider', message: 'Error solicitando recuperación de contraseña.', data: error.message });
             throw error;
         }
-        Logger.info('SupabaseProvider', 'Solicitud de recuperación procesada por el servidor (200 OK).');
+        Logger.info({ layer: 'SERVICE', role: 'ADAPTER', target: 'SupabaseProvider', message: 'Solicitud de recuperación procesada por el servidor (200 OK).' });
         return true;
     },
 
@@ -87,7 +87,7 @@ export const SupabaseProvider = {
      * @param {string} newPassword 
      */
     async updateUserPassword(newPassword) {
-        Logger.info('SupabaseProvider', 'Actualizando contraseña de usuario...');
+        Logger.info({ layer: 'SERVICE', role: 'ADAPTER', target: 'SupabaseProvider', message: 'Actualizando contraseña de usuario en sesión de recuperación.' });
         const isRecovery = await this.isRecoverySession();
         if (!isRecovery) {
             throw new Error('Sesión de recuperación no válida o no verificada.');
@@ -95,6 +95,7 @@ export const SupabaseProvider = {
         const client = this._getClient();
         const { data, error } = await client.auth.updateUser({ password: newPassword });
         if (error) throw error;
+        clearRecoverySessionProof();
         return data;
     },
 
@@ -103,10 +104,11 @@ export const SupabaseProvider = {
      * @returns {Promise<{ success: boolean, localCleared?: boolean, error?: string }>}
      */
     async logout() {
+        clearRecoverySessionProof();
         const client = this._getClient();
         const { error } = await client.auth.signOut();
         if (error) {
-            Logger.warn('SupabaseProvider', `Logout warning: ${error.message}`);
+            Logger.warn({ layer: 'SERVICE', role: 'ADAPTER', target: 'SupabaseProvider', message: 'Advertencia al cerrar sesión global en Supabase.', data: error.message });
             let localCleared;
             try {
                 const { error: localErr } = await client.auth.signOut({ scope: 'local' });
@@ -147,47 +149,51 @@ export const SupabaseProvider = {
     },
 
     /**
-     * Verifica mediante claims del SDK si la sesión activa tiene origen PASSWORD_RECOVERY.
-     * Falla cerrado (false) ante cualquier error o ausencia de claim 'recovery'.
+     * Verifica mediante claims del SDK y evidencia en memoria de PASSWORD_RECOVERY
+     * si la sesión activa corresponde a un flujo de recuperación vigente.
+     * Protege el flujo/UI cliente; la autorización de datos sigue en el servidor.
+     * Falla cerrado (false) si getClaims() falla o no hay evidencia vinculada a la sesión.
      * @returns {Promise<boolean>}
      */
     async isRecoverySession() {
         try {
             const client = this._getClient();
-            if (!client?.auth) return false;
+            if (!client?.auth || typeof client.auth.getClaims !== 'function') return false;
 
             const session = await this.getSession();
-            if (!session?.user) return false;
+            if (!session?.user?.id) return false;
 
-            const hasRecoveryMethod = (methods) =>
-                Array.isArray(methods) &&
-                methods.some((entry) => (typeof entry === 'string' ? entry === 'recovery' : entry?.method === 'recovery'));
+            const proof = getRecoverySessionProof();
+            if (!proof || !proof.sessionId || proof.userId !== session.user.id) return false;
 
-            if (typeof client.auth.getClaims === 'function') {
-                const { data, error } = await client.auth.getClaims();
-                Logger.debug('SupabaseProvider', 'isRecoverySession getClaims:', {
-                    error: error?.message || null,
-                    amr: data?.claims?.amr ?? null
-                });
-                if (!error && data?.claims?.amr !== undefined) {
-                    return hasRecoveryMethod(data.claims.amr);
-                }
+            const { data, error } = await client.auth.getClaims();
+            const claims = data?.claims;
+            const methods = Array.isArray(claims?.amr)
+                ? claims.amr.map((e) => (typeof e === 'string' ? e : e?.method)).filter(Boolean)
+                : [];
+            Logger.debug({
+                layer: 'SERVICE',
+                role: 'ADAPTER',
+                target: 'SupabaseProvider',
+                message: 'Claims evaluados en isRecoverySession.',
+                data: { error: error?.message || null, amrMethods: methods }
+            });
+
+            if (error || !claims) return false;
+            if (claims.sub && claims.sub !== session.user.id) return false;
+            if (typeof claims.exp === 'number' && (Date.now() / 1000) >= claims.exp) {
+                clearRecoverySessionProof();
+                return false;
+            }
+            if (!claims.session_id || claims.session_id !== proof.sessionId) {
+                clearRecoverySessionProof();
+                return false;
             }
 
-            if (typeof client.auth.mfa?.getAuthenticatorAssuranceLevel === 'function') {
-                const { data, error } = await client.auth.mfa.getAuthenticatorAssuranceLevel();
-                Logger.debug('SupabaseProvider', 'isRecoverySession AAL:', {
-                    error: error?.message || null,
-                    methods: data?.currentAuthenticationMethods ?? null
-                });
-                if (!error && Array.isArray(data?.currentAuthenticationMethods)) {
-                    return hasRecoveryMethod(data.currentAuthenticationMethods);
-                }
-            }
-
-            return false;
+            // No aceptar 'otp' genéricamente por sí solo: exige proof válido de PASSWORD_RECOVERY vinculado a esta sesión.
+            return methods.includes('recovery') || methods.includes('otp');
         } catch (err) {
-            Logger.warn('SupabaseProvider', 'isRecoverySession exception:', err?.message || err);
+            Logger.warn({ layer: 'SERVICE', role: 'ADAPTER', target: 'SupabaseProvider', message: 'Excepción validando sesión de recuperación.', data: err?.message || err });
             return false;
         }
     },

@@ -2,26 +2,24 @@
  * BUCA Modular - Central Application Configuration
  * Sigue el estándar de buca-app-modular para asegurar compatibilidad de lógica y datos.
  */
+import { ENV } from './environment.js';
 
 export const CONFIG = {
     APP: {
-        NAME: 'BUCA Website',
-        DESCRIPTION: 'Buca Neural Engine Presentation',
-        VERSION: '1.1.6-alpha',
+        NAME: 'BUCA AI',
+        DESCRIPTION: 'Buca Neural Engine (BENE)',
+        VERSION: ENV.APP_VERSION,
         SUPPORT_EMAIL: 'support@buca.com.ve',
         WEBSITE: 'https://buca.com.ve'
     },
 
     /**
-     * Variables de Entorno y Control de Despliegue
-     * - IS_PRODUCTION: false (desarrollo activo) | true (producción - desactiva cuentas demo y accesos temporales)
-     * - IS_DEVELOPMENT: true cuando se trabaja localmente o en entornos de prueba
-     * - SHOW_DEMO_ACCOUNTS: true muestra el selector de cuentas demo en login; se desactiva automáticamente en producción
+     * Variables de Entorno y Control de Despliegue (derivadas de environment.js)
      */
     ENV: {
-        MODE: 'development', // 'development' | 'production'
-        IS_DEVELOPMENT: true,
-        IS_PRODUCTION: false,
+        MODE: ENV.MODE,
+        IS_DEVELOPMENT: ENV.IS_DEV,
+        IS_PRODUCTION: ENV.IS_PROD,
         SHOW_DEMO_ACCOUNTS: false
     },
 

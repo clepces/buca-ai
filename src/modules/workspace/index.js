@@ -10,15 +10,45 @@ import { uiState } from '@/core/state/ui.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { router } from '@/core/router/router.js';
 import { workspaceRoutes } from './routes.js';
+import { $, $$, $addClass, $removeClass } from '@/shared/utils/dom.js';
 import { Logger } from '@/shared/utils/logger.js';
 
 export const WorkspaceModule = {
+    _actionsBound: false,
+
     async init() {
-        Logger.info('WorkspaceModule', 'Módulo inicializado');
+        Logger.info({ layer: 'MODULE', role: 'CLASS', target: 'Workspace', message: 'Módulo de espacio de trabajo inicializado.' });
         if (router && typeof router.addRoutes === 'function') {
             router.addRoutes(workspaceRoutes);
         }
         this.setupDashboard();
+        this.setupActions();
+    },
+
+    setupActions() {
+        if (this._actionsBound) return;
+        this._actionsBound = true;
+
+        const openPerformanceModal = async () => {
+            const { PerformanceModal } = await import('./components/PerformanceModal.js');
+            PerformanceModal.show();
+        };
+
+        eventBus.on('ui:open_performance', openPerformanceModal);
+        eventBus.on('ui:open_settings', openPerformanceModal);
+        eventBus.on('workspace:export_report', async () => {
+            const { ExportReportModal } = await import('./components/export-report-modal.js');
+            ExportReportModal.show();
+        });
+        eventBus.on('workspace:filter_context', (data = {}) => {
+            const context = data?.context || data?.target || 'all';
+            $$('.context-pill').forEach(pill => $removeClass(pill, 'active'));
+            const activePill = $(`[data-context="${context}"]`);
+            if (activePill) $addClass(activePill, 'active');
+            if (context === 'directory') router.navigate('/workspaces');
+            else router.navigate('/workspace');
+        });
+        eventBus.on('workspace:toggle_view_mode', () => eventBus.emit('business:toggle_view'));
     },
 
     /**
@@ -28,7 +58,7 @@ export const WorkspaceModule = {
         const perf = uiState.get().graphics?.tier || 'balanced';
         const config = WidgetOrchestrator.getLayoutConfig(perf);
         
-        Logger.debug('WorkspaceModule', `Configurando layout para perfil: ${perf}`, config);
+        Logger.debug({ layer: 'MODULE', role: 'CLASS', target: 'Workspace', message: `Configurando layout para perfil gráfico: ${perf}.`, data: config });
     },
 
     /**

@@ -33,26 +33,38 @@ export class MFAEnrollmentModal {
         this._currentAttempt = attempt;
 
         ModalService.showModal({
+            id: 'mfa-enrollment-modal',
+            scope: 'module',
             size: 'md',
+            closeOnBackdrop: false,
+            lockShortcuts: true,
+            initialFocus: '#mfa-reauth-pwd',
             header: {
-                left: '<h4 class="fw-bold mb-0 text-main d-flex align-items-center gap-2"><i class="bi bi-shield-lock-fill text-primary"></i> Configurar Doble Factor (MFA)</h4>',
-                right: '<span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold">Paso 1 de 2</span>'
+                left: {
+                    icon: 'bi-shield-lock-fill',
+                    title: 'Configurar Doble Factor (MFA)',
+                    subtitle: 'Verificación de seguridad AAL2',
+                    badge: { text: 'Paso 1 de 2', tone: 'primary' }
+                }
             },
-            body: `<div id="mfa-step-container" class="p-2">
+            body: {
+                html: `<div id="mfa-step-container" class="p-2">
                 <div class="alert alert-warning d-flex align-items-start gap-2 rounded-3 small mb-3">
                     <i class="bi bi-shield-exclamation text-warning fs-5 flex-shrink-0"></i>
                     <div><strong>Reautenticación:</strong> Ingrese su contraseña actual para configurar TOTP.</div>
                 </div>
                 <form id="mfa-reauth-form">
-                    <div class="mb-3"><label class="form-label small fw-bold text-muted text-uppercase mb-1">Correo</label><input type="email" class="form-control glass-input opacity-75" value="${email}" readonly></div>
-                    <div class="mb-3"><label class="form-label small fw-bold text-muted text-uppercase mb-1">Contraseña Actual *</label><input type="password" id="mfa-reauth-pwd" class="form-control glass-input" placeholder="••••••••" required autofocus></div>
+                    <div class="mb-3"><label class="form-label small fw-bold text-muted text-uppercase mb-1">Correo</label><input type="email" class="form-control opacity-75" value="${email}" readonly></div>
+                    <div class="mb-3"><label class="form-label small fw-bold text-muted text-uppercase mb-1">Contraseña Actual *</label><input type="password" id="mfa-reauth-pwd" class="form-control" placeholder="••••••••" required></div>
                     <div id="mfa-reauth-feedback" class="small text-danger mb-3 d-none"></div>
-                    <div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-ghost" data-action="ui:close_modal">Cancelar</button><button type="submit" id="btn-mfa-reauth" class="btn btn-primary px-4 fw-bold"><span>Verificar Contraseña</span><i class="bi bi-arrow-right ms-1"></i></button></div>
-                </form></div>`,
-            footer: {},
+                </form></div>`
+            },
+            footer: {
+                right: '<button type="button" class="btn btn-ghost rounded-pill px-3" data-action="ui:close_modal">Cancelar</button><button type="submit" id="btn-mfa-reauth" form="mfa-reauth-form" class="btn btn-primary rounded-pill px-4 fw-bold"><span>Verificar Contraseña</span><i class="bi bi-arrow-right ms-1"></i></button>'
+            },
             onClose: () => {
                 try { this._handleModalClose(attempt); } catch (e) {
-                    Logger.warn('MFAEnrollmentModal', 'Error en cierre de modal:', e);
+                    Logger.warn({ layer: 'UI', role: 'CLASS', target: 'MFAEnrollmentModal', message: 'Error al cerrar modal de inscripción MFA.', data: e?.message || e });
                 }
             }
         });
@@ -73,7 +85,7 @@ export class MFAEnrollmentModal {
                     factorSet.delete(factorId);
                     if (factorSet.size === 0) this._orphanFactorsToPurge.delete(currentUid);
                 })
-                .catch(err => Logger.warn('MFAEnrollmentModal', `Purga huérfano ${factorId} falló:`, err))
+                .catch(err => Logger.warn({ layer: 'UI', role: 'CLASS', target: 'MFAEnrollmentModal', message: `Purga de factor huérfano ${factorId} falló.`, data: err?.message || err }))
                 .finally(() => { this._purgingFactors.delete(factorId); });
         }
     }
@@ -89,18 +101,18 @@ export class MFAEnrollmentModal {
         const currentUid = sessionState.get().user?.uid;
         if (currentUid !== ownerUid) {
             this._enqueueOrphan(ownerUid, factorId);
-            Logger.warn('MFAEnrollmentModal', `Sesión ${currentUid} difiere de creador ${ownerUid}. Factor retenido.`);
+            Logger.warn({ layer: 'UI', role: 'CLASS', target: 'MFAEnrollmentModal', message: `Sesión ${currentUid} difiere de creador ${ownerUid}; factor retenido.` });
             return;
         }
 
         SupabaseProvider.mfaUnenroll(factorId)
             .then((res) => {
                 if (res?.error) throw res.error;
-                Logger.info('MFAEnrollmentModal', `Factor no verificado ${factorId} revocado.`);
+                Logger.info({ layer: 'UI', role: 'CLASS', target: 'MFAEnrollmentModal', message: `Factor TOTP no verificado ${factorId} revocado.` });
             })
             .catch(err => {
                 this._enqueueOrphan(ownerUid, factorId);
-                Logger.warn('MFAEnrollmentModal', `Fallo revocando factor ${factorId}:`, err);
+                Logger.warn({ layer: 'UI', role: 'CLASS', target: 'MFAEnrollmentModal', message: `Fallo revocando factor TOTP ${factorId}.`, data: err?.message || err });
             });
     }
 
@@ -146,7 +158,7 @@ export class MFAEnrollmentModal {
                 const loginData = await SupabaseProvider.login(email, password);
                 const activeUid = sessionState.get().user?.uid || loginData?.user?.id;
                 if (activeUid && attempt.ownerUid && activeUid !== attempt.ownerUid) {
-                    Logger.warn('MFAEnrollmentModal', 'Cambio de identidad en reautenticación. Cancelando.');
+                    Logger.warn({ layer: 'UI', role: 'CLASS', target: 'MFAEnrollmentModal', message: 'Cambio de identidad detectado durante reautenticación; cancelando.' });
                     ModalService.hideModal();
                     return;
                 }

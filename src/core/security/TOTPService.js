@@ -7,6 +7,8 @@
  * =========================================================================
  */
 
+import { Logger } from '@/shared/utils/logger.js';
+
 const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
 /**
@@ -81,7 +83,7 @@ export const TOTPService = {
      * @returns {string}
      */
     getQRCodeURL(_otpauthURL) {
-        console.warn('[TOTPService] Generador externo de QR desactivado para evitar exposición del secreto.');
+        Logger.warn({ layer: 'SERVICE', role: 'CLASS', target: 'TOTPService', message: 'Generador externo de QR desactivado para evitar exposición del secreto.' });
         return '';
     },
 
@@ -144,7 +146,7 @@ export const TOTPService = {
                     return true;
                 }
             } catch (err) {
-                console.error('[TOTPService] Error verificando token:', err);
+                Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'TOTPService', message: 'Error verificando código TOTP.', data: err });
             }
         }
         return false;

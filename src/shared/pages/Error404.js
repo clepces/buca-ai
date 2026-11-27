@@ -4,6 +4,7 @@
  * Utiliza el SystemOverlay unificado para mantener coherencia visual.
  */
 import { router } from '@/core/router/router.js';
+import { goBack } from '@/core/utils/system-helper.js';
 import SystemOverlay from '@/shared/ui/overlays/SystemOverlay.js';
 import { $, $on } from '@/shared/utils/dom.js';
 
@@ -38,9 +39,7 @@ export const Error404 = {
         if (btnBack) {
             $on(btnBack, 'click', (e) => {
                 e.preventDefault();
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
+                if (!goBack()) {
                     router.navigate('/workspace');
                 }
             });

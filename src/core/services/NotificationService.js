@@ -41,7 +41,7 @@ export const NotificationService = {
 
         this._cleanups.push(
             eventBus.on('notifications:push', (data) => this.addNotification(data)),
-            eventBus.on('ui:clear_notifications', () => this.clearNotifications()),
+            eventBus.on('notifications:clear', () => this.clearNotifications()),
             eventBus.on('notifications:mark_as_read', (payload) => {
                 const id = typeof payload === 'object' && payload !== null ? (payload.id || payload.target) : payload;
                 if (id) this.markAsRead(id);

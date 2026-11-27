@@ -42,7 +42,7 @@ export function renderRibbonTemplate() {
                 <!-- 3. RIGHT ZONE: ACTIONS & TOOLS NAV OVERFLOW SUITE -->
                 <div class="ws-ribbon-right d-flex align-items-center gap-2">
                     <!-- Primary CTA -->
-                    <button type="button" class="btn btn-sm ws-btn-primary shadow-xs" data-action="ui:open_create_business" data-tooltip="Crear Nueva Unidad Comercial">
+                    <button type="button" class="btn btn-sm ws-btn-primary shadow-xs" data-action="business:open_create" data-tooltip="Crear Nueva Unidad Comercial">
                         <i class="bi bi-plus-lg"></i>
                         <span class="ws-btn-label">Nueva Unidad</span>
                     </button>
@@ -57,7 +57,7 @@ export function renderRibbonTemplate() {
                             <button type="button" class="btn btn-sm action-mini-pill" data-tooltip="Sincronizar Datos Operativos" data-action="workspace:refresh_data">
                                 <i class="bi bi-arrow-clockwise"></i>
                             </button>
-                            <button type="button" class="btn btn-sm action-mini-pill" data-tooltip="Exportar Reporte Maestro" data-action="ui:export_report">
+                            <button type="button" class="btn btn-sm action-mini-pill" data-tooltip="Exportar Reporte Maestro" data-action="workspace:export_report">
                                 <i class="bi bi-cloud-arrow-down"></i>
                             </button>
                             <button type="button" class="btn btn-sm action-mini-pill" data-tooltip="Ajustes del Workspace & BENE" data-action="ui:open_settings">
@@ -85,7 +85,7 @@ export function renderRibbonTemplate() {
                                             <button type="button" class="btn btn-sm btn-light border flex-fill py-1.5 px-2 d-flex align-items-center justify-content-center gap-1.5 text-muted x-small" data-action="workspace:refresh_data" data-tooltip="Sincronizar Datos">
                                                 <i class="bi bi-arrow-clockwise"></i> Sync
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-light border flex-fill py-1.5 px-2 d-flex align-items-center justify-content-center gap-1.5 text-muted x-small" data-action="ui:export_report" data-tooltip="Exportar Reporte">
+                                            <button type="button" class="btn btn-sm btn-light border flex-fill py-1.5 px-2 d-flex align-items-center justify-content-center gap-1.5 text-muted x-small" data-action="workspace:export_report" data-tooltip="Exportar Reporte">
                                                 <i class="bi bi-cloud-arrow-down"></i> Exportar
                                             </button>
                                         </div>

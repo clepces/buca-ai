@@ -1,0 +1,153 @@
+@use '../../abstracts' as *;
+
+/* ─────────────────────────────────────────────────────────
+   BOTTOM SHEET — TODOS los paneles en Mobile (≤767px)
+   ─────────────────────────────────────────────────────────
+   Estrategia: en mobile todos los paneles salen desde abajo.
+   Esto es más natural en táctil (como Edge, Sheets, apps nativas).
+   JS limpia los estilos inline → CSS toma el control aquí.
+   ───────────────────────────────────────────────────────── */
+@media screen and (max-width: 767px) {
+
+    /* ── Base para TODOS los paneles como bottom sheet ──
+       ESTRATEGIA DE OCULTAMIENTO DUAL:
+       Estado CERRADO:  opacity:0 + translateY(100%) → invisible Y fuera del viewport
+       Estado ABIERTO:  opacity:1 + translateY(0)   → visible y en posición
+       
+       Usar AMBOS mecanismos evita que inline styles residuales del drag
+       dejen el panel visible por accidente (ej: transform:translateY(0) residual). */
+    .panel-overlay {
+        z-index: z('panel-overlay') !important;
+    }
+
+    .glass-panel {
+        position: fixed !important;
+        inset: auto 0 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 24px 24px 0 0;
+        z-index: z('panel') !important;
+        /* Estado CERRADO: invisible + fuera de pantalla */
+        transform: translateY(100%) !important;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        /* Animar AMBAS propiedades para entrada fluida */
+        transition:
+            transform  0.32s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity    0.20s ease,
+            visibility 0.32s !important;
+        overscroll-behavior: contain;
+        border-bottom: none !important;
+        will-change: transform, opacity;
+
+        /* Estado ABIERTO: visible + en posición */
+        &.active {
+            transform: translateY(0) !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto;
+            box-shadow: 0 -16px 60px rgba(0, 0, 0, 0.3);
+        }
+    }
+
+    /* Panel rich: más alto porque tiene scroll */
+    .glass-panel--rich {
+        max-height: 90vh;
+        border-radius: 28px 28px 0 0;
+        box-shadow: 0 -20px 80px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Paneles compactos: altura reducida */
+    .glass-panel--standard,
+    .glass-panel--mini {
+        max-height: 70vh;
+        border-radius: 20px 20px 0 0;
+
+        .panel-header {
+            padding: 16px 20px 12px;
+        }
+    }
+
+    /* ── Drag Handle — barra visual de arrastre táctil ── */
+    .glass-panel::before {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--border-glass);
+        margin: 10px auto 6px;
+        flex-shrink: 0;
+        touch-action: none;
+    }
+
+    /* Handle más prominente en el panel rico */
+    .glass-panel--rich::before {
+        width: 46px;
+        height: 5px;
+        margin: 12px auto 8px;
+        cursor: grab;
+    }
+
+    .glass-panel--rich:active::before {
+        cursor: grabbing;
+        background: var(--text-muted);
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   RESPONSIVE — Tablet (768-1024px)
+   ───────────────────────────────────────────────────────── */
+@media screen and (max-width: 1100px) {
+    .glass-panel--rich {
+        width: 310px;
+    }
+    .panel-profile-zone {
+        padding: 18px 14px 14px;
+        gap: 12px;
+    }
+    .panel-item {
+        padding: 9px 14px;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   FIX: ORIENTACIÓN LANDSCAPE (Móvil Horizontal)
+   ───────────────────────────────────────────────────────── */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .glass-panel {
+        max-height: 94vh !important;
+        
+        &--rich {
+            width: 70% !important;
+            margin: 0 auto;
+            left: 15% !important;
+        }
+
+        &--standard, &--mini {
+            width: 60% !important;
+            margin: 0 auto;
+            left: 20% !important;
+        }
+
+        .panel-scroll-area {
+            max-height: 50vh;
+        }
+    }
+
+    .panel-footer-bar {
+        padding: 6px 12px;
+    }
+}
+
+@keyframes pulse-update {
+    0% { transform: scale(1); box-shadow: 0 0 0 rgba(37, 99, 235, 0); }
+    50% { transform: scale(1.05); box-shadow: 0 0 15px var(--buca-blue-glow); }
+    100% { transform: scale(1); box-shadow: 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+.pulse-update {
+    animation: pulse-update 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+

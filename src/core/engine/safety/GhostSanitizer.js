@@ -40,7 +40,7 @@ export class GhostSanitizer {
         });
         
         if (sanitizedCount > 0) {
-            Logger.debug('GhostSanitizer', `Eliminadas ${sanitizedCount} capas ocultas de la GPU.`);
+            Logger.debug({ layer: 'ENGINE', role: 'CLASS', target: 'GhostSanitizer', message: `Ocultadas ${sanitizedCount} capas fantasma fuera de pantalla.` });
         }
     }
 

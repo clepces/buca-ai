@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { getSupabase } from '@/core/config/supabase.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { sessionState } from '@/core/state/session.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const BusinessModelSchema = z.object({
     id: z.string().min(1),
@@ -82,7 +83,13 @@ class BusinessService {
                 .limit(pageSize);
 
             if (error) {
-                console.warn('[BusinessService] Error al consultar negocios en Supabase:', error.message);
+                Logger.warn({
+                    layer: 'SERVICE',
+                    role: 'SERVICE',
+                    target: 'BusinessService',
+                    message: 'Error al consultar negocios del usuario en Supabase.',
+                    data: { error: error.message }
+                });
                 return { success: false, error: error.message, data: Object.freeze([]) };
             }
 
@@ -114,7 +121,13 @@ class BusinessService {
 
             return { success: true, data: Object.freeze(businesses) };
         } catch (error) {
-            console.error('[BusinessService] Error obteniendo negocios:', error);
+            Logger.error({
+                layer: 'SERVICE',
+                role: 'SERVICE',
+                target: 'BusinessService',
+                message: 'Error inesperado obteniendo listado de negocios.',
+                data: { error: error?.message || error }
+            });
             return { success: false, error: error.message, data: Object.freeze([]) };
         }
     }
@@ -198,7 +211,7 @@ class BusinessService {
             eventBus.emit('workspace:refresh_data');
             return { success: true, data: newBusiness };
         } catch (error) {
-            console.error('[BusinessService] Error registrando empresa en Supabase:', error);
+            Logger.error({ layer: 'SERVICE', role: 'CLASS', target: 'BusinessService', message: 'Error registrando unidad comercial en Supabase.', data: error?.message || error });
             return { success: false, error: error.message };
         }
     }

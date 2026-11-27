@@ -4,6 +4,9 @@
  * Responsable de la gestión de empresas, sucursales, registro fiscal (RIF) y Business Hub.
  */
 import { eventBus } from '@/core/eventBus/index.js';
+import { sessionState } from '@/core/state/session.js';
+import { router } from '@/core/router/router.js';
+import { ModalService } from '@/shared/ui/services/ModalService.js';
 import { Logger } from '@/shared/utils/logger.js';
 import BusinessWizardController from './BusinessWizardController.js';
 import { BusinessHub } from './components/BusinessHub.js';
@@ -15,12 +18,27 @@ export const BusinessModule = {
     async init() {
         if (this.isInitialized) return;
         this.isInitialized = true;
-        Logger.info('BusinessModule', 'Inicializado módulo de negocios');
+        Logger.info({ layer: 'MODULE', role: 'CLASS', target: 'Business', message: 'Módulo de negocios inicializado.' });
 
-        // Escuchar eventos para solicitar apertura del Wizard
+        // Escuchar eventos para solicitar apertura del Wizard y entrada a unidad comercial
         eventBus.on('business:open_wizard', () => BusinessWizardController.init());
-        eventBus.on('ui:open_create_business', () => {
+        eventBus.on('business:open_create', () => {
             import('./components/business-wizard-modal.js').then(m => m.default.show());
+        });
+        eventBus.on('business:enter', (payload = {}) => {
+            const bizId = payload?.id || payload?.businessId;
+            if (bizId && bizId !== 'Dashboard') {
+                sessionState.set({ tenantId: bizId });
+                Logger.info({ layer: 'MODULE', role: 'CLASS', target: 'Business', message: `Unidad comercial activa establecida en sesión: ${bizId}` });
+                eventBus.emit('business:selected', { id: bizId });
+                eventBus.emit('notifications:push', {
+                    title: 'Unidad Seleccionada',
+                    message: 'Comercio activo establecido en la sesión.',
+                    type: 'info'
+                });
+            }
+            ModalService.closeModal();
+            router.navigate('/workspace');
         });
     },
 

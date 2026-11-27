@@ -1,0 +1,247 @@
+/* =========================================================================
+   COMPONENTS: PANELS — Sistema Unificado de Paneles Desplegables
+   =========================================================================
+   Tres variantes: MINI, STANDARD, RICH.
+   Paneles se renderizan en el body (portal) para evitar Stacking Context.
+   En mobile (≤767px): TODOS los paneles son Bottom Sheet (deslizar desde abajo).
+   Soporte de touch nativo: swipe-down para cerrar (implementado en Header.js).
+   ========================================================================= */
+
+@use "../../abstracts" as *;
+
+/* ─────────────────────────────────────────────────────────
+   DROPDOWN WRAPPER — Contenedor trigger en el header
+   Mantiene position:relative para que JS pueda calcular
+   la posición del panel vía getBoundingClientRect().
+   ───────────────────────────────────────────────────────── */
+.dropdown-wrapper {
+    position: relative;
+    cursor: pointer;
+}
+
+/* ─────────────────────────────────────────────────────────
+   OVERLAY DE FONDO (para mobile bottom sheets)
+   ───────────────────────────────────────────────────────── */
+.panel-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--panel-overlay-bg);
+    z-index: z('panel-overlay');
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s;
+    -webkit-backdrop-filter: blur(var(--blur-intensity));
+    backdrop-filter: blur(var(--blur-intensity));
+
+    &.active {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   BASE DEL PANEL — Renderizado en body (portal).
+   JS maneja el posicionamiento vía _positionPanel().
+   ───────────────────────────────────────────────────────── */
+.glass-panel {
+    position: fixed;
+
+    @include glass-surface(var(--surface-glass), var(--blur-intensity), 20px);
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px) scale(0.97);
+    transition: 
+        opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0.25s,
+        transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: z('panel');
+    overflow: hidden;
+    pointer-events: none;
+
+    &.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+
+    /* En mobile: el estado inicial es translateY(100%) no translateY(8px).
+       La transición se sobreescribe en el @media bloque más abajo. */
+}
+
+/* ─────────────────────────────────────────────────────────
+   VARIANTE MINI — Idioma, opciones simples
+   ───────────────────────────────────────────────────────── */
+.glass-panel--mini {
+    width: 220px;
+    padding: 6px 0;
+}
+
+/* ─────────────────────────────────────────────────────────
+   VARIANTE STANDARD — Notificaciones, listas
+   ───────────────────────────────────────────────────────── */
+.glass-panel--standard {
+    width: 320px;
+    padding: 6px 0;
+}
+
+/* ─────────────────────────────────────────────────────────
+   VARIANTE RICH — Perfil de usuario Enterprise
+   Solo el panel tiene scroll (NO doble scrollbar)
+   ───────────────────────────────────────────────────────── */
+.glass-panel--rich {
+    width: 340px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column; /* Perfil arriba, scroll en medio, footer abajo */
+    overflow: hidden;       /* SIN scroll en el panel — solo en .panel-scroll-area */
+}
+
+/* ─────────────────────────────────────────────────────────
+   CONTENIDO INTERIOR DE PANELES
+   ───────────────────────────────────────────────────────── */
+
+/* Encabezado de cualquier panel */
+.panel-header {
+    padding: 14px 18px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-glass);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Estado vacío (ej: sin notificaciones) */
+.panel-empty {
+    padding: 28px 18px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    i {
+        font-size: 1.6rem;
+        opacity: 0.4;
+    }
+}
+
+/* Títulos de sección */
+.panel-section-title {
+    display: block;
+    padding: 12px 18px 6px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 1.2px;
+}
+
+    /* Badges (ENTERPRISE / BALANCED / ECO) - Movidos a _elements.scss para estandarización */
+    .badge {
+        margin-left: auto;
+    }
+
+/* Item genérico de lista dentro del panel */
+.panel-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 18px;
+    border: none;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Outfit', sans-serif;
+    position: relative;
+    color: var(--text-main);
+
+    .item-icon-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: var(--hover-glass);
+        border: 1px solid var(--border-glass);
+        border-radius: 10px;
+        margin-right: 14px;
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        flex-shrink: 0;
+    }
+
+    .item-text-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 0; /* Fix text overflow */
+        
+        .item-label {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .item-subtext {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 1px;
+            font-weight: 400;
+        }
+    }
+
+    .item-arrow {
+        margin-left: auto;
+        font-size: 0.8rem;
+        color: var(--border-glass);
+        opacity: 0;
+        transition: all 0.2s;
+    }
+
+    &:hover {
+        background: var(--hover-glass);
+        
+        .item-icon-box {
+            background: var(--buca-blue);
+            color: white;
+            border-color: var(--buca-blue);
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .item-arrow {
+            opacity: 1;
+            transform: translateX(4px);
+        }
+    }
+
+    /* Variante peligro */
+    &--danger {
+        .item-icon-box { color: var(--color-error); }
+        .item-label { color: var(--color-error); }
+        &:hover {
+            background: rgba(239, 68, 68, 0.08);
+            .item-icon-box {
+                background: var(--color-error);
+                border-color: var(--color-error);
+            }
+        }
+    }
+}
+
+/* Separador visual */
+.panel-divider {
+    height: 1px;
+    background: var(--border-glass);
+    margin: 8px 18px;
+}
+

@@ -4,6 +4,7 @@
  */
 
 import { $styleVar, $ } from '@/shared/utils/dom.js';
+import { getViewportWidth } from '@/core/utils/system-helper.js';
 
 export const initTouchGestures = (onClose) => {
     const THRESHOLD_RICH = 140;
@@ -17,6 +18,7 @@ export const initTouchGestures = (onClose) => {
     let activePanel = null;
     let touchStartedInScrollable = false;
     let isMoveListenerAttached = false;
+    let animTimerId = null;
 
     const attachMoveListener = () => {
         if (!isMoveListenerAttached) {
@@ -33,7 +35,7 @@ export const initTouchGestures = (onClose) => {
     };
 
     const onTouchStart = (e) => {
-        if (window.innerWidth > 767) return;
+        if (getViewportWidth() > 767) return;
 
         // No interceptar clics en elementos interactivos (botones, pestañas, links)
         if (e.target.closest('button, a, input, select, textarea, [data-action], .notif-action-btn, .tray-tab-btn')) {
@@ -120,13 +122,17 @@ export const initTouchGestures = (onClose) => {
 
         if (shouldClose) {
             $styleVar(panelRef, 'transform', 'translateY(100%)');
-            setTimeout(() => {
+            if (animTimerId) clearTimeout(animTimerId);
+            animTimerId = setTimeout(() => {
+                animTimerId = null;
                 $styleVar(panelRef, 'transform', '');
                 if (onClose) onClose();
             }, 300);
         } else {
             $styleVar(panelRef, 'transform', 'translateY(0)');
-            setTimeout(() => {
+            if (animTimerId) clearTimeout(animTimerId);
+            animTimerId = setTimeout(() => {
+                animTimerId = null;
                 if (panelRef) $styleVar(panelRef, 'transition', '');
             }, 300);
         }
@@ -150,6 +156,10 @@ export const initTouchGestures = (onClose) => {
     document.addEventListener('touchcancel', onTouchCancel, { passive: true });
 
     return () => {
+        if (animTimerId) {
+            clearTimeout(animTimerId);
+            animTimerId = null;
+        }
         detachMoveListener();
         document.removeEventListener('touchstart', onTouchStart);
         document.removeEventListener('touchend', onTouchEnd);

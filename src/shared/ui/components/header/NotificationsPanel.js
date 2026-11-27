@@ -45,7 +45,7 @@ export const NotificationsPanel = {
                 </div>
                 ${hasNotifications ? `
                     <div class="panel-footer p-2 border-top text-center">
-                        <button type="button" class="btn btn-link btn-sm text-decoration-none x-small fw-bold text-primary" data-action="ui:clear_notifications">Marcar todas como leídas</button>
+                        <button type="button" class="btn btn-link btn-sm text-decoration-none x-small fw-bold text-primary" data-action="notifications:clear">Marcar todas como leídas</button>
                     </div>
                 ` : ''}
             </div>

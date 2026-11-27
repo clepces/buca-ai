@@ -6,6 +6,8 @@
  * 
  * @author Buca Neural Engine Team
  */
+import { Logger } from '@/shared/utils/logger.js';
+
 export class BaseState {
     constructor(initialState = {}) {
         this._state = initialState;
@@ -86,7 +88,7 @@ export class BaseState {
                 try {
                     handler(state);
                 } catch (error) {
-                    console.error('[BaseState] Error en suscriptor:', error);
+                    Logger.error({ layer: 'KERNEL', role: 'CLASS', target: 'BaseState', message: 'Error ejecutando suscriptor de estado reactivo.', data: error?.message || error });
                 }
             });
             this._notifyTimeout = null;

@@ -19,16 +19,20 @@ import { ActivityLogService } from '@/core/services/ActivityLogService.js';
 import { ActionDispatcher } from '@/core/services/ActionDispatcher.js';
 import ModuleLoader from '@/core/ModuleLoader.js';
 import { router } from '@/core/router/router.js';
+import { RouterGuards } from '@/core/router/guards.js';
 import { routes } from '@/core/router/routes.js';
+import { AuthService } from '@/modules/auth/services/AuthService.js';
 import { storage } from '@/core/storage/StorageAdapter.js';
 import ModalService from '@/shared/ui/services/ModalService.js';
+import SharedActions from '@/shared/ui/services/shared-actions.js';
 import TooltipService from '@/shared/ui/services/tooltip-service.js';
 import { PerformanceStorage } from '@/core/storage/PerformanceStorage.js';
 import { SearchService } from '@/core/services/SearchService.js';
+import { KeyboardShortcuts } from '@/core/services/KeyboardShortcuts.js';
 import { getPath, replaceHistory } from '@/core/utils/index.js';
 import { $id, $mount, $attr, $addClass, $$, $text, $className, $styleVar, $on } from '@/shared/utils/dom.js';
 
-class BucaKernel {
+class Kernel {
     constructor() {
         this.isInitialized = false;
         this.currentLayoutMode = null;
@@ -49,14 +53,14 @@ class BucaKernel {
         };
 
         try {
-            updateStatus(10, 'Calibrando Motor Gráfico & Rendimiento BNE...');
+            updateStatus(10, 'Calibrando Motor Gráfico & Rendimiento BENE...');
 
             // 1. Motores Gráficos y Almacenamiento Local
             let engineResponse;
             try {
                 engineResponse = await GraphicsEngine.init();
             } catch (engineErr) {
-                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '⚠️', message: 'GraphicsEngine fallback init', data: engineErr });
+                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'Kernel', icon: '⚠️', message: 'Fallo al inicializar GraphicsEngine; usando perfil L2 por defecto.', data: engineErr });
                 engineResponse = { tier: 'L2', profile: 'balanced' };
             }
             storage.init(engineResponse?.tier || 'L2');
@@ -68,7 +72,7 @@ class BucaKernel {
             try {
                 await initSupabase();
             } catch (e) {
-                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '⚠️', message: 'Supabase initialization deferred', data: e?.message || e });
+                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'Kernel', icon: '⚠️', message: 'Inicialización de Supabase diferida durante el arranque.', data: e?.message || e });
             }
 
             await ThemeManager.init();
@@ -79,15 +83,26 @@ class BucaKernel {
 
             // 3. Auth-First Gate: Validar sesión de Supabase ANTES de pintar cualquier Layout
             await ModuleLoader.load('auth');
-            const { AuthService } = await import('@/modules/auth/services/AuthService.js');
             const sessionCheck = await AuthService.checkSession();
             const isAuthenticated = Boolean(sessionCheck?.isAuthenticated);
 
             let initialPath = getPath();
-            const isExplicitAuthPath = initialPath.startsWith('/auth');
+            const AUTH_SHELL_PATHS = new Set([
+                '/auth/login',
+                '/auth/register',
+                '/auth/recovery',
+                '/auth/recovery/reset-password',
+                '/auth/two-factor',
+                '/auth/verify-email',
+                '/auth/callback',
+                '/auth/logout',
+                '/auth/unauthorized'
+            ]);
+            const isExplicitAuthPath = AUTH_SHELL_PATHS.has(initialPath);
 
-            // Gate Estricto: Si la ruta requiere autenticación y no hay sesión, forzar /auth/login
+            // Gate Estricto: Si la ruta requiere autenticación y no hay sesión, guardar returnUrl y forzar /auth/login
             if (!isAuthenticated && !isExplicitAuthPath) {
+                RouterGuards.setReturnUrl(initialPath);
                 initialPath = '/auth/login';
                 replaceHistory('/auth/login');
             }
@@ -95,9 +110,9 @@ class BucaKernel {
             updateStatus(70, 'Construyendo Estructura de Interfaz Autorizada...');
 
             // 4. Renderizar ÚNICAMENTE el Layout que corresponde al estado de sesión verificado
-            await this._renderMainLayout(initialPath);
+            await this._renderMainLayout(initialPath, isExplicitAuthPath ? 'auth' : 'workspace');
 
-            if (isAuthenticated && !initialPath.startsWith('/auth')) {
+            if (isAuthenticated && !isExplicitAuthPath) {
                 Header.init('topbar-slot');
                 Dock.init('dock-slot');
             }
@@ -114,6 +129,7 @@ class BucaKernel {
 
             // 6. Servicios de Interfaz y Enrutamiento
             ModalService.init();
+            SharedActions.init();
             ActionDispatcher.init();
             SearchService.init();
             TooltipService.init();
@@ -125,8 +141,8 @@ class BucaKernel {
 
             const offTheme = eventBus.on('ui:toggle_theme', () => ThemeManager.toggle());
             const offRecalibrate = eventBus.on('engine:recalibrate', () => GraphicsEngine.calibrate());
-            const offLayoutSync = eventBus.on('router:layout-sync-required', async ({ path }) => {
-                await this.handleLayoutSync(path);
+            const offLayoutSync = eventBus.on('router:layout-sync-required', async ({ path, layout }) => {
+                await this.handleLayoutSync(path, layout);
             });
             this._cleanups.push(offTheme, offRecalibrate, offLayoutSync);
 
@@ -142,11 +158,11 @@ class BucaKernel {
 
             this._finalizeBoot();
         } catch (err) {
-            Logger.critical({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '🚨', message: 'Fallo crítico durante el arranque', data: err });
+            Logger.critical({ layer: 'KERNEL', role: 'CLASS', target: 'Kernel', icon: '🚨', message: 'Fallo crítico durante el arranque del sistema.', data: err });
             try {
                 this.destroy();
             } catch (cleanupErr) {
-                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '⚠️', message: 'Error en teardown tras fallo de boot', data: cleanupErr });
+                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'Kernel', icon: '⚠️', message: 'Error limpiando recursos tras fallo de arranque.', data: cleanupErr });
             }
             throw err;
         }
@@ -156,12 +172,12 @@ class BucaKernel {
      * Renderiza de forma segura el layout base sin utilizar innerHTML directo.
      * @param {string} [targetPath]
      */
-    async _renderMainLayout(targetPath) {
+    async _renderMainLayout(targetPath, explicitLayout = null) {
         const appContainer = $id('app');
         if (!appContainer) return;
 
         const path = targetPath || getPath();
-        const isAuth = path.startsWith('/auth');
+        const isAuth = explicitLayout ? explicitLayout === 'auth' : path.startsWith('/auth');
         const mode = isAuth ? 'auth' : 'workspace';
 
         if (this.currentLayoutMode === mode && $id(isAuth ? 'auth-content-slot' : 'workspace-dynamic-content')) return;
@@ -182,9 +198,10 @@ class BucaKernel {
      * Sincroniza el layout ante transiciones de ruta que demandan cambio estructural.
      * @param {string} path 
      */
-    async handleLayoutSync(path) {
-        await this._renderMainLayout(path);
+    async handleLayoutSync(path, layout = null) {
+        await this._renderMainLayout(path, layout);
         if (this.currentLayoutMode === 'workspace') {
+            await Promise.allSettled(['workspace', 'finance', 'business', 'profile'].map(m => ModuleLoader.load(m)));
             Header.init('topbar-slot');
             Dock.init('dock-slot');
         }
@@ -249,7 +266,7 @@ class BucaKernel {
             try {
                 if (typeof cleanupFn === 'function') cleanupFn();
             } catch (err) {
-                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '⚠️', message: 'Error en cleanup de recurso registrado', data: err });
+                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'Kernel', icon: '⚠️', message: 'Error liberando suscripción registrada en Kernel.', data: err });
             }
         }
 
@@ -258,15 +275,18 @@ class BucaKernel {
             ['NotificationService', NotificationService],
             ['ActivityLogService', ActivityLogService],
             ['SearchService', SearchService],
+            ['KeyboardShortcuts', KeyboardShortcuts],
             ['ActionDispatcher', ActionDispatcher],
+            ['SharedActions', SharedActions],
             ['ModalService', ModalService],
             ['TooltipService', TooltipService],
+            ['ThemeManager', ThemeManager],
         ];
         for (const [name, svc] of services) {
             try {
                 if (svc && typeof svc.destroy === 'function') svc.destroy();
             } catch (e) {
-                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '⚠️', message: `Error during ${name} teardown`, data: e });
+                Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'Kernel', icon: '⚠️', message: `Error al desmontar el servicio ${name}.`, data: e });
             }
         }
 
@@ -276,7 +296,7 @@ class BucaKernel {
                 router.destroy();
             }
         } catch (e) {
-            Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '⚠️', message: 'Error during router teardown', data: e });
+            Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'Kernel', icon: '⚠️', message: 'Error al desmontar el enrutador SPA.', data: e });
         }
 
         try {
@@ -284,10 +304,10 @@ class BucaKernel {
                 GraphicsEngine.destroy();
             }
         } catch (e) {
-            Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'BucaKernel', icon: '⚠️', message: 'Error during GraphicsEngine teardown', data: e });
+            Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'Kernel', icon: '⚠️', message: 'Error al desmontar GraphicsEngine.', data: e });
         }
     }
 }
 
-export const kernel = new BucaKernel();
+export const kernel = new Kernel();
 export default kernel;

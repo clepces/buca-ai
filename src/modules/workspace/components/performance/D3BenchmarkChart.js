@@ -10,11 +10,13 @@ import { $id, $empty, $hasClass } from '@/shared/utils/dom.js';
 
 export class D3BenchmarkChart {
     static _resizeObserver = null;
+    static _resizeTimer = null;
+    static _lastWidth = 0;
 
     /**
      * Dibuja el gráfico completo de D3 en el contenedor indicado
      */
-    static render(containerId, activeProfile, onSelectProfile) {
+    static render(containerId, activeProfile, onSelectProfile, { animate = true } = {}) {
         const container = $id(containerId);
         if (!container) return;
 
@@ -25,6 +27,7 @@ export class D3BenchmarkChart {
         const dataList = Object.values(benchmarks);
 
         const rawWidth = container.clientWidth || 500;
+        this._lastWidth = container.clientWidth || rawWidth;
         const isMobile = rawWidth < 480;
         const width = Math.max(280, rawWidth);
         const height = isMobile ? 195 : 180;
@@ -150,7 +153,7 @@ export class D3BenchmarkChart {
                 if (typeof onSelectProfile === 'function') onSelectProfile(d.id);
             });
 
-        if (typeof bars.transition === 'function') {
+        if (animate && typeof bars.transition === 'function') {
             bars.transition()
                 .duration(650)
                 .ease(d3.easeCubicOut)
@@ -174,7 +177,7 @@ export class D3BenchmarkChart {
             .style('fill', d => d.color || '#3b82f6')
             .text(d => `${Number(d.avgLoadMs) || 0}ms`);
 
-        if (typeof labels.transition === 'function') {
+        if (animate && typeof labels.transition === 'function') {
             labels.transition()
                 .duration(650)
                 .ease(d3.easeCubicOut)
@@ -186,12 +189,13 @@ export class D3BenchmarkChart {
         this._updateIndicator(g, xScale, yScale, activeProfile);
 
         if (typeof ResizeObserver !== 'undefined') {
-            let resizeTimer;
             this._resizeObserver = new ResizeObserver(() => {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(() => {
+                const nextWidth = container.clientWidth || 0;
+                if (!nextWidth || Math.abs(nextWidth - this._lastWidth) < 2) return;
+                clearTimeout(this._resizeTimer);
+                this._resizeTimer = setTimeout(() => {
                     if ($id(containerId) === container) {
-                        this.render(containerId, activeProfile, onSelectProfile);
+                        this.render(containerId, activeProfile, onSelectProfile, { animate: false });
                     }
                 }, 150);
             });
@@ -285,13 +289,14 @@ export class D3BenchmarkChart {
     }
 
     static destroy() {
+        if (this._resizeTimer) {
+            clearTimeout(this._resizeTimer);
+            this._resizeTimer = null;
+        }
         if (this._resizeObserver) {
-            try {
-                this._resizeObserver.disconnect();
-            } catch {
-                // Silencioso
-            }
+            try { this._resizeObserver.disconnect(); } catch { /* Silencioso */ }
             this._resizeObserver = null;
         }
+        this._lastWidth = 0;
     }
 }

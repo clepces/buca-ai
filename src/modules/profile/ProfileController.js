@@ -20,7 +20,7 @@ export const ProfileController = {
     _generatedSecret: null,
 
     init(initialTab = 'general') {
-        Logger.info('ProfileController', `Initialized with tab: ${initialTab}`);
+        Logger.debug({ layer: 'UI', role: 'CLASS', target: 'ProfileController', message: `Inicializado en pestaña "${initialTab}".` });
         this._bindTabs(initialTab);
         this._bindGeneralForm();
         this._bindSecurityTab();
@@ -155,7 +155,7 @@ export const ProfileController = {
                 }
             })
             .catch(err => {
-                Logger.warn('ProfileController', 'Error consultando factores MFA:', err);
+                Logger.warn({ layer: 'UI', role: 'CLASS', target: 'ProfileController', message: 'Error consultando factores MFA del usuario.', data: err?.message || err });
                 if (toggle2FA) toggle2FA.disabled = true;
             });
     }

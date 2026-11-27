@@ -4,6 +4,7 @@
  * Utiliza el SystemOverlay unificado para mantener coherencia visual.
  */
 import SystemOverlay from '@/shared/ui/overlays/SystemOverlay.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 export const Error401 = {
     render: () => {
@@ -24,7 +25,7 @@ export const Error401 = {
     },
 
     init: () => {
-        console.warn('[ErrorView] 401 Renderizado con SystemOverlay');
+        Logger.warn({ layer: 'UI', role: 'CLASS', target: 'Error401', message: 'Vista 401 renderizada con SystemOverlay.' });
     }
 };
 

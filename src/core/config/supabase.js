@@ -7,18 +7,122 @@
 import { createClient } from '@supabase/supabase-js';
 import { ENV } from './environment.js';
 import { uiState } from '../state/ui.js';
+import { Logger } from '@/shared/utils/logger.js';
 
 let clientInstance = null;
 let mockClient = null;
+let recoveryObserverSubscription = null;
+
+// Evidencia en memoria del evento PASSWORD_RECOVERY emitido por el SDK.
+// Protege el flujo/UI cliente; la autorización real de datos y cambio de contraseña reside en el servidor (Supabase Auth / RLS).
+let recoverySessionProof = null;
+
+const decodeJwtClaimFields = (token) => {
+    if (typeof token !== 'string') return {};
+    const parts = token.split('.');
+    if (parts.length !== 3 || !parts[1]) return {};
+    try {
+        const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+        const json = typeof atob === 'function'
+            ? atob(padded)
+            : globalThis.Buffer?.from(padded, 'base64').toString('utf8');
+        const parsed = JSON.parse(json);
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+        return {};
+    }
+};
+
+const detachRecoveryObserver = () => {
+    if (recoveryObserverSubscription && typeof recoveryObserverSubscription.unsubscribe === 'function') {
+        try {
+            recoveryObserverSubscription.unsubscribe();
+        } catch { /* ignore */ }
+    }
+    recoveryObserverSubscription = null;
+};
+
+const installRecoveryObserver = (client) => {
+    detachRecoveryObserver();
+    if (!client?.auth || typeof client.auth.onAuthStateChange !== 'function') return;
+
+    const res = client.auth.onAuthStateChange((event, session) => {
+        if (event === 'PASSWORD_RECOVERY' && session?.user?.id) {
+            const tokenClaims = decodeJwtClaimFields(session.access_token);
+            const sessionId = session.session_id || tokenClaims.session_id || null;
+            if (!sessionId) {
+                recoverySessionProof = null;
+                return;
+            }
+            recoverySessionProof = {
+                userId: session.user.id,
+                sessionId,
+                expiresAt: session.expires_at ?? tokenClaims.exp ?? null
+            };
+            return;
+        }
+
+        if (event === 'SIGNED_OUT' || !session?.user?.id) {
+            recoverySessionProof = null;
+            return;
+        }
+
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED' || event === 'MFA_CHALLENGE_VERIFIED') {
+            if (!recoverySessionProof) return;
+            const tokenClaims = decodeJwtClaimFields(session.access_token);
+            const incomingSessionId = session.session_id || tokenClaims.session_id || null;
+            const sameUser = session.user.id === recoverySessionProof.userId;
+            const sameSessionId = Boolean(
+                recoverySessionProof.sessionId &&
+                incomingSessionId &&
+                incomingSessionId === recoverySessionProof.sessionId
+            );
+
+            if (event === 'USER_UPDATED' || !sameUser || !sameSessionId) {
+                recoverySessionProof = null;
+                return;
+            }
+
+            recoverySessionProof = {
+                ...recoverySessionProof,
+                expiresAt: session.expires_at ?? tokenClaims.exp ?? recoverySessionProof.expiresAt
+            };
+        }
+    });
+
+    recoveryObserverSubscription = res?.data?.subscription || res?.subscription || null;
+};
+
+export const getRecoverySessionProof = () => {
+    if (!recoverySessionProof) return null;
+    if (typeof recoverySessionProof.expiresAt === 'number' && (Date.now() / 1000) >= recoverySessionProof.expiresAt) {
+        recoverySessionProof = null;
+        return null;
+    }
+    return { ...recoverySessionProof };
+};
+
+export const clearRecoverySessionProof = () => {
+    recoverySessionProof = null;
+};
 
 /**
  * Permite inyectar un cliente mock para aislamiento de pruebas (Zero Remote Calls).
  */
 export const setMockSupabase = (mock) => {
+    recoverySessionProof = null;
     mockClient = mock;
+    if (mock) {
+        installRecoveryObserver(mock);
+    } else {
+        detachRecoveryObserver();
+    }
 };
 
 export const resetSupabase = () => {
+    detachRecoveryObserver();
+    recoverySessionProof = null;
     clientInstance = null;
     mockClient = null;
 };
@@ -43,6 +147,8 @@ export const getSupabase = () => {
             storageKey: 'buca_supabase_auth'
         }
     });
+    // Instalar observador sincrónicamente antes de ceder el event loop para no perder PASSWORD_RECOVERY
+    installRecoveryObserver(clientInstance);
 
     return clientInstance;
 };
@@ -62,7 +168,7 @@ export const initSupabase = async () => {
         return { client, session: data.session };
     } catch (err) {
         uiState.set({ isConnecting: false, isOnline: false });
-        console.warn('[Supabase] Health check warning:', err.message || err);
+        Logger.warn({ layer: 'SERVICE', role: 'ADAPTER', target: 'Supabase', message: 'Advertencia en verificación inicial de sesión Supabase.', data: err?.message || err });
         return { client, session: null };
     }
 };
