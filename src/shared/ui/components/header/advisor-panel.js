@@ -4,7 +4,7 @@
  */
 import { escapeHTML } from '@/shared/utils/security.js';
 import { eventBus } from '@/core/eventBus/index.js';
-import { $id } from '@/shared/utils/dom.js';
+import { $id, $mount } from '@/shared/utils/dom.js';
 import { ADVISOR_ITEMS } from './advisor-data.js';
 
 export const AdvisorPanel = {
@@ -29,6 +29,12 @@ export const AdvisorPanel = {
         eventBus.on('advisor:toggle_filter', (payload) => this.toggleFilter(payload?.filter));
         eventBus.on('advisor:select_filter', (payload) => this.selectFilter(payload?.type, payload?.value));
         eventBus.on('advisor:clear_filters', () => this.clearFilters());
+        eventBus.on('advisor:dismiss_popover', () => {
+            if (this._openFilter) {
+                this._openFilter = null;
+                this.refresh();
+            }
+        });
     },
 
     showDetail(id) {
@@ -69,7 +75,7 @@ export const AdvisorPanel = {
     refresh() {
         const panel = $id('panel-advisor');
         if (panel) {
-            panel.innerHTML = this._renderInner();
+            $mount(panel, this._renderInner());
         }
     },
 
@@ -120,13 +126,16 @@ export const AdvisorPanel = {
     _renderList() {
         const advisors = this._getFilteredAdvisors();
         const catLabel = this._activeCategory !== 'all' ? this._activeCategory : '';
-        const statusLabel = this._activeStatus !== 'all' ? this._activeStatus : '';
+        const statusMap = { unread: 'No leído', archived: 'Archivado' };
+        const statusLabel = this._activeStatus !== 'all' ? (statusMap[this._activeStatus] || this._activeStatus) : '';
+        const sevMap = { warning: 'Auditoría', info: 'Información', success: 'Óptimo' };
+        const sevLabel = this._activeSeverity !== 'all' ? (sevMap[this._activeSeverity] || this._activeSeverity) : '';
         return `
             <div class="p-3 border-bottom d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-lightbulb-fill text-warning fs-5"></i>
                     <span class="fw-bold small text-main">Advisor Center</span>
-                    <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-0.5 x-small">${advisors.length} Activos</span>
+                    <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-0.5 x-small text-uppercase">${advisors.length} ${advisors.length === 1 ? 'Activo' : 'Activos'}</span>
                 </div>
                 <button type="button" class="btn-close-panel btn btn-sm p-0 text-muted" data-action="header:close_all_panels" aria-label="Cerrar panel">
                     <i class="bi bi-x-lg"></i>
@@ -143,11 +152,12 @@ export const AdvisorPanel = {
                     <i class="bi bi-chevron-down" style="font-size:0.6rem;"></i>
                 </button>
                 <button type="button" class="badge rounded-pill px-2.5 py-1 x-small border-0 cursor-pointer d-inline-flex align-items-center gap-1 ${this._activeSeverity !== 'all' ? 'bg-warning-subtle text-warning-emphasis' : 'bg-secondary-subtle text-muted'}" data-action="advisor:toggle_filter" data-filter="severity">
-                    <span>Gravedad: ${advisors.length}</span>
+                    <span>Gravedad${sevLabel ? `: ${sevLabel}` : ''}</span>
                     <i class="bi bi-chevron-down" style="font-size:0.6rem;"></i>
                 </button>
                 ${this._openFilter ? this._renderFilterPopover(this._openFilter) : ''}
             </div>
+            ${this._openFilter ? '<div class="advisor-popover-scrim" data-action="advisor:dismiss_popover"></div>' : ''}
 
             <div class="advisor-list p-2 buca-scroll-area max-h-350" id="advisor-items-container">
                 ${advisors.length === 0 ? '<div class="p-4 text-center text-muted small"><i class="bi bi-check2-circle fs-3 text-success d-block mb-1"></i>No hay avisos con los filtros seleccionados</div>' : ''}
