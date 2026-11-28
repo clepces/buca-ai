@@ -1,6 +1,106 @@
 @use '../../abstracts' as *;
 
 /* ─────────────────────────────────────────────────────────
+   ADVISOR PANEL — Centro de Asesoramiento
+   ───────────────────────────────────────────────────────── */
+.advisor-dropdown-panel {
+    width: 380px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    @media screen and (max-width: 767px) {
+        width: 100% !important;
+        max-height: 85vh;
+    }
+}
+
+.advisor-filter-bar {
+    flex-wrap: wrap;
+
+    @media screen and (max-width: 400px) {
+        gap: 4px !important;
+    }
+}
+
+.advisor-filter-popover {
+    position: absolute;
+    top: 100%;
+    left: 8px;
+    z-index: 20;
+    min-width: 200px;
+    max-width: calc(100% - 16px);
+    background: var(--surface-solid, #fff);
+    border: 1px solid var(--border-glass);
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+    animation: advisor-popover-in 0.15s ease-out;
+
+    [data-theme="dark"] & {
+        background: var(--surface-solid, #1e293b);
+    }
+}
+
+@keyframes advisor-popover-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.advisor-card {
+    &:hover {
+        background: var(--hover-glass);
+        border-color: var(--buca-blue) !important;
+    }
+    &:focus-visible {
+        outline: 2px solid var(--buca-blue);
+        outline-offset: 1px;
+    }
+}
+
+.advisor-severity-badge {
+    font-size: 0.55rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+
+    &.severity-warning {
+        background: rgba(245, 158, 11, 0.12);
+        color: #d97706;
+        border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    &.severity-info {
+        background: rgba(37, 99, 235, 0.1);
+        color: #2563eb;
+        border: 1px solid rgba(37, 99, 235, 0.2);
+    }
+    &.severity-success {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+}
+
+.max-h-350 {
+    max-height: 350px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    @supports (scrollbar-width: thin) {
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-glass) transparent;
+    }
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-thumb {
+        background: var(--border-glass);
+        border-radius: 4px;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
    PROFILE PANEL REFINED CONTROLS (Zero Deformation & Eye Friendly)
    ───────────────────────────────────────────────────────── */
 .profile-quick-action {
@@ -143,13 +243,8 @@
         font-size: 0.85rem;
     }
 
-    .notif-header-title {
-        font-size: 0.85rem;
-    }
-
-    .notif-badge-pill {
-        font-size: 0.65rem;
-    }
+    .notif-header-title { font-size: 0.85rem; }
+    .notif-badge-pill { font-size: 0.65rem; }
 
     .tray-filter-tabs {
         background: rgba(0, 0, 0, 0.02);
@@ -166,7 +261,6 @@
             background: var(--hover-glass);
             color: var(--text-main);
         }
-
         &.active-tab {
             background: var(--buca-blue);
             color: #fff;
@@ -221,10 +315,7 @@
             background: transparent;
             opacity: 0.65;
             border-left: 3.5px solid transparent;
-
-            &:hover {
-                opacity: 0.9;
-            }
+            &:hover { opacity: 0.9; }
         }
 
         .notif-type-icon {
@@ -234,37 +325,12 @@
             background: var(--notif-bg, rgba(37, 99, 235, 0.12));
             color: var(--notif-color, #2563eb);
         }
-
-        .notif-title {
-            font-size: 0.78rem;
-        }
-
-        .notif-time {
-            font-size: 0.62rem;
-            font-weight: 500;
-        }
-
-        .notif-desc {
-            font-size: 0.72rem;
-            line-height: 1.35;
-            word-break: break-word;
-        }
-
-        .notif-badge {
-            font-size: 0.58rem;
-            background: var(--notif-bg, rgba(37, 99, 235, 0.12));
-            color: var(--notif-color, #2563eb);
-            padding: 1px 6px;
-        }
-
-        .notif-action-btn {
-            font-size: 0.65rem;
-        }
-
-        .notif-read-indicator {
-            font-size: 0.62rem;
-            opacity: 0.7;
-        }
+        .notif-title { font-size: 0.78rem; }
+        .notif-time { font-size: 0.62rem; font-weight: 500; }
+        .notif-desc { font-size: 0.72rem; line-height: 1.35; word-break: break-word; }
+        .notif-badge { font-size: 0.58rem; background: var(--notif-bg, rgba(37, 99, 235, 0.12)); color: var(--notif-color, #2563eb); padding: 1px 6px; }
+        .notif-action-btn { font-size: 0.65rem; }
+        .notif-read-indicator { font-size: 0.62rem; opacity: 0.7; }
     }
 
     .panel-footer-clean {
@@ -272,4 +338,3 @@
         font-size: 0.7rem;
     }
 }
-

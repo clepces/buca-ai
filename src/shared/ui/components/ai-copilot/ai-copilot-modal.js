@@ -5,7 +5,7 @@
  * Clean Core Vanilla JS - 0 Frameworks, memoria gestionada con ModalService.
  * =========================================================================
  */
-import { ModalService } from '@/shared/ui/services/ModalService.js';
+import { modalServiceV2 } from '@/shared/ui/services/modal/modal-service-v2.js';
 import { sessionState } from '@/core/state/session.js';
 import { $id, $on } from '@/shared/utils/dom.js';
 
@@ -14,7 +14,7 @@ export const AICopilotModal = {
         const user = sessionState.get()?.user;
         const userEmail = user?.email || 'admin@buca.com.ve';
 
-        ModalService.showModal({
+        modalServiceV2.showModal({
             id: 'ai-copilot-modal',
             scope: 'global',
             size: 'lg',
@@ -29,7 +29,7 @@ export const AICopilotModal = {
                     showGlobalControls: { ai: false, help: true, resize: true }
                 }
             },
-            body: `
+            body: { html: `
                 <div class="ai-copilot-container p-2" id="ai-copilot-view">
                     <!-- Banner de Contexto Seguro -->
                     <div class="d-flex align-items-start gap-2.5 p-2.5 rounded-3 mb-3 border bg-subtle" style="border-color: rgba(37,99,235,0.15) !important;">
@@ -110,14 +110,13 @@ export const AICopilotModal = {
                         </button>
                     </div>
                 </div>
-            `,
+            ` },
             footer: {
                 left: '<span class="x-small text-muted"><i class="bi bi-clock me-1"></i> Sesión segura con Supabase AI Gateway</span>',
                 right: '<button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-action="ui:close_modal">Cerrar</button>'
-            }
+            },
+            onOpen: () => this._bindEvents()
         });
-
-        this._bindEvents();
     },
 
     _bindEvents() {

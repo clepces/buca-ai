@@ -99,17 +99,17 @@ export const AdvisorPanel = {
         }
 
         return `
-            <div class="advisor-filter-popover shadow-lg">
+            <div class="advisor-filter-popover shadow-lg" role="listbox" aria-label="${title}">
                 <span class="x-small fw-bold text-muted text-uppercase d-block mb-2">${title}</span>
-                <div class="d-flex flex-column gap-1.5 mb-2.5">
+                <div class="d-flex flex-column gap-1 mb-2">
                     ${items.map(opt => `
-                        <button type="button" class="btn btn-sm text-start py-1 px-2 rounded-2 border-0 x-small d-flex align-items-center justify-content-between ${opt.active ? 'bg-primary-subtle text-primary fw-bold' : 'text-main bg-subtle'}" data-action="advisor:select_filter" data-type="${type}" data-value="${opt.id}">
+                        <button type="button" role="option" aria-selected="${opt.active}" class="btn btn-sm text-start py-1.5 px-2.5 rounded-2 border-0 x-small d-flex align-items-center justify-content-between ${opt.active ? 'bg-primary-subtle text-primary fw-bold' : 'text-main bg-subtle'}" data-action="advisor:select_filter" data-type="${type}" data-value="${opt.id}">
                             <span>${opt.label}</span>
                             ${opt.active ? '<i class="bi bi-check2"></i>' : ''}
                         </button>
                     `).join('')}
                 </div>
-                <div class="d-flex justify-content-between pt-1 border-top">
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top">
                     <button type="button" class="btn btn-link text-muted p-0 x-small text-decoration-none" data-action="advisor:select_filter" data-type="${type}" data-value="all">Limpiar</button>
                     <button type="button" class="btn btn-sm btn-primary py-0.5 px-2.5 x-small rounded-pill" data-action="advisor:toggle_filter" data-filter="${type}">Cerrar</button>
                 </div>
@@ -119,6 +119,8 @@ export const AdvisorPanel = {
 
     _renderList() {
         const advisors = this._getFilteredAdvisors();
+        const catLabel = this._activeCategory !== 'all' ? this._activeCategory : '';
+        const statusLabel = this._activeStatus !== 'all' ? this._activeStatus : '';
         return `
             <div class="p-3 border-bottom d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
@@ -126,20 +128,23 @@ export const AdvisorPanel = {
                     <span class="fw-bold small text-main">Advisor Center</span>
                     <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-0.5 x-small">${advisors.length} Activos</span>
                 </div>
-                <button type="button" class="btn-close-panel btn btn-sm p-0 text-muted" data-action="header:close_all_panels">
+                <button type="button" class="btn-close-panel btn btn-sm p-0 text-muted" data-action="header:close_all_panels" aria-label="Cerrar panel">
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
 
-            <div class="px-3 py-2 border-bottom bg-subtle d-flex align-items-center gap-1.5 position-relative">
-                <button type="button" class="badge rounded-pill px-2 py-1 x-small border-0 cursor-pointer ${this._activeCategory !== 'all' ? 'bg-primary text-white' : 'bg-secondary-subtle text-muted'}" data-action="advisor:toggle_filter" data-filter="category">
-                    Categoría${this._activeCategory !== 'all' ? `: ${this._activeCategory}` : ''} <i class="bi bi-chevron-down ms-0.5"></i>
+            <div class="advisor-filter-bar px-3 py-2 border-bottom bg-subtle d-flex flex-wrap align-items-center gap-1.5 position-relative">
+                <button type="button" class="badge rounded-pill px-2.5 py-1 x-small border-0 cursor-pointer d-inline-flex align-items-center gap-1 ${this._activeCategory !== 'all' ? 'bg-primary text-white' : 'bg-secondary-subtle text-muted'}" data-action="advisor:toggle_filter" data-filter="category">
+                    <span>Categoría${catLabel ? `: ${catLabel}` : ''}</span>
+                    <i class="bi bi-chevron-down" style="font-size:0.6rem;"></i>
                 </button>
-                <button type="button" class="badge rounded-pill px-2 py-1 x-small border-0 cursor-pointer ${this._activeStatus !== 'all' ? 'bg-primary text-white' : 'bg-secondary-subtle text-muted'}" data-action="advisor:toggle_filter" data-filter="status">
-                    Estado${this._activeStatus !== 'all' ? `: ${this._activeStatus}` : ''} <i class="bi bi-chevron-down ms-0.5"></i>
+                <button type="button" class="badge rounded-pill px-2.5 py-1 x-small border-0 cursor-pointer d-inline-flex align-items-center gap-1 ${this._activeStatus !== 'all' ? 'bg-primary text-white' : 'bg-secondary-subtle text-muted'}" data-action="advisor:toggle_filter" data-filter="status">
+                    <span>Estado${statusLabel ? `: ${statusLabel}` : ''}</span>
+                    <i class="bi bi-chevron-down" style="font-size:0.6rem;"></i>
                 </button>
-                <button type="button" class="badge rounded-pill px-2 py-1 x-small border-0 cursor-pointer ${this._activeSeverity !== 'all' ? 'bg-warning-subtle text-warning-emphasis' : 'bg-secondary-subtle text-muted'}" data-action="advisor:toggle_filter" data-filter="severity">
-                    Gravedad: ${advisors.length} <i class="bi bi-chevron-down ms-0.5"></i>
+                <button type="button" class="badge rounded-pill px-2.5 py-1 x-small border-0 cursor-pointer d-inline-flex align-items-center gap-1 ${this._activeSeverity !== 'all' ? 'bg-warning-subtle text-warning-emphasis' : 'bg-secondary-subtle text-muted'}" data-action="advisor:toggle_filter" data-filter="severity">
+                    <span>Gravedad: ${advisors.length}</span>
+                    <i class="bi bi-chevron-down" style="font-size:0.6rem;"></i>
                 </button>
                 ${this._openFilter ? this._renderFilterPopover(this._openFilter) : ''}
             </div>
@@ -147,20 +152,20 @@ export const AdvisorPanel = {
             <div class="advisor-list p-2 buca-scroll-area max-h-350" id="advisor-items-container">
                 ${advisors.length === 0 ? '<div class="p-4 text-center text-muted small"><i class="bi bi-check2-circle fs-3 text-success d-block mb-1"></i>No hay avisos con los filtros seleccionados</div>' : ''}
                 ${advisors.map(adv => `
-                    <div class="advisor-card p-2.5 rounded-3 border mb-2 cursor-pointer transition-all" data-action="advisor:show_detail" data-id="${adv.id}">
+                    <div class="advisor-card p-2.5 rounded-3 border mb-2 cursor-pointer transition-all" data-action="advisor:show_detail" data-id="${adv.id}" role="button" tabindex="0">
                         <div class="d-flex align-items-start gap-2.5">
                             <div class="advisor-shield-icon flex-shrink-0 mt-0.5 ${adv.severity === 'warning' ? 'text-warning' : (adv.severity === 'success' ? 'text-success' : 'text-primary')}">
                                 <i class="bi ${adv.severity === 'success' ? 'bi-shield-fill-check' : (adv.severity === 'warning' ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill')} fs-5"></i>
                             </div>
                             <div class="flex-grow-1 min-w-0">
-                                <div class="d-flex align-items-center justify-content-between mb-0.5">
+                                <div class="d-flex align-items-center justify-content-between gap-2 mb-0.5">
                                     <span class="d-block fw-bold text-main small text-truncate">${escapeHTML(adv.title)}</span>
-                                    <span class="badge advisor-severity-badge severity-${adv.severity} rounded-pill font-monospace">${adv.severityLabel}</span>
+                                    <span class="badge advisor-severity-badge severity-${adv.severity} rounded-pill font-monospace flex-shrink-0">${adv.severityLabel}</span>
                                 </div>
                                 <span class="d-block text-muted x-small mb-1 text-truncate">${escapeHTML(adv.entity)}</span>
                                 <p class="x-small text-muted mb-0 lh-sm line-clamp-2">${escapeHTML(adv.desc)}</p>
                             </div>
-                            <i class="bi bi-chevron-right text-muted x-small mt-1"></i>
+                            <i class="bi bi-chevron-right text-muted x-small mt-1 flex-shrink-0"></i>
                         </div>
                     </div>
                 `).join('')}
@@ -168,7 +173,7 @@ export const AdvisorPanel = {
 
             <div class="p-2.5 bg-subtle border-top d-flex justify-content-between align-items-center">
                 <span class="x-small text-muted">Auditoría en tiempo real</span>
-                <button type="button" class="btn btn-sm btn-link text-primary text-decoration-none fw-semibold p-0 x-small" data-action="ui:open_activity_log">
+                <button type="button" class="btn btn-sm p-0 x-small rounded-pill px-2.5 py-1 fw-semibold text-decoration-none" disabled style="filter:grayscale(1);opacity:.5;cursor:not-allowed;">
                     Ver registro completo <i class="bi bi-arrow-right ms-0.5"></i>
                 </button>
             </div>
