@@ -8,23 +8,22 @@ export function renderRibbonTemplate() {
             <div class="ribbon-content">
                 <!-- 1. LEFT ZONE: AREA SELECTOR + CONTEXT PILLS -->
                 <div class="ws-ribbon-left d-flex align-items-center gap-2">
-                    <!-- Area Selector: Supabase-style dropdown trigger -->
-                    <button type="button" class="ribbon-area-selector" data-action="workspace:open_area_menu" data-tooltip="Cambiar área de trabajo (Ctrl + J)">
+                    <!-- Area Selector: solo muestra ↨ si hay >1 negocio -->
+                    <div class="ribbon-area-selector" data-action="workspace:open_area_menu" data-tooltip="Panel de Control">
                         <i class="bi bi-buildings-fill text-primary"></i>
                         <span class="ribbon-area-selector__label">Panel de Control</span>
-                        <i class="bi bi-chevron-expand ribbon-area-selector__chevron"></i>
-                    </button>
+                    </div>
 
-                    <span class="text-muted opacity-30 d-none d-lg-inline">|</span>
+                    <span class="ribbon-sep d-none d-lg-inline"></span>
 
-                    <!-- Segmented Context Pills -->
-                    <div class="ws-context-segmented d-flex align-items-center p-0.5 rounded-pill bg-subtle border" role="tablist">
-                        <button type="button" class="context-pill active btn btn-sm rounded-pill px-2.5 py-1 d-flex align-items-center gap-1.5 fw-semibold x-small" data-action="workspace:filter_context" data-context="all" role="tab" aria-selected="true" data-tooltip="Ver todas mis unidades (Ctrl + 1)">
-                            <i class="bi bi-briefcase-fill text-primary"></i>
+                    <!-- Segmented Context Pills (flat, sin glass) -->
+                    <div class="ws-context-segmented" role="tablist">
+                        <button type="button" class="context-pill active" data-action="workspace:filter_context" data-context="all" role="tab" aria-selected="true" data-tooltip="Ver todas mis unidades (Ctrl + 1)">
+                            <i class="bi bi-briefcase-fill"></i>
                             <span class="pill-text d-none d-sm-inline">Mis Negocios</span>
-                            <span class="badge bg-primary text-white rounded-pill px-1.5 py-0.2 pill-count">0</span>
+                            <span class="pill-count">0</span>
                         </button>
-                        <button type="button" class="context-pill btn btn-sm rounded-pill px-2.5 py-1 d-flex align-items-center gap-1.5 fw-semibold x-small text-muted" data-action="workspace:filter_context" data-context="directory" role="tab" aria-selected="false" data-tooltip="Explorar directorio global (Ctrl + 2)">
+                        <button type="button" class="context-pill" data-action="workspace:filter_context" data-context="directory" role="tab" aria-selected="false" data-tooltip="Explorar directorio global (Ctrl + 2)">
                             <i class="bi bi-diagram-3"></i>
                             <span class="pill-text d-none d-sm-inline">Directorio</span>
                         </button>

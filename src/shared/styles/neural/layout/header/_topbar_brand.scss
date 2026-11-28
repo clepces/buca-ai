@@ -90,6 +90,25 @@
     gap: 0 !important;
 }
 
+/* Static crumb label (no dropdown, just text) */
+.header-crumb-static {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-muted, #64748b);
+    white-space: nowrap;
+
+    i { font-size: 0.75rem; }
+
+    [data-theme="dark"] & { color: #94a3b8; }
+}
+
+/* Interactive crumb selector (with optional ↨ chevron) */
 .header-crumb-selector {
     display: inline-flex;
     align-items: center;
@@ -115,7 +134,6 @@
 
     [data-theme="dark"] & {
         color: #e2e8f0;
-
         &:hover {
             background: rgba(255, 255, 255, 0.06);
             border-color: rgba(255, 255, 255, 0.1);
@@ -128,37 +146,6 @@
         text-overflow: ellipsis;
     }
 
-    &__badge {
-        font-size: 0.6rem;
-        font-weight: 800;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        padding: 1px 5px;
-        border-radius: 4px;
-        line-height: 1.4;
-        flex-shrink: 0;
-
-        &--free {
-            background: rgba(37, 99, 235, 0.1);
-            color: var(--buca-blue, #2563eb);
-
-            [data-theme="dark"] & {
-                background: rgba(96, 165, 250, 0.15);
-                color: #93c5fd;
-            }
-        }
-
-        &--prod {
-            background: rgba(5, 150, 105, 0.1);
-            color: #059669;
-
-            [data-theme="dark"] & {
-                background: rgba(16, 185, 129, 0.15);
-                color: #6ee7b7;
-            }
-        }
-    }
-
     &__chevron {
         font-size: 0.6rem;
         color: var(--text-muted, #94a3b8);
@@ -167,9 +154,7 @@
         flex-shrink: 0;
     }
 
-    &:hover &__chevron {
-        opacity: 1;
-    }
+    &:hover &__chevron { opacity: 1; }
 }
 
 .header-breadcrumb-sep {
