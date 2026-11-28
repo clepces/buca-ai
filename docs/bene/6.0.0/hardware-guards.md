@@ -39,15 +39,15 @@ Inicializa un observador dedicado con `{ cpu: true }` y clasifica el estrés té
 
 | Estado CPU | Acción del Motor BENE | Impacto en el DOM |
 |---|---|---|
-| **`nominal`** | Preservar perfil asignado. | `bne-perf` sin cambios. |
-| **`fair`** | Monitoreo estándar latente. | `bne-perf` sin cambios. |
+| **`nominal`** | Preservar perfil asignado. | `bene-perf` sin cambios. |
+| **`fair`** | Monitoreo estándar latente. | `bene-perf` sin cambios. |
 | **`serious`** | Ejecutar `engine.degrade()`. | Descenso atómico de un Tier (`L2` → `L1`). |
-| **`critical`** | Activar Modo Pánico L0 Preventivo. | Forzado inmediato de `bne-perf="L0"`. |
+| **`critical`** | Activar Modo Pánico L0 Preventivo. | Forzado inmediato de `bene-perf="L0"`. |
 
 ### Protocolo de Mitigación de Emergencia (Estado `critical`)
 
 1. Inyecta la clase global `.buca-thermal-throttle` en `document.documentElement`.
-2. Invoca `engine.applyTier('eco')`, forzando transversalmente **`bne-perf="L0"`**.
+2. Invoca `engine.applyTier('eco')`, forzando transversalmente **`bene-perf="L0"`**.
 3. Despacha el evento `buca:perf_critical_network_pause` para que la capa de red congele el tráfico secundario de fondo.
 
 > [!NOTE]
@@ -68,7 +68,7 @@ Administra el uso de memoria física asignado al proceso del ERP para prevenir c
 
 $$\text{Uso de Heap } (\%) = \left( \frac{\text{performance.memory.usedJSHeapSize}}{\text{performance.memory.jsHeapSizeLimit}} \right) \times 100$$
 
-* **Zona Crítica (> 80%):** Asume riesgo inminente de OOM. Fuerza el perfil `'eco'` (`bne-perf="L0"`), dispara purgas forzadas en `GhostSanitizer` y libera cachés en memoria.
+* **Zona Crítica (> 80%):** Asume riesgo inminente de OOM. Fuerza el perfil `'eco'` (`bene-perf="L0"`), dispara purgas forzadas en `GhostSanitizer` y libera cachés en memoria.
 * **Zona Nominal (< 50%):** Remueve los bloqueos de memoria y autoriza la re-escalada hacia perfiles superiores si los FPS lo respaldan.
 
 ---
@@ -77,9 +77,9 @@ $$\text{Uso de Heap } (\%) = \left( \frac{\text{performance.memory.usedJSHeapSiz
 
 | Parámetro | L0: Eco (Supervivencia) | L1: Balanced (Estándar ERP) | L2: Pro (Fidelidad Completa) | L3: Ultra (Post-Procesado) |
 |---|:---:|:---:|:---:|:---:|
-| **Atributo DOM** | `bne-perf="L0"` | `bne-perf="L1"` | `bne-perf="L2"` | `bne-perf="L3"` |
-| **Motion** | `bne-motion="static"` | `bne-motion="eco"` | `bne-motion="fluid"` | `bne-motion="fluid"` |
-| **FPS Mode** | `bne-fps-mode="half"` | `bne-fps-mode="normal"` | `bne-fps-mode="normal"` | `bne-fps-mode="normal"` |
+| **Atributo DOM** | `bene-perf="L0"` | `bene-perf="L1"` | `bene-perf="L2"` | `bene-perf="L3"` |
+| **Motion** | `bene-motion="static"` | `bene-motion="eco"` | `bene-motion="fluid"` | `bene-motion="fluid"` |
+| **FPS Mode** | `bene-fps-mode="half"` | `bene-fps-mode="normal"` | `bene-fps-mode="normal"` | `bene-fps-mode="normal"` |
 | **`backdrop-filter`** | **0px (Desactivado)** | 6px - 8px | 12px - 16px | 20px+ Multicapa |
 | **Fondo** | `var(--surface-solid)` | `var(--surface-glass)` | `var(--surface-glass)` | `var(--surface-glass-ultra)` |
 | **Sombras** | Desactivadas | Reducidas (1 nivel) | Dinámicas suaves | Oclusión ambiental 3D |

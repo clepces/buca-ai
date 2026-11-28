@@ -6,14 +6,16 @@
  * composición, estructura HTML y estilos CSS con variante glassmorphism.
  */
 
-import { $id, $, $mount, $on, $addClass, $removeClass, $text, $className, $create, $appendTo, $show } from '@/shared/utils/dom.js';
+import { $id, $, $mount, $on, $addClass, $removeClass, $className, $create, $appendTo, $show } from '@/shared/utils/dom.js';
+import preloaderController from '@/shared/ui/overlays/preloader-controller.js';
+import { renderBrandLoader } from '@/shared/ui/components/brand-loader.js';
 
 export class SystemOverlay {
     /**
      * Mapeo de iconos predeterminados según la severidad/tipo de alerta
      */
     static ICONS = {
-        loading: '<div class="buca-spinner"></div>',
+        loading: renderBrandLoader({ size: 'lg' }),
         recovery: '⚠️',
         danger: '❌',
         warning: '⚠️',
@@ -92,7 +94,12 @@ export class SystemOverlay {
             });
             $appendTo(document.body, overlay);
         } else {
+            if (overlay._hideTimer) {
+                clearTimeout(overlay._hideTimer);
+                overlay._hideTimer = null;
+            }
             if (overlay.id === 'global-preloader') {
+                preloaderController.destroy();
                 $className(overlay, `preloader-state ${typeClass} ${type === 'warning' ? 'is-warning' : 'is-error'}`);
             } else {
                 $className(overlay, `buca-system-overlay ${typeClass}`);
@@ -103,70 +110,78 @@ export class SystemOverlay {
 
         $mount(overlay, this.renderCard(options));
 
-        // Bind click handlers para los botones de acción
+        // Bind click handlers para los botones de acción con limpieza automática
         if (options.actions && options.actions.length > 0) {
+            if (overlay._actionsAbort) overlay._actionsAbort.abort();
+            overlay._actionsAbort = new AbortController();
+            const { signal } = overlay._actionsAbort;
+
             options.actions.forEach((act, index) => {
                 const btn = $(`[data-overlay-btn-index="${index}"]`, overlay);
                 if (btn && typeof act.onClick === 'function') {
                     $on(btn, 'click', (e) => {
                         e.preventDefault();
                         act.onClick();
-                    });
+                    }, { signal });
                 }
             });
         }
     }
 
     /**
-     * Aplica directamente una clase de utilidad al #global-preloader para cambiar su estado (error, warning, 404, 500, 503)
-     * sin destruir su estructura interna.
-     * @param {string} stateClass - 'preloader--error' | 'preloader--warning' | 'preloader--404' | 'preloader--500' | 'preloader--503'
-     * @param {string} [statusText] - Texto opcional para actualizar #splash-status
+     * Aplica un estado semántico y badge al #global-preloader sin destruir su estructura.
+     * @param {string} stateClass - Ej. 'preloader--error' | 'preloader--warning' | 'preloader--offline' | 'preloader--503'
+     * @param {string} [statusText] - Descripción del estado
+     * @param {Object} [options] - { icon, title, phaseId, actions }
      */
-    static setPreloaderState(stateClass, statusText) {
-        const preloader = $id('global-preloader');
-        if (!preloader) return;
-
-        $addClass(preloader, stateClass);
-        if (stateClass.includes('error') || stateClass.includes('500') || stateClass.includes('503')) {
-            $addClass(preloader, 'is-error');
-        } else if (stateClass.includes('warning')) {
-            $addClass(preloader, 'is-warning');
-        }
-
-        if (statusText) {
-            const statusEl = $id('splash-status');
-            if (statusEl) $text(statusEl, statusText);
-        }
+    static setPreloaderState(stateClass, statusText = '', options = {}) {
+        const state = stateClass.replace(/^preloader--/, '');
+        preloaderController.updateStatus({
+            phaseId: options.phaseId || state,
+            state,
+            icon: options.icon,
+            title: options.title,
+            description: statusText,
+            actions: options.actions || []
+        });
     }
 
     /**
      * Remueve todas las clases de utilidad de error/advertencia del #global-preloader.
      */
     static clearPreloaderState() {
-        const preloader = $id('global-preloader');
-        if (!preloader) return;
-
-        $removeClass(
-            preloader,
-            'preloader--error', 'preloader--warning', 'preloader--404',
-            'preloader--500', 'preloader--503', 'is-error', 'is-warning'
-        );
+        preloaderController.clearState();
     }
 
     /**
-     * Oculta suavemente el overlay si existe.
+     * Oculta suavemente el overlay si existe y libera sus recursos.
      */
     static hideOverlay() {
         const overlay = $id('global-preloader') || $id('buca-system-overlay');
         if (!overlay) return;
 
+        preloaderController.destroy();
+        if (overlay._actionsAbort) {
+            overlay._actionsAbort.abort();
+            overlay._actionsAbort = null;
+        }
+        if (overlay._hideTimer) {
+            clearTimeout(overlay._hideTimer);
+            overlay._hideTimer = null;
+        }
+
+        if (preloaderController.getPerfTier() === 'L0') {
+            if (overlay.parentNode) overlay.remove();
+            return;
+        }
+
         $addClass(overlay, 'preloader--fade-out');
-        setTimeout(() => {
-            if (overlay && overlay.parentNode && overlay.id === 'buca-system-overlay') {
+        overlay._hideTimer = setTimeout(() => {
+            overlay._hideTimer = null;
+            if (overlay.parentNode) {
                 overlay.remove();
             }
-        }, 500);
+        }, 450);
     }
 
     /**

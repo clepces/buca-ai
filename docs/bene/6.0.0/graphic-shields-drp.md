@@ -7,9 +7,9 @@
 
 ---
 
-## 1. `ReflowGuard`: Aislamiento Geométrico con `bne-contain`
+## 1. `ReflowGuard`: Aislamiento Geométrico con `bene-contain`
 
-El `ReflowGuard` intercepta el fenómeno de *Layout Thrashing* (congelamiento de pantalla provocado por cálculos geométricos síncronos redundantes en el DOM). En BENE v6.0.0, este escudo automatiza la inyección del atributo nativo **`bne-contain`**.
+El `ReflowGuard` intercepta el fenómeno de *Layout Thrashing* (congelamiento de pantalla provocado por cálculos geométricos síncronos redundantes en el DOM). En BENE v6.0.0, este escudo automatiza la inyección del atributo nativo **`bene-contain`**.
 
 ### Algoritmo de Detección de Mutación Caliente
 
@@ -22,9 +22,9 @@ El `ReflowGuard` intercepta el fenómeno de *Layout Thrashing* (congelamiento de
 Al rebasar el umbral:
 - Inyecta la bandera global `.buca-reflow-throttle` en el elemento raíz `html`.
 - Ordena al motor degradar el perfil de calidad (`engine.degrade()`).
-- **Aislamiento por `bne-contain="strict"`:** Escanea el contenedor activo y le inyecta `bne-contain="strict"`, forzando la directiva CSS:
+- **Aislamiento por `bene-contain="strict"`:** Escanea el contenedor activo y le inyecta `bene-contain="strict"`, forzando la directiva CSS:
   ```css
-  [bne-contain="strict"] {
+  [bene-contain="strict"] {
       contain: strict; /* Aísla layout, estilo y pintura del widget */
   }
   ```
@@ -57,7 +57,7 @@ sanitize() {
 
 ### Protocolo de Purga en el Árbol del DOM
 
-1. **Detección de Capas Residuales:** Identifica nodos con clases de ocultación pero con contextos de composición activos, omitiendo aquellos marcados explícitamente con `[bne-ignore]`.
+1. **Detección de Capas Residuales:** Identifica nodos con clases de ocultación pero con contextos de composición activos, omitiendo aquellos marcados explícitamente con `[bene-ignore]`.
 2. **Destrucción Física de Contexto:** Aplica síncronamente `display: none`. Esto destruye de forma inmediata la textura en la GPU, liberando memoria de vídeo al instante.
 3. **Reporte a Telemetría:** Registra el total de nodos purgados y actualiza las estadísticas de VRAM en el motor.
 

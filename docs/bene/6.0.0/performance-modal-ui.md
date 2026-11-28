@@ -2,7 +2,7 @@
 ## Panel de Control Full-Screen del Motor Gráfico BENE
 
 > **Módulo:** `docs/bene/6.0.0/performance-modal-ui.md`  
-> **Dependencias:** `bne-sensor`, `BeneSensorEngineBridge.js`, `IndexedDB`, `localStorage`  
+> **Dependencias:** `bene-sensor`, `BeneSensorEngineBridge.js`, `IndexedDB`, `localStorage`  
 > **Estado:** `[Especificación de Investigación (new)]`
 
 ---
@@ -32,25 +32,25 @@ flowchart TD
 | **Título** | `Motor Gráfico BENE` — `font-size: 18px`, `font-weight: 600` |
 | **Subtítulo** | `Balanced Effect Neural Engine` — `font-size: 12px`, `color: var(--text-muted)` |
 | **Badge de Versión** | `v6.0.0` — pill con `background: var(--primary-color)`, `color: white`, `border-radius: 12px` |
-| **Panel de Sensores** | Fila de `bne-sensor` incrustados: FPS, DOM Nodes, Memory, GPU Tier |
+| **Panel de Sensores** | Fila de `bene-sensor` incrustados: FPS, DOM Nodes, Memory, GPU Tier |
 
 ```html
-<header class="bne-modal__header">
-  <div class="bne-modal__title-group">
-    <h2 class="bne-modal__title">Motor Gráfico BENE</h2>
-    <p class="bne-modal__subtitle">Balanced Effect Neural Engine</p>
+<header class="bene-modal__header">
+  <div class="bene-modal__title-group">
+    <h2 class="bene-modal__title">Motor Gráfico BENE</h2>
+    <p class="bene-modal__subtitle">Balanced Effect Neural Engine</p>
   </div>
-  <span class="bne-modal__badge">v6.0.0</span>
-  <div class="bne-sensor-panel">
-    <span bne-sensor="fps" bne-status="normal">
-      <span class="bne-sensor__label">FPS</span>
-      <span class="bne-sensor__value">60</span>
-      <span class="bne-sensor__indicator"></span>
+  <span class="bene-modal__badge">v6.0.0</span>
+  <div class="bene-sensor-panel">
+    <span bene-sensor="fps" bene-status="normal">
+      <span class="bene-sensor__label">FPS</span>
+      <span class="bene-sensor__value">60</span>
+      <span class="bene-sensor__indicator"></span>
     </span>
-    <span bne-sensor="dom-count" bne-status="normal">
-      <span class="bne-sensor__label">DOM</span>
-      <span class="bne-sensor__value">847</span>
-      <span class="bne-sensor__indicator"></span>
+    <span bene-sensor="dom-count" bene-status="normal">
+      <span class="bene-sensor__label">DOM</span>
+      <span class="bene-sensor__value">847</span>
+      <span class="bene-sensor__indicator"></span>
     </span>
   </div>
 </header>
@@ -62,16 +62,16 @@ flowchart TD
 
 ### 3.1. Tab: General
 - **Selector de Perfil:** Radio buttons para `L0 Eco` / `L1 Balanced` / `L2 Pro` / `L3 Ultra`.
-- **Modo Manual:** Toggle para desactivar autocalibración (`bne-manual="true"`).
+- **Modo Manual:** Toggle para desactivar autocalibración (`bene-manual="true"`).
 - **Perfil Activo:** Indicador visual del perfil actualmente calibrado por hardware.
 
 ### 3.2. Tab: Efectos por Componente
 - **Lista de Componentes Registrados:** Tabla con toggle individual por componente.
-- Permite desactivar efectos (`bne-effect`) en componentes específicos sin afectar al resto.
+- Permite desactivar efectos (`bene-effect`) en componentes específicos sin afectar al resto.
 - Ejemplo: Desactivar glassmorphism solo en `buca-card` del módulo `workspace`.
 
 ### 3.3. Tab: Sensores
-- **Dashboard de Telemetría:** Todos los `bne-sensor` en formato de cuadrícula compacta.
+- **Dashboard de Telemetría:** Todos los `bene-sensor` en formato de cuadrícula compacta.
 - Historial de FPS (mini sparkline de los últimos 60 segundos).
 - Alertas activas (sensors en estado `warning` o `critical`).
 
@@ -101,7 +101,7 @@ flowchart TD
 
 | Almacén | Datos | Propósito |
 |---|---|---|
-| **`localStorage`** | `bne-profile`, `bne-manual`, `bne-theme` | Lectura ultra-rápida al arranque del Kernel. |
+| **`localStorage`** | `bene-profile`, `bene-manual`, `bene-theme` | Lectura ultra-rápida al arranque del Kernel. |
 | **`IndexedDB`** | Component overrides, presets exportados, historial de sensores | Datos estructurados complejos con volumen potencialmente alto. |
 
 > [!IMPORTANT]
@@ -127,7 +127,7 @@ flowchart TD
 
 ## 6. Degradación L0
 
-En perfil `bne-perf="L0"`, el Performance Modal:
+En perfil `bene-perf="L0"`, el Performance Modal:
 - Desactiva todas las transiciones de entrada/salida (render instantáneo).
 - Oculta el panel de sensores del header (CPU zero).
 - Reemplaza sparklines por valores numéricos estáticos.

@@ -74,6 +74,27 @@
         }
     }
 
+    .dropdown-item-kbd {
+        margin-left: auto;
+        flex-shrink: 0;
+        font-size: 0.62rem;
+        font-weight: 600;
+        font-family: inherit;
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: rgba(0, 0, 0, 0.04);
+        color: var(--text-muted, #64748b);
+        box-shadow: none;
+        line-height: 1.4;
+
+        [data-theme="dark"] & {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #94a3b8;
+        }
+    }
+
     .item-badge-roadmap {
         margin-left: auto;
         flex-shrink: 0;

@@ -118,6 +118,15 @@ html[data-theme="dark"] {
     }
 }
 
+[bene-perf="L0"] .buca-system-overlay,
+[data-buca-perf="L0"] .buca-system-overlay,
+[bene-perf="L0"] .buca-overlay-card,
+[data-buca-perf="L0"] .buca-overlay-card {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--surface-solid);
+}
+
 .buca-overlay-icon {
     font-size: 3.2rem;
     line-height: 1;

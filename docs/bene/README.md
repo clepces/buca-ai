@@ -14,7 +14,7 @@ El nombre **BENE (Balanced Effect Neural Engine) — Motor neuronal de efecto eq
 ```mermaid
 flowchart LR
     A["Hardware & Telemetría<br/>(FPS / Batería / Memoria / CPU)"] --> B["BENE Orquestador<br/>(Cálculo Paramétrico)"]
-    B --> C["Atributos Declarativos<br/>(bne-perf / bne-effect)"]
+    B --> C["Atributos Declarativos<br/>(bene-perf / bene-effect)"]
     C --> D["Renderizado Nativo GPU<br/>(CSS Puro / Cero Overhead JS)"]
 ```
 
@@ -26,17 +26,17 @@ flowchart LR
 |---|---|:---:|---|
 | **v5.3.0** | **BNE Legacy (Production Core)** | 🟢 Activa en `/src/core/engine` | [Documentación v5.3.0](./5.3.0/README.md) |
 | **v5.5.0** | **BNE Legacy (Última `data-*` exclusiva)** | 📋 Planificada | — |
-| **v5.5.1 — v5.9.9** | **BNE Transición (`bne-*` + `data-*` dual)** | 🔄 Transición | [Tabla de Migración](./attribute-migration.md) |
+| **v5.5.1 — v5.9.9** | **BNE Transición (`bene-*` + `data-*` dual)** | 🔄 Transición | [Tabla de Migración](./attribute-migration.md) |
 | **v6.0.0** | **BENE Next-Gen (Agnostic Orchestrator)** | 🧪 Etapa de Investigación | [Documentación v6.0.0](./6.0.0/README.md) |
 
 > [!NOTE]
-> Para el mapeo detallado de atributos legacy (`data-buca-perf`, `data-theme`) al nuevo namespace (`bne-perf`, `bne-theme`), consulte la [Tabla de Migración de Atributos](./attribute-migration.md).
+> Para el mapeo detallado de atributos legacy (`data-buca-perf`, `data-theme`) al nuevo namespace (`bene-perf`, `bene-theme`), consulte la [Tabla de Migración de Atributos](./attribute-migration.md) y el [Inventario Global de Migración (`v5.3.*` – `v6.0.0`)](./migration-inventory.md).
 
 ---
 
 ## 🔑 Pilares Fundamentales de la Evolución a BENE v6.0.0
 
-1. **Motor Agnóstico de Múltiples Efectos (`bne-effect`):** Soporte declarativo para alternar entre *Glassmorphism*, *Neumorphism*, *Neubrutalism*, *Claymorphism*, *Bento Grid*, etc., sin alterar la lógica de negocio.
+1. **Motor Agnóstico de Múltiples Efectos (`bene-effect`):** Soporte declarativo para alternar entre *Glassmorphism*, *Neumorphism*, *Neubrutalism*, *Claymorphism*, *Bento Grid*, etc., sin alterar la lógica de negocio.
 2. **Desacoplamiento Radical:** Separación estricta entre el CSS Base estructural y las hojas de efectos modulares.
 3. **Cero Carga de JavaScript en Degradación:** JavaScript se limita exclusivamente a calcular la telemetría y emitir atributos semánticos en el nodo raíz; el motor CSS nativo se encarga de la degradación a 60 FPS estables.
 4. **Inteligencia Ambiental y Contraste Automático:** Evaluación dinámica de contraste y legibilidad con transiciones suaves en todos los perfiles, incluido el perfil de supervivencia `L0 Eco`.

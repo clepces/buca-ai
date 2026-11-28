@@ -1,4 +1,4 @@
-# 🎨 Matriz Maestra del Ecosistema de Atributos Agnósticos `bne-*`
+# 🎨 Matriz Maestra del Ecosistema de Atributos Agnósticos `bene-*`
 ## Especificación de Banderas Semánticas y Efectos Modulares — BENE v6.0.0
 
 > **Módulo:** `docs/bene/6.0.0/agnostic-effects-matrix.md`  
@@ -7,31 +7,31 @@
 
 ---
 
-## 1. La Matriz Semántica Universal de Atributos `bne-*`
+## 1. La Matriz Semántica Universal de Atributos `bene-*`
 
 El DOM de **B.U.C.A. AI** se gobierna bajo 12 banderas semánticas universales:
 
 | Atributo | Valores Permitidos | Operación en el ERP | Impacto de Hardware y Mitigación |
 |---|---|---|---|
-| **`bne-theme`** | `dark`, `light`, `oled` | Paletas cromáticas globales. | **Modo OLED:** Fuerza negros puros (`#000000`) apagando píxeles emisores para reducir el consumo energético hasta un 40%. |
-| **`bne-effect`** | `glassmorphic`, `neumorphic`, `cyberpunk`, `flat`, `claymorphic` *(new)*, `bento-grid` *(new)* | Máscara estética abstracta del componente. | **Aislamiento Total:** El JavaScript del motor jamás toca una propiedad CSS de diseño; solo conmuta el tipo de efecto solicitado. |
-| **`bne-perf`** | `L0`, `L1`, `L2`, `L3` | Nivel dinámico de estrés gráfico dictado por los monitores. | **Mitigación Crítica:** `L0` apaga los filtros más costosos (`backdrop-filter`). `L3` habilita la máxima fidelidad y shaders multicapa. |
-| **`bne-motion`** | `fluid`, `eco`, `static` | Curvas de interpolación y animaciones cinéticas. | **Control de Refresco:** Previene el *Screen Tearing* eliminando animaciones complejas ante caídas en la tasa de fotogramas. |
-| **`bne-contain`** | `strict`, `content`, `none` | Encapsulamiento del ciclo de vida del layout en el navegador. | **Aislamiento de Reflow:** Forzado nativo mediante `contain: strict;` para evitar repintados masivos del dashboard. |
-| **`bne-layer`** | `base`, `overlay`, `nested` | Jerarquía tridimensional de capas visuales apiladas. | **Control de Overdraw:** Impide el cálculo simultáneo de múltiples efectos de desenfoque anidados verticalmente en la GPU. |
-| **`bne-asset-status`** | `loading`, `ready` | Control de transición asíncrona de texturas e imágenes. | **Suavizado de Carga:** Aplica transiciones suaves y bloquea clics accidentales durante la carga (`pointer-events: none`). |
-| **`bne-fps-mode`** | `normal`, `half` | Programador de saltos de fotogramas. | **Alivio de CPU:** En entornos saturados, reduce la frecuencia de actualización de observadores a la mitad. |
-| **`bne-viewport-zone`** | `active`, `buffer`, `inactive` | Segmentación de elementos según proximidad al viewport. | **Optimización de Scroll:** Desactiva filtros pesados en la zona de amortiguación antes de que el usuario haga scroll. |
-| **`bne-gpu-raster`** | `forced`, `normal` | Creación de capa de composición independiente en GPU. | **Aceleración Focalizada:** Aplica `will-change: transform` exclusivamente a widgets críticos con alta densidad de datos. |
-| **`bne-ambience`** | `solar`, `circadian`, `standard` *(new)* | Adaptación lumínica ambiental con el entorno físico. | **Salud Visual:** Modifica contrastes bajo luz solar intensa y despliega temperaturas cálidas durante turnos nocturnos. |
-| **`bne-net-profile`** | `standard`, `eco` *(new)* | Perfil de conectividad predictivo. | **Ahorro de Datos:** Desactiva gradientes animados de malla si `navigator.connection` reporta modo de ahorro de datos. |
+| **`bene-theme`** | `dark`, `light`, `oled` | Paletas cromáticas globales. | **Modo OLED:** Fuerza negros puros (`#000000`) apagando píxeles emisores para reducir el consumo energético hasta un 40%. |
+| **`bene-effect`** | `glassmorphic`, `neumorphic`, `cyberpunk`, `flat`, `claymorphic` *(new)*, `bento-grid` *(new)* | Máscara estética abstracta del componente. | **Aislamiento Total:** El JavaScript del motor jamás toca una propiedad CSS de diseño; solo conmuta el tipo de efecto solicitado. |
+| **`bene-perf`** | `L0`, `L1`, `L2`, `L3` | Nivel dinámico de estrés gráfico dictado por los monitores. | **Mitigación Crítica:** `L0` apaga los filtros más costosos (`backdrop-filter`). `L3` habilita la máxima fidelidad y shaders multicapa. |
+| **`bene-motion`** | `fluid`, `eco`, `static` | Curvas de interpolación y animaciones cinéticas. | **Control de Refresco:** Previene el *Screen Tearing* eliminando animaciones complejas ante caídas en la tasa de fotogramas. |
+| **`bene-contain`** | `strict`, `content`, `none` | Encapsulamiento del ciclo de vida del layout en el navegador. | **Aislamiento de Reflow:** Forzado nativo mediante `contain: strict;` para evitar repintados masivos del dashboard. |
+| **`bene-layer`** | `base`, `overlay`, `nested` | Jerarquía tridimensional de capas visuales apiladas. | **Control de Overdraw:** Impide el cálculo simultáneo de múltiples efectos de desenfoque anidados verticalmente en la GPU. |
+| **`bene-asset-status`** | `loading`, `ready` | Control de transición asíncrona de texturas e imágenes. | **Suavizado de Carga:** Aplica transiciones suaves y bloquea clics accidentales durante la carga (`pointer-events: none`). |
+| **`bene-fps-mode`** | `normal`, `half` | Programador de saltos de fotogramas. | **Alivio de CPU:** En entornos saturados, reduce la frecuencia de actualización de observadores a la mitad. |
+| **`bene-viewport-zone`** | `active`, `buffer`, `inactive` | Segmentación de elementos según proximidad al viewport. | **Optimización de Scroll:** Desactiva filtros pesados en la zona de amortiguación antes de que el usuario haga scroll. |
+| **`bene-gpu-raster`** | `forced`, `normal` | Creación de capa de composición independiente en GPU. | **Aceleración Focalizada:** Aplica `will-change: transform` exclusivamente a widgets críticos con alta densidad de datos. |
+| **`bene-ambience`** | `solar`, `circadian`, `standard` *(new)* | Adaptación lumínica ambiental con el entorno físico. | **Salud Visual:** Modifica contrastes bajo luz solar intensa y despliega temperaturas cálidas durante turnos nocturnos. |
+| **`bene-net-profile`** | `standard`, `eco` *(new)* | Perfil de conectividad predictivo. | **Ahorro de Datos:** Desactiva gradientes animados de malla si `navigator.connection` reporta modo de ahorro de datos. |
 
 ---
 
-## 2. Catálogo de Efectos Agnósticos Soportados (`bne-effect`)
+## 2. Catálogo de Efectos Agnósticos Soportados (`bene-effect`)
 
 ### 2.1. `glassmorphic` (Corporate Hybrid Glass)
-- **Concepto:** Translúcido aeroespacial con reflejos especulares a 45°, sombras internas sutiles y desenfoque dinámico atenuado por `--bne-fps-factor`.
+- **Concepto:** Translúcido aeroespacial con reflejos especulares a 45°, sombras internas sutiles y desenfoque dinámico atenuado por `--bene-fps-factor`.
 - **Uso Recomendado:** Paneles de navegación, dashboards financieros y modales ejecutivos.
 
 ### 2.2. `neumorphic` (Soft Elevated Elements) `(new)`

@@ -201,7 +201,8 @@ $breakpoints: (
     --color-error: #f87171;
 }
 
-/* ── SISTEMA DE RENDIMIENTO (Neural Auto-Profiling) ────────── */
+/* ── SISTEMA DE RENDIMIENTO (Neural Auto-Profiling BENE) ─── */
+[bene-perf="L0"],
 [data-buca-perf="L0"] {
     --buca-v4-perf-level: "L0 - ECO";
     --buca-tier-num: 0;
@@ -221,16 +222,16 @@ $breakpoints: (
     --surface-dock: var(--surface-dock-fallback);
     --surface-glass-bright: var(--surface-solid);
 
-    /* Neural Reset: Solo lo esencial para garantizar fluidez */
-    * {
+    /* Neural Reset: Solo lo esencial para garantizar fluidez (sin afectar #global-preloader) */
+    *:not(#global-preloader, #global-preloader *) {
         transition-duration: 0s !important;
         -webkit-backdrop-filter: none !important;
         backdrop-filter: none !important;
         box-shadow: none !important; /* Blindaje GPU */
     }
 
-    /* Excluir animaciones esenciales como el Preloader */
-    *:not(.hud-toast, .buca-spinner) {
+    /* Excluir animaciones esenciales como el Preloader y Toasts */
+    *:not(.hud-toast, .buca-spinner, #global-preloader, #global-preloader *) {
         animation: none !important;
         transition: none !important;
     }
@@ -241,11 +242,13 @@ $breakpoints: (
     }
 }
 
+[bene-perf="L1"],
 [data-buca-perf="L1"] {
     --buca-v4-perf-level: "L1 - BALANCED";
     --buca-tier-num: 1;
 }
 
+[bene-perf="L2"],
 [data-buca-perf="L2"] {
     --buca-v4-perf-level: "L2 - PRO";
     --buca-tier-num: 2;
@@ -255,6 +258,7 @@ $breakpoints: (
     --interaction-scale: 1.035;
 }
 
+[bene-perf="L3"],
 [data-buca-perf="L3"] {
     --buca-v4-perf-level: "L3 - ULTRA";
     --buca-tier-num: 3;

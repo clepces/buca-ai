@@ -41,3 +41,16 @@ Barra de navegación tipo dock con efecto de elevación neumórfica para móvile
 - Punto de Venta (`/pos`)
 - Tasas de Cambio (`/finance`)
 - Ajustes del Sistema (`/workspace/settings`)
+
+---
+
+## 5. Preloader Global y Sistema de Badges (`preloader-controller.js`)
+
+* **Logo-Spinner SVG (`.buca-brand-loader`):** Trazado animado sobre el isotipo `public/assets/icons/logo-light.svg` exclusivo para `#global-preloader`. El spinner clásico `.buca-spinner` se mantiene intacto para modales (`MFAEnrollmentModal.js`) y formularios de autenticación.
+* **Anatomía de Estado:** `(icon)(badge-title): (description) → [action-btn]` dentro de `#splash-status-row` con `role="status"` y `aria-live="polite"`.
+  * Cambio de sub-estado dentro de la misma fase: anima verticalmente (`↑↓`) solo `#splash-status-text`.
+  * Cambio de fase o estado crítico: anima todo `#splash-status-row` y actualiza las variables `--preloader-*`.
+* **Catálogo de Clases Semánticas:**
+  * Fases progresivas: `.preloader--boot`, `.preloader--engine`, `.preloader--database`, `.preloader--auth`, `.preloader--layout`, `.preloader--modules`, `.preloader--router`, `.preloader--ready`, `.preloader--success`.
+  * Estados de sistema/HTTP: `.preloader--info`, `.preloader--warning`, `.preloader--offline`, `.preloader--error`, `.preloader--401`, `.preloader--403`, `.preloader--404`, `.preloader--500`, `.preloader--503`.
+* **Accesibilidad:** Respeta `prefers-reduced-motion: reduce` desactivando desplazamientos verticales y trazado continuo.

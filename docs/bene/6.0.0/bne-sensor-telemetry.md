@@ -1,7 +1,7 @@
-# 📡 `bne-sensor` — Especificación de Telemetría Embebida
+# 📡 `bene-sensor` — Especificación de Telemetría Embebida
 ## Widgets de Métricas en Tiempo Real para Cabeceras de Modal
 
-> **Módulo:** `docs/bene/6.0.0/bne-sensor-telemetry.md`  
+> **Módulo:** `docs/bene/6.0.0/bene-sensor-telemetry.md`  
 > **Componente JS:** `BeneSensorEngineBridge.js` (futuro)  
 > **Estado:** `[Especificación de Investigación (new)]`
 
@@ -9,12 +9,12 @@
 
 ## 1. Visión General
 
-`bne-sensor` es un sistema de microcomponentes de telemetría visual diseñados para incrustar métricas de rendimiento del motor gráfico directamente en las cabeceras de modales y paneles del sistema. Su propósito es proporcionar al operador feedback instantáneo sobre el estado de la GPU, el consumo de memoria y la tasa de fotogramas sin necesidad de abrir herramientas de desarrollo.
+`bene-sensor` es un sistema de microcomponentes de telemetría visual diseñados para incrustar métricas de rendimiento del motor gráfico directamente en las cabeceras de modales y paneles del sistema. Su propósito es proporcionar al operador feedback instantáneo sobre el estado de la GPU, el consumo de memoria y la tasa de fotogramas sin necesidad de abrir herramientas de desarrollo.
 
 ```mermaid
 flowchart LR
     HW["🖥️ Hardware\n(GPU / CPU / RAM)"] --> Bridge["🧠 BeneSensorEngineBridge.js\n(requestAnimationFrame)"]
-    Bridge --> Attrs["📡 Atributos DOM\nbne-sensor='fps'\nbne-status='normal'"]
+    Bridge --> Attrs["📡 Atributos DOM\nbene-sensor='fps'\nbene-status='normal'"]
     Attrs --> CSS["🎨 CSS Puro\n(Indicadores Visuales)"]
 ```
 
@@ -26,31 +26,31 @@ flowchart LR
 
 | Atributo | Valores | Propósito |
 |---|---|---|
-| `bne-sensor` | `fps`, `dom-count`, `memory`, `gpu-tier`, `thermal`, `render-cost` | Métrica que visualiza el sensor. |
-| `bne-status` | `normal`, `warning`, `critical` | Estado cromático del indicador (verde / ámbar / rojo). |
-| `bne-sensor-unit` | `fps`, `ms`, `mb`, `nodes`, `%` | Unidad de medida mostrada junto al valor. |
-| `bne-sensor-label` | Texto libre | Etiqueta descriptiva opcional del sensor. |
+| `bene-sensor` | `fps`, `dom-count`, `memory`, `gpu-tier`, `thermal`, `render-cost` | Métrica que visualiza el sensor. |
+| `bene-status` | `normal`, `warning`, `critical` | Estado cromático del indicador (verde / ámbar / rojo). |
+| `bene-sensor-unit` | `fps`, `ms`, `mb`, `nodes`, `%` | Unidad de medida mostrada junto al valor. |
+| `bene-sensor-label` | Texto libre | Etiqueta descriptiva opcional del sensor. |
 
 ### 2.2. Estructura HTML Canónica
 
 ```html
 <!-- Sensor individual en cabecera de modal -->
-<span bne-sensor="fps" bne-status="normal" bne-sensor-unit="fps">
-  <span class="bne-sensor__label">FPS</span>
-  <span class="bne-sensor__value">60</span>
-  <span class="bne-sensor__indicator"></span>
+<span bene-sensor="fps" bene-status="normal" bene-sensor-unit="fps">
+  <span class="bene-sensor__label">FPS</span>
+  <span class="bene-sensor__value">60</span>
+  <span class="bene-sensor__indicator"></span>
 </span>
 
 <!-- Panel de sensores agrupados -->
-<div class="bne-sensor-panel">
-  <span bne-sensor="fps" bne-status="normal">
-    <span class="bne-sensor__value">60</span>
+<div class="bene-sensor-panel">
+  <span bene-sensor="fps" bene-status="normal">
+    <span class="bene-sensor__value">60</span>
   </span>
-  <span bne-sensor="dom-count" bne-status="normal">
-    <span class="bne-sensor__value">847</span>
+  <span bene-sensor="dom-count" bene-status="normal">
+    <span class="bene-sensor__value">847</span>
   </span>
-  <span bne-sensor="memory" bne-status="warning" bne-sensor-unit="mb">
-    <span class="bne-sensor__value">142</span>
+  <span bene-sensor="memory" bene-status="warning" bene-sensor-unit="mb">
+    <span class="bene-sensor__value">142</span>
   </span>
 </div>
 ```
@@ -61,7 +61,7 @@ flowchart LR
 
 ```css
 /* Indicador base */
-[bne-sensor] {
+[bene-sensor] {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -74,7 +74,7 @@ flowchart LR
 }
 
 /* Indicador de estado (punto LED) */
-.bne-sensor__indicator {
+.bene-sensor__indicator {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -82,20 +82,20 @@ flowchart LR
 }
 
 /* Estados cromáticos */
-[bne-status="normal"] .bne-sensor__indicator { background: #22c55e; }
-[bne-status="warning"] .bne-sensor__indicator { background: #f59e0b; }
-[bne-status="critical"] .bne-sensor__indicator {
+[bene-status="normal"] .bene-sensor__indicator { background: #22c55e; }
+[bene-status="warning"] .bene-sensor__indicator { background: #f59e0b; }
+[bene-status="critical"] .bene-sensor__indicator {
   background: #ef4444;
-  animation: bne-pulse-critical 1s ease-in-out infinite;
+  animation: bene-pulse-critical 1s ease-in-out infinite;
 }
 
-@keyframes bne-pulse-critical {
+@keyframes bene-pulse-critical {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
 
 /* Degradación L0: sensores se ocultan para liberar GPU */
-[bne-perf="L0"] [bne-sensor] {
+[bene-perf="L0"] [bene-sensor] {
   display: none !important;
 }
 ```
@@ -119,9 +119,9 @@ class BeneSensorEngineBridge {
   };
 
   mount(container) {
-    const nodes = container.querySelectorAll('[bne-sensor]');
+    const nodes = container.querySelectorAll('[bene-sensor]');
     nodes.forEach(node => {
-      const metric = node.getAttribute('bne-sensor');
+      const metric = node.getAttribute('bene-sensor');
       this.#sensors.set(metric, node);
     });
   }
@@ -132,7 +132,7 @@ class BeneSensorEngineBridge {
 
     // Actualizar valor en el próximo frame de animación
     requestAnimationFrame(() => {
-      const valueEl = node.querySelector('.bne-sensor__value');
+      const valueEl = node.querySelector('.bene-sensor__value');
       if (valueEl) valueEl.textContent = value;
 
       // Calcular estado basado en umbrales
@@ -147,7 +147,7 @@ class BeneSensorEngineBridge {
           else if (value >= thresholds.warning) status = 'warning';
         }
       }
-      node.setAttribute('bne-status', status);
+      node.setAttribute('bene-status', status);
     });
   }
 
@@ -161,10 +161,10 @@ class BeneSensorEngineBridge {
 
 ## 5. Principios de Arquitectura
 
-1. **Atributos como Data Hooks:** `bne-sensor` y `bne-status` son **exclusivamente ganchos de datos**. Toda la presentación se resuelve con CSS puro; JavaScript solo escribe atributos, nunca manipula estilos inline.
+1. **Atributos como Data Hooks:** `bene-sensor` y `bene-status` son **exclusivamente ganchos de datos**. Toda la presentación se resuelve con CSS puro; JavaScript solo escribe atributos, nunca manipula estilos inline.
 2. **Zero Layout Thrashing:** Las actualizaciones de valores deben siempre ejecutarse dentro de `requestAnimationFrame()`.
-3. **Degradación L0 Automática:** En perfil `bne-perf="L0"`, los sensores se ocultan completamente vía CSS para liberar ciclos de GPU y CPU.
-4. **Composición Futura:** Soporte planificado para sensores compuestos (`bne-sensors="fps,dom-count"`) que renderizarán múltiples métricas en un solo componente compacto tipo sparkline.
+3. **Degradación L0 Automática:** En perfil `bene-perf="L0"`, los sensores se ocultan completamente vía CSS para liberar ciclos de GPU y CPU.
+4. **Composición Futura:** Soporte planificado para sensores compuestos (`bene-sensors="fps,dom-count"`) que renderizarán múltiples métricas en un solo componente compacto tipo sparkline.
 
 > [!TIP]
 > `(new)` Los sensores se integrarán en el `PerformanceModal` full-screen como dashboard principal de telemetría, ofreciendo una vista consolidada de todos los indicadores del motor gráfico.

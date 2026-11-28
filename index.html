@@ -34,34 +34,41 @@
 
                 const perfData = JSON.parse(localStorage.getItem('buca_performance_config') || '{"profile":"balanced","isManualMode":false}');
                 const tiers = { 'eco': 'L0', 'balanced': 'L1', 'pro': 'L2', 'ultra': 'L3' };
-                document.documentElement.setAttribute('data-buca-perf', tiers[perfData.profile] || 'L1');
+                const resolvedTier = tiers[perfData.profile] || 'L1';
+                document.documentElement.setAttribute('bene-perf', resolvedTier);
+                document.documentElement.setAttribute('data-buca-perf', resolvedTier);
                 document.documentElement.setAttribute('data-buca-manual', perfData.isManualMode ? 'true' : 'false');
-
-                // Registro de actividad para el watchdog
-                window.__bucaLastActivity = Date.now();
-                window.bucaNotifyActivity = function () { window.__bucaLastActivity = Date.now(); };
             } catch (e) {
                 console.warn('[Pre-init] Error cargando preferencias:', e);
             }
         })();
     </script>
 
-    <!-- 2.1. CSS CRÍTICO DE ARRANQUE (PRELOADER INICIAL SIN FOUC) -->
+    <!-- 2.1. CSS CRÍTICO DE ARRANQUE (CSS BASE SÓLIDO SIN FOUC NI GLASS) -->
     <style id="buca-critical-preloader-css">
         #global-preloader {
+            --preloader-bg: #f8fafc;
+            --preloader-text: #0f172a;
+            --preloader-muted: #64748b;
+            --preloader-accent: #2563eb;
+            --preloader-track: rgba(37, 99, 235, 0.14);
+            --preloader-badge-bg: rgba(37, 99, 235, 0.08);
+            --preloader-badge-border: rgba(37, 99, 235, 0.22);
+            --preloader-badge-text: #1d4ed8;
             position: fixed;
             inset: 0;
             width: 100vw;
             height: 100vh;
             z-index: 99999;
-            background: #f8fafc;
+            background: var(--preloader-bg);
+            color: var(--preloader-text);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 24px;
             box-sizing: border-box;
             text-align: center;
             -webkit-user-select: none;
@@ -69,29 +76,63 @@
         }
 
         html[data-theme="dark"] #global-preloader {
-            background: #0f172a;
-            color: #ffffff;
+            --preloader-bg: #0f172a;
+            --preloader-text: #f8fafc;
+            --preloader-muted: #94a3b8;
+            --preloader-track: rgba(96, 165, 250, 0.16);
+            --preloader-badge-bg: rgba(59, 130, 246, 0.14);
+            --preloader-badge-border: rgba(96, 165, 250, 0.28);
+            --preloader-badge-text: #93c5fd;
         }
 
-        .buca-spinner {
-            width: 44px;
-            height: 44px;
-            border: 4px solid rgba(37, 99, 235, 0.15);
-            border-top: 4px solid #2563eb;
-            border-radius: 50%;
-            animation: buca-spin 0.8s linear infinite;
-            margin-bottom: 20px;
-            will-change: transform;
+        .buca-brand-loader {
+            width: 58px;
+            height: 58px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        @keyframes buca-spin {
-            to {
-                transform: rotate(360deg);
+        .buca-brand-loader svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .buca-brand-loader__track {
+            fill: none;
+            stroke: var(--preloader-track);
+            stroke-width: 24;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .buca-brand-loader__stroke {
+            fill: none;
+            stroke: url(#bucaPreloaderGrad);
+            stroke-width: 26;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 32 68;
+            stroke-dashoffset: 100;
+            animation: buca-logo-trace 1.65s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+        }
+
+        @keyframes buca-logo-trace {
+            0% {
+                stroke-dashoffset: 100;
+            }
+            100% {
+                stroke-dashoffset: 0;
             }
         }
 
         .buca-text {
-            color: #2563eb;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--preloader-accent);
             font-weight: 700;
             font-size: 1.5rem;
             letter-spacing: 4px;
@@ -102,108 +143,261 @@
             color: #ffffff;
         }
 
-        .buca-sub {
-            color: #64748b;
-            font-size: 0.85rem;
-            margin-top: 8px;
-            letter-spacing: 0.5px;
-            max-width: 320px;
-            line-height: 1.4;
-        }
-
-        html[data-theme="dark"] .buca-sub {
-            color: #94a3b8;
+        .buca-brand-ai {
+            font-size: 0.72rem;
+            letter-spacing: 1.5px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: var(--preloader-badge-bg);
+            color: var(--preloader-badge-text);
+            border: 1px solid var(--preloader-badge-border);
+            font-weight: 700;
         }
 
         .splash-progress-wrapper {
-            width: 180px;
+            width: 220px;
             max-width: 80vw;
             height: 4px;
-            background: rgba(37, 99, 235, 0.12);
+            background: var(--preloader-track);
             border-radius: 99px;
             overflow: hidden;
-            margin: 16px 0;
+            margin: 16px 0 10px;
         }
 
         #splash-progress {
             width: var(--buca-progress, 0%);
             height: 100%;
-            background: #2563eb;
-            transition: width 0.3s ease;
+            background: var(--preloader-accent);
+            border-radius: 99px;
+            transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.35s ease;
         }
 
         #splash-percentage {
             font-size: 0.75rem;
             font-weight: 600;
-            margin-top: 0;
+            color: var(--preloader-muted);
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 12px;
         }
 
-        /* Estados de Alerta / Advertencia del Preloader (Watchdog 503 / Error) */
-        #global-preloader.preloader--503,
-        #global-preloader.is-warning,
-        #global-preloader.preloader--error,
-        #global-preloader.is-error {
-            background: linear-gradient(135deg, rgba(255, 247, 237, 0.95) 0%, rgba(254, 215, 170, 0.95) 100%) !important;
+        .splash-status-viewport {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            width: min(92vw, 520px);
+            min-height: 76px;
+            overflow: hidden;
+            padding: 4px 0;
         }
 
-        html[data-theme="dark"] #global-preloader.preloader--503,
-        html[data-theme="dark"] #global-preloader.is-warning,
-        html[data-theme="dark"] #global-preloader.is-error {
-            background: linear-gradient(135deg, rgba(69, 10, 10, 0.96) 0%, rgba(24, 4, 4, 0.96) 100%) !important;
+        .splash-status-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8px;
+            width: 100%;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 0.85rem;
+            will-change: transform, opacity;
         }
 
-        #global-preloader.preloader--503 .buca-text,
-        #global-preloader.is-warning .buca-text {
-            color: #ea580c !important;
-        }
-
-        html[data-theme="dark"] #global-preloader.preloader--503 .buca-text,
-        html[data-theme="dark"] #global-preloader.is-warning .buca-text {
-            color: #fb923c !important;
-        }
-
-        #global-preloader.preloader--503 #splash-status,
-        #global-preloader.is-warning #splash-status {
-            color: #9a3412 !important;
-            font-weight: 600;
-            opacity: 1 !important;
-            background: rgba(234, 88, 12, 0.12);
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid rgba(234, 88, 12, 0.25);
+        .splash-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.15);
+            padding: 4px 11px;
+            border-radius: 999px;
+            background: var(--preloader-badge-bg);
+            border: 1px solid var(--preloader-badge-border);
+            color: var(--preloader-badge-text);
+            font-weight: 600;
+            font-size: 0.7rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .splash-badge-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 13px;
+            height: 13px;
+            flex-shrink: 0;
+        }
+
+        .splash-badge-icon svg {
+            width: 13px;
+            height: 13px;
+            display: block;
+        }
+
+        .splash-status-text-wrap {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: var(--preloader-muted);
+            line-height: 1.45;
+            min-height: 22px;
+            max-width: 100%;
+            text-align: center;
+        }
+
+        #splash-status-text {
+            display: inline-block;
+            will-change: transform, opacity;
+        }
+
+        .splash-actions {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
+        .splash-actions:empty {
+            display: none;
+        }
+
+        .splash-action-btn {
+            appearance: none;
+            border: 1px solid var(--preloader-badge-border);
+            background: var(--preloader-accent);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: opacity 0.2s ease, transform 0.15s ease;
         }
 
-        html[data-theme="dark"] #global-preloader.preloader--503 #splash-status,
-        html[data-theme="dark"] #global-preloader.is-warning #splash-status {
-            color: #fdba74 !important;
-            background: rgba(251, 146, 60, 0.15);
-            border-color: rgba(251, 146, 60, 0.3);
+        .splash-action-btn:hover {
+            opacity: 0.92;
         }
 
+        .splash-action-btn--secondary {
+            background: transparent;
+            color: var(--preloader-badge-text);
+        }
+
+        /* Estados críticos pre-bundle (503 / Error / Offline) */
+        #global-preloader.preloader--503,
+        #global-preloader.preloader--warning {
+            --preloader-bg: #fff7ed;
+            --preloader-accent: #ea580c;
+            --preloader-badge-bg: rgba(234, 88, 12, 0.12);
+            --preloader-badge-border: rgba(234, 88, 12, 0.3);
+            --preloader-badge-text: #9a3412;
+        }
+
+        #global-preloader.preloader--error,
+        #global-preloader.preloader--500 {
+            --preloader-bg: #fef2f2;
+            --preloader-accent: #dc2626;
+            --preloader-badge-bg: rgba(220, 38, 38, 0.12);
+            --preloader-badge-border: rgba(220, 38, 38, 0.3);
+            --preloader-badge-text: #991b1b;
+        }
+
+        #global-preloader.preloader--offline {
+            --preloader-bg: #f1f5f9;
+            --preloader-accent: #475569;
+            --preloader-badge-bg: rgba(71, 85, 105, 0.12);
+            --preloader-badge-border: rgba(71, 85, 105, 0.28);
+            --preloader-badge-text: #334155;
+        }
+
+        html[data-theme="dark"] #global-preloader.preloader--503,
+        html[data-theme="dark"] #global-preloader.preloader--warning {
+            --preloader-bg: #2a1205;
+            --preloader-accent: #fb923c;
+            --preloader-badge-bg: rgba(251, 146, 60, 0.16);
+            --preloader-badge-border: rgba(251, 146, 60, 0.35);
+            --preloader-badge-text: #fdba74;
+        }
+
+        html[data-theme="dark"] #global-preloader.preloader--error,
+        html[data-theme="dark"] #global-preloader.preloader--500 {
+            --preloader-bg: #2a0a0a;
+            --preloader-accent: #f87171;
+            --preloader-badge-bg: rgba(248, 113, 113, 0.16);
+            --preloader-badge-border: rgba(248, 113, 113, 0.35);
+            --preloader-badge-text: #fca5a5;
+        }
+
+        html[data-theme="dark"] #global-preloader.preloader--offline {
+            --preloader-bg: #0f172a;
+            --preloader-accent: #94a3b8;
+            --preloader-badge-bg: rgba(148, 163, 184, 0.16);
+            --preloader-badge-border: rgba(148, 163, 184, 0.3);
+            --preloader-badge-text: #cbd5e1;
+        }
+
+        #global-preloader.preloader--error .buca-brand-loader__stroke,
+        #global-preloader.preloader--500 .buca-brand-loader__stroke,
+        #global-preloader.preloader--503 .buca-brand-loader__stroke,
+        #global-preloader.preloader--warning .buca-brand-loader__stroke,
+        #global-preloader.preloader--offline .buca-brand-loader__stroke {
+            stroke: var(--preloader-accent);
+        }
+
+        #global-preloader.preloader--error .splash-progress-wrapper,
+        #global-preloader.preloader--error #splash-percentage,
+        #global-preloader.preloader--500 .splash-progress-wrapper,
+        #global-preloader.preloader--500 #splash-percentage,
         #global-preloader.preloader--503 .splash-progress-wrapper,
         #global-preloader.preloader--503 #splash-percentage,
-        #global-preloader.is-warning .splash-progress-wrapper,
-        #global-preloader.is-warning #splash-percentage {
-            display: none !important;
+        #global-preloader.preloader--offline .splash-progress-wrapper,
+        #global-preloader.preloader--offline #splash-percentage {
+            display: none;
         }
     </style>
 </head>
 
 <body class="glass-theme">
     <!-- 3. CAPA DE ARRANQUE (SPLASH SCREEN) -->
-    <div id="global-preloader">
-        <div class="buca-spinner"></div>
-        <div class="buca-text">BUCA</div>
-        <div class="splash-progress-wrapper">
+    <div id="global-preloader" class="preloader--boot" data-preloader-phase="boot" data-preloader-state="boot">
+        <div class="buca-brand-loader" aria-hidden="true">
+            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="bucaPreloaderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#60a5fa" />
+                        <stop offset="50%" stop-color="#818cf8" />
+                        <stop offset="100%" stop-color="#c084fc" />
+                    </linearGradient>
+                </defs>
+                <path class="buca-brand-loader__track" d="M182.2,298.2c29.1,0,52.7-23.6,52.7-52.7c0-29.1-10.5-42.2-21.1-63.2C191.2,137,209.1,96.8,256,55.7c10.5,52.7,42.2,103.3,84.3,137s63.2,73.8,63.2,115.9c0,81.5-66.1,147.6-147.6,147.6s-147.6-66.1-147.6-147.6c0-24.3,9.1-48.4,21.1-63.2C129.5,274.6,153.1,298.2,182.2,298.2z" />
+                <path class="buca-brand-loader__stroke" pathLength="100" d="M182.2,298.2c29.1,0,52.7-23.6,52.7-52.7c0-29.1-10.5-42.2-21.1-63.2C191.2,137,209.1,96.8,256,55.7c10.5,52.7,42.2,103.3,84.3,137s63.2,73.8,63.2,115.9c0,81.5-66.1,147.6-147.6,147.6s-147.6-66.1-147.6-147.6c0-24.3,9.1-48.4,21.1-63.2C129.5,274.6,153.1,298.2,182.2,298.2z" />
+            </svg>
+        </div>
+        <div class="buca-text">
+            <span>BUCA</span>
+            <span class="buca-brand-ai">AI</span>
+        </div>
+        <div class="splash-progress-wrapper" aria-hidden="true">
             <div id="splash-progress"></div>
         </div>
-        <div id="splash-percentage" class="buca-sub">0%</div>
-        <div id="splash-status" class="buca-sub buca-sub--low-opacity">Iniciando Kernel Neuronal...</div>
+        <div id="splash-percentage">0%</div>
+        <div class="splash-status-viewport">
+            <div id="splash-status-row" class="splash-status-row" role="status" aria-live="polite">
+                <span id="splash-badge-pill" class="splash-badge">
+                    <span id="splash-badge-icon" class="splash-badge-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    </span>
+                    <span id="splash-badge-title" class="splash-badge-title">Sistema</span>
+                </span>
+                <span id="splash-status" class="splash-status-text-wrap">
+                    <span id="splash-status-text">Iniciando Kernel Neuronal...</span>
+                </span>
+                <div id="splash-actions" class="splash-actions"></div>
+            </div>
+        </div>
     </div>
 
     <!-- 4. CONTENEDOR RAÍZ SPA -->
@@ -287,26 +481,89 @@
     <!-- 5. SISTEMA DE VIGILANCIA Y GESTIÓN DE ERRORES (WATCHDOG) -->
     <script>
         (function () {
-            window.onerror = function (msg, url, line, col) {
+            let watchdogTimer = null;
+            let isDisposed = false;
+
+            const setPreloaderAlert = (stateClass, icon, title, message, showRetry = true) => {
                 const splash = document.getElementById('global-preloader');
-                if (splash && !document.body.classList.contains('app-ready')) {
-                    splash.classList.add('preloader--error', 'is-error');
-                    const status = document.getElementById('splash-status');
-                    if (status) status.textContent = "Error de Kernel: " + (msg || "Anomalía de arranque");
-                    splash.style.cursor = "pointer";
-                    splash.onclick = function () { location.reload(); };
+                if (!splash || document.body.classList.contains('app-ready')) return;
+
+                splash.classList.remove(
+                    'preloader--boot', 'preloader--engine', 'preloader--database',
+                    'preloader--auth', 'preloader--layout', 'preloader--modules',
+                    'preloader--router', 'preloader--ready', 'preloader--success',
+                    'preloader--info', 'preloader--warning', 'preloader--offline',
+                    'preloader--error', 'preloader--401', 'preloader--403',
+                    'preloader--404', 'preloader--500', 'preloader--503',
+                    'is-error', 'is-warning'
+                );
+                splash.classList.add(stateClass);
+
+                const iconEl = document.getElementById('splash-badge-icon');
+                const titleEl = document.getElementById('splash-badge-title');
+                const textEl = document.getElementById('splash-status-text');
+                const actionsEl = document.getElementById('splash-actions');
+
+                if (iconEl) {
+                    const icons = {
+                        'preloader--offline': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l20 20"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M5 13a10 10 0 0 1 5.17-2.69"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>',
+                        'preloader--503': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+                    };
+                    iconEl.innerHTML = icons[stateClass] || '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
                 }
+                if (titleEl) titleEl.textContent = title;
+                if (textEl) textEl.textContent = message;
+
+                if (actionsEl) {
+                    actionsEl.replaceChildren();
+                    if (showRetry) {
+                        const retryBtn = document.createElement('button');
+                        retryBtn.type = 'button';
+                        retryBtn.id = 'buca-watchdog-retry';
+                        retryBtn.className = 'splash-action-btn';
+                        retryBtn.textContent = 'Reintentar';
+                        retryBtn.addEventListener('click', () => location.reload(), { once: true });
+                        actionsEl.appendChild(retryBtn);
+                    }
+                }
+            };
+
+            const onBootError = (event) => {
+                if (isDisposed || document.body.classList.contains('app-ready')) return;
+                if (event?.filename && !event.filename.startsWith(location.origin)) return;
+                const msg = event?.message || 'Anomalía de arranque';
+                setPreloaderAlert('preloader--error', '🚨', 'Error de Kernel', String(msg), true);
                 try {
                     localStorage.setItem('buca_watchdog_last_error', JSON.stringify({
-                        msg: String(msg), url: String(url), line, col, time: Date.now()
+                        msg: String(msg),
+                        url: String(event?.filename || ''),
+                        line: event?.lineno || 0,
+                        col: event?.colno || 0,
+                        time: Date.now()
                     }));
                 } catch {
                     // Silencioso en caso de bloqueo de storage
                 }
-                return false;
             };
 
-            // Watchdog de carga adaptativo según velocidad de red (evita falsos 503 y recargas accidentales en 2G/3G)
+            const stopWatchdog = () => {
+                isDisposed = true;
+                if (watchdogTimer) {
+                    clearTimeout(watchdogTimer);
+                    watchdogTimer = null;
+                }
+                window.removeEventListener('error', onBootError);
+            };
+
+            document.addEventListener('buca:app-ready', stopWatchdog, { once: true });
+            window.addEventListener('error', onBootError);
+
+            if (navigator.onLine === false) {
+                setPreloaderAlert('preloader--offline', '📡', 'Sin conexión', 'Verifica tu red para conectar con BUCA AI.', true);
+                return;
+            }
+
+            // Watchdog de carga adaptativo según velocidad de red
             const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
             const isSlowNet = Boolean(conn && (conn.saveData || ['slow-2g', '2g', '3g'].includes(conn.effectiveType)));
             const initialDelay = isSlowNet ? 15000 : 10000;
@@ -315,35 +572,28 @@
 
             let attempts = 0;
             const check = () => {
-                if (document.body.classList.contains('app-ready')) return;
+                if (isDisposed || document.body.classList.contains('app-ready')) {
+                    stopWatchdog();
+                    return;
+                }
                 attempts++;
-                const status = document.getElementById('splash-status');
                 if (attempts > maxAttempts) {
-                    const splash = document.getElementById('global-preloader');
-                    if (splash) {
-                        splash.classList.add('preloader--503', 'is-warning');
-                        if (status && !document.getElementById('buca-watchdog-retry')) {
-                            status.textContent = 'La carga está tardando más de lo normal. ';
-                            const retryBtn = document.createElement('button');
-                            retryBtn.type = 'button';
-                            retryBtn.id = 'buca-watchdog-retry';
-                            retryBtn.className = 'btn btn-sm btn-warning ms-2 fw-semibold';
-                            retryBtn.textContent = 'Reintentar';
-                            retryBtn.addEventListener('click', () => location.reload());
-                            status.appendChild(retryBtn);
+                    setPreloaderAlert('preloader--503', '🔌', 'Tiempo excedido', 'La carga está tardando más de lo normal.', true);
+                    stopWatchdog();
+                } else {
+                    if (attempts >= 2) {
+                        const textEl = document.getElementById('splash-status-text');
+                        if (textEl && !textEl.dataset.slowNotified) {
+                            textEl.dataset.slowNotified = 'true';
+                            textEl.textContent = isSlowNet
+                                ? 'Conexión lenta detectada, cargando recursos...'
+                                : 'Finalizando carga de recursos...';
                         }
                     }
-                } else {
-                    if (attempts >= 2 && status && !status.dataset.slowNotified) {
-                        status.dataset.slowNotified = 'true';
-                        status.textContent = isSlowNet
-                            ? 'Conexión lenta detectada, cargando recursos...'
-                            : 'Finalizando carga de recursos...';
-                    }
-                    setTimeout(check, stepDelay);
+                    watchdogTimer = setTimeout(check, stepDelay);
                 }
             };
-            setTimeout(check, initialDelay);
+            watchdogTimer = setTimeout(check, initialDelay);
         })();
     </script>
 

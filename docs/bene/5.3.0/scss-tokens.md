@@ -2,7 +2,7 @@
 ## Especificación de Estilos de Cristal y Degradación L0
 
 > **Módulo:** `docs/bene/5.3.0/scss-tokens.md`  
-> **Directiva:** `BNE-RULE-001`  
+> **Directiva:** `bene-RULE-001`  
 > **Estado:** `[Producción v1.1.8-alpha]`
 
 ---
@@ -17,8 +17,8 @@
     -webkit-backdrop-filter: blur(var(--blur-intensity));
 
     // Degradación obligatoria L0 para hardware modesto
-    // Legacy: [data-buca-perf="L0"] — Nuevo: [bne-perf="L0"]
-    [bne-perf="L0"] & {
+    // Legacy: [data-buca-perf="L0"] — Nuevo: [bene-perf="L0"]
+    [bene-perf="L0"] & {
         background: var(--surface-solid) !important;
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;

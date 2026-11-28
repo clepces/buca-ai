@@ -13,7 +13,7 @@ El `PanicSwitch` es el sistema de mitigación final de BENE. No es una desescala
 
 ### Protocolo de Activación Dinámica (`forceState = true`)
 
-1. **Forzado del Perfil de Supervivencia:** Establece el perfil interno a `'eco'` e inyecta la bandera **`bne-perf="L0"`** en `document.documentElement`.
+1. **Forzado del Perfil de Supervivencia:** Establece el perfil interno a `'eco'` e inyecta la bandera **`bene-perf="L0"`** en `document.documentElement`.
 2. **Inyección de Clase de Suspensión:** Agrega `.engine-suspended` de manera simultánea en `html` y `body`.
 3. **Congelamiento de Monitores:** Invoca inmediatamente `.stop()` en `FPSMonitor`, `ReflowGuard` y `MemoryGuard`, deteniendo bucles basados en `requestAnimationFrame` y temporizadores de alta frecuencia.
 4. **Despacho de Evento de Conmutación:** Emite `buca:panic_mode_toggled` con `{ isPanicMode: true }` para que `ResourceThrottle` congele el tráfico de red secundario.
@@ -23,12 +23,12 @@ El `PanicSwitch` es el sistema de mitigación final de BENE. No es una desescala
    CORTOCIRCUITO GRÁFICO MAESTRO: BNE PANIC SWITCH ACTIVO
    ========================================================================== */
 .engine-suspended *,
-[bne-perf="L0"] * {
+[bene-perf="L0"] * {
   /* Anulación matemática instantánea */
-  --bne-blur-factor: 0 !important;
-  --bne-shadow-factor: 0 !important;
-  --bne-glow-factor: 0 !important;
-  --bne-motion-factor: 0 !important;
+  --bene-blur-factor: 0 !important;
+  --bene-shadow-factor: 0 !important;
+  --bene-glow-factor: 0 !important;
+  --bene-motion-factor: 0 !important;
 
   /* Destrucción de hilos pesados de GPU */
   backdrop-filter: none !important;
@@ -54,7 +54,7 @@ El sistema de notificaciones de la UI de B.U.C.A. AI se conecta directamente a l
 // Inspección síncrona en el renderizado del toast
 const isThermal = document.documentElement.classList.contains('buca-thermal-throttle');
 const isPanic = document.documentElement.classList.contains('engine-suspended');
-const isEco = isThermal || isPanic || document.documentElement.getAttribute('bne-perf') === 'L0';
+const isEco = isThermal || isPanic || document.documentElement.getAttribute('bene-perf') === 'L0';
 
 toast.className = `hud-toast hud-toast--${options.type || 'info'} ${isEco ? 'hud-toast--eco' : 'hud-toast--glass'}`;
 ```
@@ -64,36 +64,36 @@ toast.className = `hud-toast hud-toast--${options.type || 'info'} ${isEco ? 'hud
 
 ---
 
-## 3. Arnés de Desarrollo: Modo Debug Visual (`bne-debug`)
+## 3. Arnés de Desarrollo: Modo Debug Visual (`bene-debug`)
 
-Para auditar y validar que los atributos `bne-*` se están inyectando en los contenedores correctos y que la GPU está liberando nodos del árbol, el motor integra un **Modo de Inspección Visual por CSS**.
+Para auditar y validar que los atributos `bene-*` se están inyectando en los contenedores correctos y que la GPU está liberando nodos del árbol, el motor integra un **Modo de Inspección Visual por CSS**.
 
-Al activar `bne-debug="true"` en `html`, el CSS resalta cromáticamente el comportamiento del hardware en vivo:
+Al activar `bene-debug="true"` en `html`, el CSS resalta cromáticamente el comportamiento del hardware en vivo:
 
 ```css
 /* ==========================================================================
-   ARNÉS DE INSPECCIÓN VISUAL EN DESARROLLO (html[bne-debug="true"])
+   ARNÉS DE INSPECCIÓN VISUAL EN DESARROLLO (html[bene-debug="true"])
    ========================================================================== */
-html[bne-debug="true"] [bne-viewport-zone="buffer"] {
+html[bene-debug="true"] [bene-viewport-zone="buffer"] {
   outline: 2px dashed #f59e0b !important; /* Ámbar: Elemento optimizado en buffer */
 }
 
-html[bne-debug="true"] [bne-viewport-zone="active"] {
+html[bene-debug="true"] [bene-viewport-zone="active"] {
   outline: 2px dashed #10b981 !important; /* Esmeralda: Elemento activo en pantalla */
 }
 
-html[bne-debug="true"] [bne-contain="strict"] {
+html[bene-debug="true"] [bene-contain="strict"] {
   border: 2px solid #ef4444 !important; /* Rojo: Zona aislada por ReflowGuard */
 }
 
-html[bne-debug="true"] [bne-asset-status="loading"] {
+html[bene-debug="true"] [bene-asset-status="loading"] {
   outline: 2px dotted #38bdf8 !important; /* Celeste: Textura precargándose */
 }
 
-html[bne-debug="true"] [bne-layer="nested"] {
+html[bene-debug="true"] [bene-layer="nested"] {
   background: rgba(239, 68, 68, 0.08) !important; /* Alerta Overdraw GPU */
 }
 ```
 
 > [!NOTE]
-> `(new)` **Consola de Telemetría Flotante:** En modo `bne-debug="true"`, se renderiza un micro-HUD de 80x24px en la esquina inferior izquierda mostrando FPS en tiempo real, latencia ($\Delta t$), tier activo y factor multiplicador (`--bne-fps-factor`).
+> `(new)` **Consola de Telemetría Flotante:** En modo `bene-debug="true"`, se renderiza un micro-HUD de 80x24px en la esquina inferior izquierda mostrando FPS en tiempo real, latencia ($\Delta t$), tier activo y factor multiplicador (`--bene-fps-factor`).

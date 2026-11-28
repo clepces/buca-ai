@@ -63,7 +63,7 @@ export const detectHardware = () => {
 
 ---
 
-## 3. El Multiplicador Continuo: `--bne-fps-factor`
+## 3. El Multiplicador Continuo: `--bene-fps-factor`
 
 La innovación matemática más relevante de **BENE v6.0.0** es la eliminación de las caídas visuales escalonadas y abruptas. En lugar de saltar súbitamente entre perfiles, el motor calcula un factor numérico continuo inyectado en el `:root` del DOM.
 
@@ -79,14 +79,14 @@ $$F_{\text{actual}} = F_{\text{anterior}} + \alpha \times (F_{\text{target}} - F
 
 * $\alpha = 0.15$: Coeficiente de velocidad de respuesta térmica.
 * **Clamping Seguro:** El valor final se restringe estrictamente al rango `[0.00, 1.50]`.
-* **Inyección Continua:** `document.documentElement.style.setProperty('--bne-fps-factor', F_actual.toFixed(2));`
+* **Inyección Continua:** `document.documentElement.style.setProperty('--bene-fps-factor', F_actual.toFixed(2));`
 
 ```css
 /* Consumo Dinámico en Hojas de Estilo */
 .glass-panel {
     /* Si los FPS caen de 60 a 45, el blur se atenúa suavemente sin saltos */
-    backdrop-filter: blur(calc(16px * var(--bne-fps-factor, 1)));
-    -webkit-backdrop-filter: blur(calc(16px * var(--bne-fps-factor, 1)));
+    backdrop-filter: blur(calc(16px * var(--bene-fps-factor, 1)));
+    -webkit-backdrop-filter: blur(calc(16px * var(--bene-fps-factor, 1)));
 }
 ```
 
@@ -96,12 +96,12 @@ $$F_{\text{actual}} = F_{\text{anterior}} + \alpha \times (F_{\text{target}} - F
 
 El método universal `processElement(el)` se desvincula de cualquier mutación de estilo en línea:
 
-1. **Mapeo Atómico:** Convierte estados internos (`eco`, `balanced`, `pro`, `ultra`) en atributos `bne-perf="L0|L1|L2|L3"` y `bne-motion="fluid|eco|static"`.
-2. **Evaluación DPR Asíncrona:** Si `window.devicePixelRatio > 1.2`, prioriza fuentes optimizadas `bne-src-ultra` o `@2x`.
-3. **Escudo de Texturas `bne-asset-status`:**
-   - Inyecta `bne-asset-status="loading"` durante la carga.
+1. **Mapeo Atómico:** Convierte estados internos (`eco`, `balanced`, `pro`, `ultra`) en atributos `bene-perf="L0|L1|L2|L3"` y `bene-motion="fluid|eco|static"`.
+2. **Evaluación DPR Asíncrona:** Si `window.devicePixelRatio > 1.2`, prioriza fuentes optimizadas `bene-src-ultra` o `@2x`.
+3. **Escudo de Texturas `bene-asset-status`:**
+   - Inyecta `bene-asset-status="loading"` durante la carga.
    - Precarga la textura mediante una imagen virtual en memoria (`new Image()`).
-   - Al completarse el evento `onload`, escribe el `src` definitivo en el nodo real y actualiza a `bne-asset-status="ready"`.
+   - Al completarse el evento `onload`, escribe el `src` definitivo en el nodo real y actualiza a `bene-asset-status="ready"`.
    - Permite que el CSS ejecute transiciones de revelado aceleradas por GPU sin bloquear el renderizado del dashboard.
 
 ---

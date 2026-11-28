@@ -9,6 +9,7 @@ import { CanvasQRRenderer } from '@/core/security/CanvasQRRenderer.js';
 import { sessionState } from '@/core/state/session.js';
 import { eventBus } from '@/core/eventBus/index.js';
 import { $id, $on, $text, $mount, $hide, $show, setButtonLoading, setButtonContent } from '@/shared/utils/dom.js';
+import { renderBrandLoader } from '@/shared/ui/components/brand-loader.js';
 import { Logger } from '@/shared/utils/logger.js';
 
 export class MFAEnrollmentModal {
@@ -180,7 +181,7 @@ export class MFAEnrollmentModal {
         const container = $id('mfa-step-container');
         if (!container || !attempt.isOpen || this._currentAttempt !== attempt) return;
 
-        $mount(container, '<div class="text-center py-2"><div class="buca-spinner mx-auto mb-3"></div><div class="small text-muted">Generando factor TOTP y código QR seguro...</div></div>');
+        $mount(container, `<div class="text-center py-2">${renderBrandLoader({ size: 'md', label: 'Generando factor TOTP y código QR seguro...' })}</div>`);
 
         const enrollment = await AuthService.enrollTOTP();
         const activeUid = sessionState.get().user?.uid;

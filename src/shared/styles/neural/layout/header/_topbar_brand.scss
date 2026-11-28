@@ -1,6 +1,6 @@
 /* =========================================================================
-   HEADER PARTIAL: TOPBAR BRAND (Collapsible Identity & Hover Tooltip)
-   Supabase-style brand contraction animation and contextual tooltip.
+   HEADER PARTIAL: TOPBAR BRAND (Collapsible Identity, Hover Tooltip & Crumb Selectors)
+   Supabase-style brand contraction animation and contextual breadcrumb selectors.
    ========================================================================= */
 
 /* ── BRAND COLLAPSIBLE (Supabase-style contraction) ──────────── */
@@ -59,10 +59,6 @@
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     }
 
-    &--ready {
-        /* tooltip is eligible to show (brand is contracted) */
-    }
-
     &--visible {
         opacity: 1;
         visibility: visible;
@@ -87,23 +83,97 @@
         padding: 1px 6px;
         border-radius: 4px;
     }
+}
 
-    &__sep {
-        color: var(--text-muted);
-        opacity: 0.4;
+/* ── HEADER BREADCRUMB CRUMB SELECTORS (Supabase Pattern) ────── */
+.header-breadcrumb-ctx {
+    gap: 0 !important;
+}
+
+.header-crumb-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 10px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-main, #1e293b);
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    max-width: 180px;
+    white-space: nowrap;
+
+    &:hover {
+        background: var(--hover-glass, rgba(0, 0, 0, 0.04));
+        border-color: var(--border-glass, rgba(0, 0, 0, 0.08));
     }
 
-    &__context {
-        color: var(--text-muted);
-        font-size: 0.75rem;
+    [data-theme="dark"] & {
+        color: #e2e8f0;
 
-        small {
-            font-size: 0.65rem;
-            font-weight: 700;
-            color: var(--buca-blue, #2563eb);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-left: 4px;
+        &:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
         }
     }
+
+    &__label {
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__badge {
+        font-size: 0.6rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        padding: 1px 5px;
+        border-radius: 4px;
+        line-height: 1.4;
+        flex-shrink: 0;
+
+        &--free {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--buca-blue, #2563eb);
+
+            [data-theme="dark"] & {
+                background: rgba(96, 165, 250, 0.15);
+                color: #93c5fd;
+            }
+        }
+
+        &--prod {
+            background: rgba(5, 150, 105, 0.1);
+            color: #059669;
+
+            [data-theme="dark"] & {
+                background: rgba(16, 185, 129, 0.15);
+                color: #6ee7b7;
+            }
+        }
+    }
+
+    &__chevron {
+        font-size: 0.6rem;
+        color: var(--text-muted, #94a3b8);
+        opacity: 0.7;
+        transition: opacity 0.15s ease;
+        flex-shrink: 0;
+    }
+
+    &:hover &__chevron {
+        opacity: 1;
+    }
+}
+
+.header-breadcrumb-sep {
+    font-size: 1rem;
+    line-height: 1;
+    user-select: none;
 }

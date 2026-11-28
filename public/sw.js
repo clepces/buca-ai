@@ -4,7 +4,7 @@
  * Estrategia: Stale-While-Revalidate para activos, Network-First para API.
  * =========================================================================
  */
-const CACHE_NAME = 'buca-cache-v1.1.24';
+const CACHE_NAME = 'buca-cache-v1.1.25';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html'
@@ -43,6 +43,11 @@ self.addEventListener('activate', (event) => {
 // Interceptación de peticiones
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
+
+    // No interceptar peticiones en localhost (desarrollo) para evitar servir index.html viejo desde caché
+    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+        return;
+    }
 
     // No interceptar peticiones no GET ni peticiones a APIs externas (Supabase, Google, etc.)
     if (event.request.method !== 'GET' || url.origin !== self.location.origin) {

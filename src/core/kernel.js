@@ -29,14 +29,23 @@ import TooltipService from '@/shared/ui/services/tooltip-service.js';
 import { PerformanceStorage } from '@/core/storage/PerformanceStorage.js';
 import { SearchService } from '@/core/services/SearchService.js';
 import { KeyboardShortcuts } from '@/core/services/KeyboardShortcuts.js';
-import { getPath, replaceHistory } from '@/core/utils/index.js';
-import { $id, $mount, $attr, $addClass, $$, $text, $className, $styleVar, $on } from '@/shared/utils/dom.js';
+import { getPath, replaceHistory, isBrowser } from '@/core/utils/index.js';
+import { $id, $mount, $attr, $addClass, $$, $text, $className, $on } from '@/shared/utils/dom.js';
+import preloaderController from '@/shared/ui/overlays/preloader-controller.js';
+
+const AUTH_SHELL_PATHS = new Set([
+    '/auth/login', '/auth/register', '/auth/recovery',
+    '/auth/recovery/reset-password', '/auth/two-factor',
+    '/auth/verify-email', '/auth/callback', '/auth/logout', '/auth/unauthorized'
+]);
 
 class Kernel {
     constructor() {
         this.isInitialized = false;
         this.currentLayoutMode = null;
         this._cleanups = [];
+        this._hideSplashTimer = null;
+        this._splashCleanTimer = null;
     }
 
     /**
@@ -46,14 +55,13 @@ class Kernel {
     async boot() {
         if (this.isInitialized) return;
 
-        const updateStatus = (pct, text) => {
-            this.updateSplashProgress(pct);
-            const statusEl = $id('splash-status');
-            if (statusEl) $text(statusEl, text);
+        const updatePhase = (pct, phaseId, title, description, state = phaseId) => {
+            eventBus.emit('kernel:boot:progress', pct);
+            preloaderController.updateStatus({ phaseId, state, title, description, progress: pct });
         };
 
         try {
-            updateStatus(10, 'Calibrando Motor Gráfico & Rendimiento BENE...');
+            updatePhase(10, 'engine', 'Motor Gráfico', 'Calibrando hardware y perfil BENE...');
 
             // 1. Motores Gráficos y Almacenamiento Local
             let engineResponse;
@@ -64,9 +72,10 @@ class Kernel {
                 engineResponse = { tier: 'L2', profile: 'balanced' };
             }
             storage.init(engineResponse?.tier || 'L2');
+            updatePhase(20, 'engine', 'Motor Gráfico', 'Aplicando nivel de renderizado BENE...');
             GraphicsEngine.scan();
 
-            updateStatus(30, 'Estableciendo Conexión con Supabase Cloud...');
+            updatePhase(30, 'database', 'Base de Datos', 'Estableciendo conexión con Supabase Cloud...');
 
             // 2. Conectividad Cloud y Servicios Base
             try {
@@ -75,11 +84,12 @@ class Kernel {
                 Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'Kernel', icon: '⚠️', message: 'Inicialización de Supabase diferida durante el arranque.', data: e?.message || e });
             }
 
+            updatePhase(40, 'database', 'Base de Datos', 'Sincronizando telemetría y notificaciones...');
             await ThemeManager.init();
             NotificationService.init();
             ActivityLogService.init();
 
-            updateStatus(50, 'Verificando Credenciales & Estado de Sesión...');
+            updatePhase(50, 'auth', 'Sesión', 'Verificando credenciales y estado de sesión...');
 
             // 3. Auth-First Gate: Validar sesión de Supabase ANTES de pintar cualquier Layout
             await ModuleLoader.load('auth');
@@ -87,17 +97,6 @@ class Kernel {
             const isAuthenticated = Boolean(sessionCheck?.isAuthenticated);
 
             let initialPath = getPath();
-            const AUTH_SHELL_PATHS = new Set([
-                '/auth/login',
-                '/auth/register',
-                '/auth/recovery',
-                '/auth/recovery/reset-password',
-                '/auth/two-factor',
-                '/auth/verify-email',
-                '/auth/callback',
-                '/auth/logout',
-                '/auth/unauthorized'
-            ]);
             const isExplicitAuthPath = AUTH_SHELL_PATHS.has(initialPath);
 
             // Gate Estricto: Si la ruta requiere autenticación y no hay sesión, guardar returnUrl y forzar /auth/login
@@ -107,7 +106,7 @@ class Kernel {
                 replaceHistory('/auth/login');
             }
 
-            updateStatus(70, 'Construyendo Estructura de Interfaz Autorizada...');
+            updatePhase(70, 'layout', 'Interfaz', 'Construyendo estructura de interfaz autorizada...');
 
             // 4. Renderizar ÚNICAMENTE el Layout que corresponde al estado de sesión verificado
             await this._renderMainLayout(initialPath, isExplicitAuthPath ? 'auth' : 'workspace');
@@ -117,7 +116,7 @@ class Kernel {
                 Dock.init('dock-slot');
             }
 
-            updateStatus(85, 'Cargando Módulos del Sistema & Enrutador...');
+            updatePhase(85, 'modules', 'Módulos', 'Cargando módulos del sistema y enrutador...');
 
             // 5. Carga de módulos según el contexto de sesión
             const modulesToLoad = isAuthenticated 
@@ -146,7 +145,7 @@ class Kernel {
             });
             this._cleanups.push(offTheme, offRecalibrate, offLayoutSync);
 
-            updateStatus(95, 'Montando Vista Final & Componente de Ruta...');
+            updatePhase(95, 'router', 'Enrutador', 'Montando vista final y componente de ruta...');
 
             // 7. Inicializar Router (Monta el componente en el slot correspondiente)
             await router.init(routes);
@@ -154,7 +153,7 @@ class Kernel {
 
             this.isInitialized = true;
             PerformanceStorage.recordLoadTime(performance.now(), GraphicsEngine.profile);
-            updateStatus(100, '¡Sistema Operativo Listo!');
+            updatePhase(100, 'ready', 'Sistema', '¡Sistema Operativo Listo!', 'success');
 
             this._finalizeBoot();
         } catch (err) {
@@ -213,23 +212,35 @@ class Kernel {
      */
     hideSplash() {
         const preloader = $id('global-preloader');
+        preloaderController.destroy();
         if (!preloader || preloader._isExiting) return;
         preloader._isExiting = true;
 
         $addClass(preloader, 'preloader--fade-out');
 
         const cleanUp = () => {
+            if (this._splashCleanTimer) {
+                clearTimeout(this._splashCleanTimer);
+                this._splashCleanTimer = null;
+            }
             if (preloader.parentNode) preloader.remove();
         };
 
         $on(preloader, 'animationend', cleanUp, { once: true });
-        setTimeout(cleanUp, 550);
+        this._splashCleanTimer = setTimeout(cleanUp, 450);
     }
 
-    _finalizeBoot() {
+    async _finalizeBoot() {
+        if (isBrowser()) {
+            document.dispatchEvent(new CustomEvent('buca:app-ready'));
+        }
+        await preloaderController.whenIdle();
         requestAnimationFrame(() => {
             $addClass(document.body, 'app-ready');
-            this.hideSplash();
+            this._hideSplashTimer = setTimeout(() => {
+                this._hideSplashTimer = null;
+                this.hideSplash();
+            }, 220);
             eventBus.emit('kernel:ready', { timestamp: Date.now() });
         });
     }
@@ -249,18 +260,23 @@ class Kernel {
     }
 
     updateSplashProgress(percent) {
-        const bar = $id('splash-progress');
-        if (bar) $styleVar(bar, '--buca-progress', `${percent}%`);
-        const pct = $id('splash-percentage');
-        if (pct) $text(pct, `${percent}%`);
+        preloaderController.setProgress(percent);
         eventBus.emit('kernel:boot:progress', percent);
     }
 
     destroy() {
         this.isInitialized = false;
         this.currentLayoutMode = null;
+        if (this._hideSplashTimer) {
+            clearTimeout(this._hideSplashTimer);
+            this._hideSplashTimer = null;
+        }
+        if (this._splashCleanTimer) {
+            clearTimeout(this._splashCleanTimer);
+            this._splashCleanTimer = null;
+        }
+        preloaderController.destroy();
 
-        // 1. Drenar cleanups registrados (eventBus.on, uiState.subscribe, etc.)
         while (this._cleanups.length > 0) {
             const cleanupFn = this._cleanups.pop();
             try {
@@ -270,17 +286,11 @@ class Kernel {
             }
         }
 
-        // 2. Destruir servicios de interfaz y core (cada uno en su propio try/catch)
         const services = [
-            ['NotificationService', NotificationService],
-            ['ActivityLogService', ActivityLogService],
-            ['SearchService', SearchService],
-            ['KeyboardShortcuts', KeyboardShortcuts],
-            ['ActionDispatcher', ActionDispatcher],
-            ['SharedActions', SharedActions],
-            ['ModalService', ModalService],
-            ['TooltipService', TooltipService],
-            ['ThemeManager', ThemeManager],
+            ['NotificationService', NotificationService], ['ActivityLogService', ActivityLogService],
+            ['SearchService', SearchService], ['KeyboardShortcuts', KeyboardShortcuts],
+            ['ActionDispatcher', ActionDispatcher], ['SharedActions', SharedActions],
+            ['ModalService', ModalService], ['TooltipService', TooltipService], ['ThemeManager', ThemeManager],
         ];
         for (const [name, svc] of services) {
             try {
@@ -290,20 +300,10 @@ class Kernel {
             }
         }
 
-        // 3. Destruir router y motor gráfico
-        try {
-            if (router && typeof router.destroy === 'function') {
-                router.destroy();
-            }
-        } catch (e) {
+        try { router?.destroy?.(); } catch (e) {
             Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'Kernel', icon: '⚠️', message: 'Error al desmontar el enrutador SPA.', data: e });
         }
-
-        try {
-            if (GraphicsEngine && typeof GraphicsEngine.destroy === 'function') {
-                GraphicsEngine.destroy();
-            }
-        } catch (e) {
+        try { GraphicsEngine?.destroy?.(); } catch (e) {
             Logger.warn({ layer: 'KERNEL', role: 'CLASS', target: 'Kernel', icon: '⚠️', message: 'Error al desmontar GraphicsEngine.', data: e });
         }
     }

@@ -30,11 +30,11 @@ sequenceDiagram
     Kernel->>DOM: 6. hideSplash() con transición suave
 ```
 
-1. **Pre-Render y Layout Base:** Monta el esqueleto HTML de `MainLayout` y activa el preloader visual para evitar saltos de pantalla (FOUC).
-2. **Calibración de Hardware:** Evalúa memoria, hilos de CPU y GPU antes de permitir que la interfaz se dibuje.
+1. **Pre-Render y Preloader Desacoplado (`index.html` + `preloader-controller.js`):** Despliega `#global-preloader` con CSS base sólido (sin `glass*`), logo SVG animado (`logo-light.svg`), marca `BUCA AI` y el sistema de badges por fase (`engine`, `database`, `auth`, `layout`, `modules`, `router`, `ready`).
+2. **Calibración de Hardware:** Evalúa memoria, hilos de CPU y GPU mediante `GraphicsEngine.init()`, inyectando `bene-perf` en `document.documentElement`.
 3. **Validación de Sesión:** Verifica si existe un JWT activo en `buca_supabase_auth` y consulta el estado MFA (AAL2).
 4. **Enrutamiento:** Conmuta la ruta inicial evaluando permisos de acceso.
-5. **Finalización:** Oculta el preloader mediante transiciones nativas por GPU.
+5. **Finalización y Watchdog:** Emite `buca:app-ready` para cancelar el Watchdog de `index.html` de forma determinista, libera los `AbortController` / timers en `preloaderController.destroy()` y ejecuta `hideSplash()`.
 
 ---
 

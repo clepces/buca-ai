@@ -24,18 +24,18 @@ sequenceDiagram
     Kernel->>BENE: 2. Await GraphicsEngine.init()
     Note over BENE: Medir FPS, GPU y Presión Térmica
     BENE-->>Kernel: Retornar Perfil Calibrado (L0 - L3)
-    Kernel->>DOM: 3. documentElement.setAttribute('bne-perf', tier)
+    Kernel->>DOM: 3. documentElement.setAttribute('bene-perf', tier)
     Kernel->>Loader: 4. Descargar e instanciar módulos en paralelo
     Note over Loader: Precarga perezosa en requestIdleCallback
     Loader-->>Kernel: Módulos listos en memoria
     Kernel->>DOM: 5. Disparar hideSplash() con transición GPU nativa
 ```
 
-1. **Montaje Estructural (`_renderMainLayout`):** El Kernel inyecta `MainLayout` en `#app` y despliega la pantalla de carga interina.
-2. **Validación de Hardware y Calibración:** Invoca `GraphicsEngine.init()`. Mide FPS y termalismo inicial, resolviendo el perfil correspondiente.
-3. **Inyección Primaria:** Inyecta de inmediato `bne-perf` en `document.documentElement`.
-4. **Carga Resiliente de Módulos:** `ModuleLoader` descarga e instancia los módulos de negocio en paralelo (`auth`, `workspace`, `finance`, `business`).
-5. **Desmantelamiento Seguro del Preloader (`_finalizeBoot`):** Con el evento `kernel:layout-ready`, ejecuta `hideSplash()`, aplicando un desvanecimiento suave acelerado por hardware.
+1. **Montaje Estructural (`_renderMainLayout`):** El Kernel inyecta `MainLayout` en `#app` y despliega la pantalla de carga interina (`#global-preloader`).
+2. **Política Cero Glass en Preloader:** `#global-preloader` utiliza CSS base sólido (`--preloader-bg`, `--preloader-accent`, `--preloader-badge-*`) sin `backdrop-filter`. Los realces visuales (`drop-shadow`, `box-shadow` en barra de progreso) se aplican únicamente mediante `[bene-perf="L2"]` y `[bene-perf="L3"]`.
+3. **Excepción Controlada en `L0`:** `[bene-perf="L0"]` mantiene colores sólidos de alto contraste, suprime las animaciones de entrada/salida de badges y permite a `hideSplash()` remover el splash de forma inmediata sin esperar `animationend`.
+4. **Inyección Primaria:** Inyecta `bene-perf` en `document.documentElement`.
+5. **Desmantelamiento Seguro del Preloader (`_finalizeBoot`):** Emite `buca:app-ready`, cancela el Watchdog y ejecuta `hideSplash()` limpiando timers y `AbortController`.
 
 ---
 
@@ -70,54 +70,54 @@ El lenguaje visual deja de ser estático y se convierte en un sistema paramétri
 
 * **Frosted Glass Adaptativo:**
   ```css
-  backdrop-filter: blur(calc(20px * var(--bne-blur-factor, 1))) saturate(180%);
-  -webkit-backdrop-filter: blur(calc(20px * var(--bne-blur-factor, 1))) saturate(180%);
+  backdrop-filter: blur(calc(20px * var(--bene-blur-factor, 1))) saturate(180%);
+  -webkit-backdrop-filter: blur(calc(20px * var(--bene-blur-factor, 1))) saturate(180%);
   ```
 * **Specular Highlights & Inner Glow:** Gradientes cruzados a 45° con opacidad regulada por hardware y sombras internas (`box-shadow: inset`) para acentuar la tridimensionalidad física.
-* **Control de Capas y Overdraw (`bne-layer`):**
-  - `bne-layer="base"` (Dashboard principal): Blur 20px.
-  - `bne-layer="overlay"` (Modales de cristal): Blur 12px con resplandor perimetral.
-  - `bne-layer="nested"` (Popovers flotantes): Blur 5px para proteger la GPU.
+* **Control de Capas y Overdraw (`bene-layer`):**
+  - `bene-layer="base"` (Dashboard principal): Blur 20px.
+  - `bene-layer="overlay"` (Modales de cristal): Blur 12px con resplandor perimetral.
+  - `bene-layer="nested"` (Popovers flotantes): Blur 5px para proteger la GPU.
 * **Protección en Envío de Formularios:**
-  Al procesar solicitudes, BENE inyecta `bne-asset-status="loading"`, aplicando:
+  Al procesar solicitudes, BENE inyecta `bene-asset-status="loading"`, aplicando:
   - `pointer-events: none !important;` (bloquea físicamente dobles envíos).
   - Animación perimetral suave de borde cónico, sustituida por indicador estático en `L0`.
 
 ---
 
-## 4. Hoja de Estilos Paramétrica (`bne-glass-core.css`)
+## 4. Hoja de Estilos Paramétrica (`bene-glass-core.css`)
 
 ```css
 /* ==========================================================================
-   SUITE VISUAL SOLID PHYSICAL GLASS (bne-effect="glassmorphic")
+   SUITE VISUAL SOLID PHYSICAL GLASS (bene-effect="glassmorphic")
    ========================================================================== */
-[bne-effect="glassmorphic"] {
+[bene-effect="glassmorphic"] {
   position: relative;
   overflow: hidden;
   border-radius: 16px;
-  background: rgba(255, 255, 255, calc(0.06 * var(--bne-blur-factor, 1)));
-  border: 1px solid rgba(255, 255, 255, calc(0.12 * var(--bne-glow-factor, 1)));
-  backdrop-filter: blur(calc(18px * var(--bne-blur-factor, 1))) saturate(180%);
-  -webkit-backdrop-filter: blur(calc(18px * var(--bne-blur-factor, 1))) saturate(180%);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, calc(0.2 * var(--bne-shadow-factor, 1)));
+  background: rgba(255, 255, 255, calc(0.06 * var(--bene-blur-factor, 1)));
+  border: 1px solid rgba(255, 255, 255, calc(0.12 * var(--bene-glow-factor, 1)));
+  backdrop-filter: blur(calc(18px * var(--bene-blur-factor, 1))) saturate(180%);
+  -webkit-backdrop-filter: blur(calc(18px * var(--bene-blur-factor, 1))) saturate(180%);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, calc(0.2 * var(--bene-shadow-factor, 1)));
   transition: backdrop-filter 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Modo Oscuro / Obsidian Glass */
-[bne-theme="dark"] [bne-effect="glassmorphic"] {
-  background: rgba(15, 23, 42, calc(0.65 * var(--bne-blur-factor, 1)));
-  border-color: rgba(255, 255, 255, calc(0.08 * var(--bne-glow-factor, 1)));
+[bene-theme="dark"] [bene-effect="glassmorphic"] {
+  background: rgba(15, 23, 42, calc(0.65 * var(--bene-blur-factor, 1)));
+  border-color: rgba(255, 255, 255, calc(0.08 * var(--bene-glow-factor, 1)));
 }
 
 /* DEGRADACIÓN OBLIGATORIA L0 ECO (BENE-RULE-001) */
-[bne-perf="L0"] [bne-effect="glassmorphic"] {
+[bene-perf="L0"] [bene-effect="glassmorphic"] {
   background: var(--surface-solid, #ffffff) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border-color: var(--border-solid, #e2e8f0) !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
 }
-[bne-theme="dark"][bne-perf="L0"] [bne-effect="glassmorphic"] {
+[bene-theme="dark"][bene-perf="L0"] [bene-effect="glassmorphic"] {
   background: var(--surface-solid-dark, #0f172a) !important;
   border-color: var(--border-solid-dark, #1e293b) !important;
 }
